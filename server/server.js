@@ -4,15 +4,26 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
 
-import User from "./models/User.js";
-
-import authRoutes from "./controllers/authController.js";
-import userRoutes from "./controllers/userController.js";
+import User from "./src/models/User.js";
+import connectDB from "./src/config/database.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
+import errorHandler from "./src/middleware/errorHandler.js";
+import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
+import { AppError } from "./src/utils/AppError.js";
 
 dotenv.config();
 
-const server = express();
+const app = express();
+
+app.set("trust proxy", 1);
+
+app.use(helmet());
+app.use(mongoSanitize());
+app.use(generalLimiter);
 
 passport.use(
 	new GoogleStrategy(
@@ -24,65 +35,90 @@ passport.use(
 		},
 		async (accessToken, refreshToken, profile, done) => {
 			try {
-				await User.findOrCreate({
-					where: {
-						googleId: profile.id,
-						email: profile.emails[0].value,
-						avatar: profile.photos[0],
-					},
+				const user = await User.findOrCreate({
+					googleId: profile.id,
+					email: profile.emails[0].value,
+					firstName: profile.name.givenName,
+					lastName: profile.name.familyName,
+					avatar: profile.photos[0]?.value,
 				});
 
-				return done(null, { accessToken, refreshToken, profile });
+				return done(null, { accessToken, refreshToken, profile, user });
 			} catch (err) {
-				console.error(err);
 				return done(err);
 			}
 		}
 	)
 );
 
-server.use(cookieParser());
-server.use(express.json());
-server.use(
+app.use(cookieParser());
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+
+app.use(
 	cors({
-		origin:
-			process.env.ENV !== "production" ? "http://localhost:3000" : "https://gotayo.vercel.app",
-		methods: ["GET", "POST", "PUT", "DELETE"],
+		origin: (origin, callback) => {
+			const allowedOrigins = [
+				"http://localhost:5173",
+				"http://127.0.0.1:5173",
+				process.env.CLIENT_URL
+			].filter(Boolean);
+			
+			if (!origin || allowedOrigins.includes(origin)) {
+				callback(null, true);
+			} else {
+				callback(new Error('Not allowed by CORS'));
+			}
+		},
+		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		credentials: true,
+		allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+		optionsSuccessStatus: 200
 	})
 );
-server.use(passport.initialize());
 
-server.get("/", (_, res) => {
-	res.json("good mourning.");
+app.use(passport.initialize());
+
+app.get("/", (req, res) => {
+	res.json({
+		success: true,
+		message: "Previlace API is running",
+		version: "2.0.0",
+	});
 });
 
-(async () => {
+app.get("/api/health", (req, res) => {
+	res.json({
+		success: true,
+		message: "API is healthy",
+		timestamp: new Date().toISOString(),
+	});
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+
+app.all("*", (req, res, next) => {
+	next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 8080;
+
+const startServer = async () => {
 	try {
-		await sql.authenticate();
-		console.log("Database connected successfully.");
+		await connectDB();
 
-		if (process.env.ENV !== "production") {
-			await sql.sync({ alter: true });
-			console.log("All tables synced successfully.");
-		}
-	} catch (err) {
-		console.error("Database connection failed: ", err);
+		app.listen(PORT, () => {
+			console.log(`Server running on port ${PORT}`);
+		});
+	} catch (error) {
+		console.error("Failed to start server:", error);
+		process.exit(1);
 	}
-})();
+};
 
-// routes
-authRoutes(server);
-userRoutes(server);
+startServer();
 
-server.get("/api/test/delay", (req, res) => {
-	setTimeout(() => {
-		res.json({ message: "Data fetched successfully!" });
-	}, 2000);
-});
-
-server.listen(8080, () => {
-	console.log("Connected to the server.");
-});
-
-export default server;
+export default app;
