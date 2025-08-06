@@ -5,6 +5,7 @@ import HomePage from "@/pages/HomePage";
 import DashboardPage from "@/pages/DashboardPage";
 import AuthPage from "@/pages/AuthPage";
 import AuthCallback from "@/components/auth/AuthCallback";
+import OnboardingPage from './pages/OnboardingPage';
 
 function App() {
 	return (
@@ -13,6 +14,7 @@ function App() {
 				<Route path="/auth" element={<AuthPage />} />
 				<Route path="/auth/callback" element={<AuthCallback />} />
 				<Route path="/" element={<HomePage />} />
+				<Route path="onboarding" element={<OnboardingPage />} />
 				<Route
 					path="/dashboard"
 					element={
