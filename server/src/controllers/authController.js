@@ -25,7 +25,7 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
 	const cookieOptions = {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
-		sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+		sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
 	};
 
 	res.cookie("accessToken", accessToken, {
@@ -78,6 +78,7 @@ const register = catchAsync(async (req, res, next) => {
 				firstName: user.firstName,
 				lastName: user.lastName,
 				isEmailVerified: user.isEmailVerified,
+				isProfileComplete: user.isProfileComplete,
 				role: user.role || 'user',
 				avatar: user.avatar
 			}
@@ -125,6 +126,7 @@ const login = catchAsync(async (req, res, next) => {
 				firstName: user.firstName,
 				lastName: user.lastName,
 				isEmailVerified: user.isEmailVerified,
+				isProfileComplete: user.isProfileComplete,
 				role: user.role || 'user',
 				avatar: user.avatar
 			}
@@ -143,7 +145,6 @@ const logout = catchAsync(async (req, res, next) => {
 				await user.removeRefreshToken(refreshToken);
 			}
 		} catch (error) {
-			// Token invalid, continue with logout
 		}
 	}
 
@@ -271,6 +272,7 @@ const getMe = catchAsync(async (req, res, next) => {
 				lastName: user.lastName,
 				avatar: user.avatar,
 				isEmailVerified: user.isEmailVerified,
+				isProfileComplete: user.isProfileComplete,
 				role: user.role,
 			}
 		}
@@ -300,10 +302,19 @@ const googleAuth = passport.authenticate("google", {
 	accessType: "offline",
 });
 
-const googleCallback = passport.authenticate("google", {
-	failureRedirect: `${process.env.CLIENT_URL || "http://localhost:5173"}/auth?error=google_auth_failed`,
-	session: false,
-});
+const googleCallback = (req, res, next) => {
+	passport.authenticate("google", {
+		session: false,
+	}, (err, user, info) => {
+		if (err || !user) {
+			const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+			return res.redirect(`${clientUrl}?error=auth_failed`);
+		}
+
+		req.user = user;
+		next();
+	})(req, res, next);
+};
 
 const googleCallbackSuccess = catchAsync(async (req, res, next) => {
 	const { accessToken, refreshToken } = generateTokens(req.user.user._id);
@@ -314,89 +325,36 @@ const googleCallbackSuccess = catchAsync(async (req, res, next) => {
 		req.ip || req.connection.remoteAddress
 	);
 
-	setTokenCookies(res, accessToken, refreshToken);
-
-	const userData = {
-		id: req.user.user._id,
-		email: req.user.user.email,
-		firstName: req.user.user.firstName || '',
-		lastName: req.user.user.lastName || '',
-		avatar: req.user.user.avatar || '',
-		isEmailVerified: req.user.user.isEmailVerified,
-		role: req.user.user.role || 'user'
+	const cookieOptions = {
+		httpOnly: true,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+		domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : undefined,
 	};
 
-	const script = `
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<title>Authentication Success</title>
-			<style>
-				body {
-					font-family: Arial, sans-serif;
-					display: flex;
-					justify-content: center;
-					align-items: center;
-					height: 100vh;
-					margin: 0;
-					background-color: #f5f5f5;
-				}
-				.container {
-					text-align: center;
-					background: white;
-					padding: 30px;
-					border-radius: 10px;
-					box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-				}
-				.spinner {
-					border: 3px solid #f3f3f3;
-					border-top: 3px solid #007bff;
-					border-radius: 50%;
-					width: 40px;
-					height: 40px;
-					animation: spin 1s linear infinite;
-					margin: 20px auto;
-				}
-				@keyframes spin {
-					0% { transform: rotate(0deg); }
-					100% { transform: rotate(360deg); }
-				}
-			</style>
-		</head>
-		<body>
-			<div class="container">
-				<h3>Authentication Successful</h3>
-				<div class="spinner"></div>
-				<p>Completing login process...</p>
-			</div>
-			<script>
-				(function() {
-					try {
-						const userData = ${JSON.stringify(userData)};
-						
-						if (window.opener && !window.opener.closed) {
-							window.opener.postMessage({
-								type: 'GOOGLE_AUTH_SUCCESS',
-								user: userData
-							}, window.location.origin);
-							
-							setTimeout(() => {
-								window.close();
-							}, 1500);
-						} else {
-							window.location.href = '${process.env.CLIENT_URL || "http://localhost:5173"}';
-						}
-					} catch (error) {
-						console.error('Auth callback error:', error);
-						window.location.href = '${process.env.CLIENT_URL || "http://localhost:5173"}?error=auth_callback_failed';
-					}
-				})();
-			</script>
-		</body>
-		</html>
-	`;
+	res.cookie("accessToken", accessToken, {
+		...cookieOptions,
+		maxAge: 60 * 60 * 1000,
+	});
 
-	res.send(script);
+	res.cookie("refreshToken", refreshToken, {
+		...cookieOptions,
+		maxAge: 30 * 24 * 60 * 60 * 1000,
+	});
+
+	const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+	const userData = encodeURIComponent(JSON.stringify({
+		id: req.user.user._id,
+		email: req.user.user.email,
+		firstName: req.user.user.firstName,
+		lastName: req.user.user.lastName,
+		avatar: req.user.user.avatar,
+		isEmailVerified: req.user.user.isEmailVerified,
+		isProfileComplete: req.user.user.isProfileComplete,
+		role: req.user.user.role || 'user'
+	}));
+
+	res.redirect(`${clientUrl}?auth=success&user=${userData}`);
 });
 
 export default {

@@ -1,31 +1,39 @@
-import { Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import ProtectedRoute from "@/components/common/ProtectedRoute";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
+import { useAppStore } from "@/store/appStore";
 import HomePage from "@/pages/HomePage";
 import DashboardPage from "@/pages/DashboardPage";
-import AuthPage from "@/pages/AuthPage";
-import AuthCallback from "@/components/auth/AuthCallback";
-import OnboardingPage from './pages/OnboardingPage';
+import OnboardingPage from "@/pages/OnboardingPage";
+import AuthModal from "@/components/auth/AuthModal";
 
 function App() {
+	const { isAuthenticated, user, initializeAuth } = useAuthStore();
+	const { showAuthModal } = useAppStore();
+
+	useEffect(() => {
+		initializeAuth();
+	}, [initializeAuth]);
+
+	const renderMainContent = () => {
+		if (!isAuthenticated) {
+			return <HomePage />;
+		}
+
+		if (!user?.isProfileComplete) {
+			return <OnboardingPage />;
+		}
+
+		return <DashboardPage />;
+	};
+
 	return (
-		<AuthProvider>
-			<Routes>
-				<Route path="/auth" element={<AuthPage />} />
-				<Route path="/auth/callback" element={<AuthCallback />} />
-				<Route path="/" element={<HomePage />} />
-				<Route path="onboarding" element={<OnboardingPage />} />
-				<Route
-					path="/dashboard"
-					element={
-						<ProtectedRoute>
-							<DashboardPage />
-						</ProtectedRoute>
-					}
-				/>
-				<Route path="*" element={<div className="min-h-screen bg-background flex items-center justify-center"><p>Page not found</p></div>} />
-			</Routes>
-		</AuthProvider>
+		<>
+			<div className="min-h-screen bg-white">
+				{renderMainContent()}
+			</div>
+
+			{showAuthModal && <AuthModal />}
+		</>
 	);
 }
 

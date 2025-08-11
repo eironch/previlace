@@ -3,15 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
+import { useAppStore } from "@/store/appStore";
 
-export default function ForgotPasswordForm({ onToggleForm }) {
+export default function ForgotPasswordForm() {
 	const [email, setEmail] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [error, setError] = useState("");
 
-	const { forgotPassword } = useAuth();
+	const { forgotPassword } = useAuthStore();
+	const { setCurrentAuthForm } = useAppStore();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -19,10 +21,12 @@ export default function ForgotPasswordForm({ onToggleForm }) {
 		setError("");
 
 		try {
-			await forgotPassword(email);
-			setIsSubmitted(true);
-		} catch (err) {
-			setError(err.message);
+			const result = await forgotPassword(email);
+			if (result.success) {
+				setIsSubmitted(true);
+			} else {
+				setError(result.error);
+			}
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -30,49 +34,51 @@ export default function ForgotPasswordForm({ onToggleForm }) {
 
 	if (isSubmitted) {
 		return (
-			<Card className="w-full max-w-md">
-				<CardHeader className="text-center">
-					<CardTitle>Check Your Email</CardTitle>
-					<CardDescription>
+			<div className="w-full max-w-md">
+				<div className="text-center mb-6">
+					<h2 className="text-2xl font-bold text-gray-900">Check Your Email</h2>
+					<p className="text-gray-600 mt-2">
 						We've sent a password reset link to {email}
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="p-4 text-sm border border-green-200 bg-green-50 text-green-700">
+					</p>
+				</div>
+				
+				<div className="space-y-4">
+					<div className="p-4 text-sm border border-green-200 bg-green-50 text-green-700 rounded-md">
 						If an account with that email exists, you'll receive a password reset link shortly.
 					</div>
 
 					<Button
 						type="button"
 						variant="outline"
-						className="w-full"
-						onClick={() => onToggleForm("login")}
+						className="w-full border border-gray-300 py-2 px-4 rounded-md hover:bg-gray-50 transition-colors"
+						onClick={() => setCurrentAuthForm("login")}
 					>
 						Back to Sign In
 					</Button>
-				</CardContent>
-			</Card>
+				</div>
+			</div>
 		);
 	}
 
 	return (
-		<Card className="w-full max-w-md">
-			<CardHeader className="text-center">
-				<CardTitle>Reset Password</CardTitle>
-				<CardDescription>
+		<div className="w-full max-w-md">
+			<div className="text-center mb-6">
+				<h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
+				<p className="text-gray-600 mt-2">
 					Enter your email address and we'll send you a reset link
-				</CardDescription>
-			</CardHeader>
-			<CardContent className="space-y-4">
+				</p>
+			</div>
+			
+			<div className="space-y-4">
 				{error && (
-					<div className="p-3 text-sm border border-red-200 bg-red-50 text-red-700">
+					<div className="p-3 text-sm border border-red-200 bg-red-50 text-red-700 rounded-md">
 						{error}
 					</div>
 				)}
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
-						<Label htmlFor="email">Email</Label>
+						<label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
 						<Input
 							id="email"
 							name="email"
@@ -81,10 +87,16 @@ export default function ForgotPasswordForm({ onToggleForm }) {
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							required
+							disabled={isSubmitting}
+							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
 						/>
 					</div>
 
-					<Button type="submit" className="w-full" disabled={isSubmitting}>
+					<Button 
+						type="submit" 
+						className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
+						disabled={isSubmitting}
+					>
 						{isSubmitting ? "Sending..." : "Send Reset Link"}
 					</Button>
 				</form>
@@ -92,13 +104,14 @@ export default function ForgotPasswordForm({ onToggleForm }) {
 				<div className="text-center">
 					<button
 						type="button"
-						className="text-sm text-muted-foreground hover:text-foreground underline"
-						onClick={() => onToggleForm("login")}
+						className="text-sm text-gray-500 hover:text-gray-700 underline"
+						onClick={() => setCurrentAuthForm("login")}
+						disabled={isSubmitting}
 					>
 						Back to Sign In
 					</button>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 }

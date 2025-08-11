@@ -17,12 +17,35 @@ const getProfile = catchAsync(async (req, res, next) => {
 });
 
 const updateProfile = catchAsync(async (req, res, next) => {
-	const { firstName, lastName, bio } = req.body;
+	const allowedFields = [
+		'firstName', 
+		'lastName', 
+		'bio', 
+		'isProfileComplete', 
+		'examType',
+		'education',
+		'hasTakenExam',
+		'previousScore',
+		'reviewExperience',
+		'struggles',
+		'studyMode',
+		'studyTime',
+		'hoursPerWeek',
+		'targetDate',
+		'reason',
+		'targetScore',
+		'showLeaderboard',
+		'receiveReminders',
+		'studyBuddy'
+	];
 
 	const updateData = {};
-	if (firstName !== undefined) updateData.firstName = firstName;
-	if (lastName !== undefined) updateData.lastName = lastName;
-	if (bio !== undefined) updateData.bio = bio;
+	
+	Object.keys(req.body).forEach(key => {
+		if (allowedFields.includes(key) && req.body[key] !== undefined) {
+			updateData[key] = req.body[key];
+		}
+	});
 
 	const user = await User.findByIdAndUpdate(req.user.userId, updateData, {
 		new: true,

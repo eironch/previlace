@@ -1,9 +1,9 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
-	const { user, logout } = useAuth();
+	const { user, logout } = useAuthStore();
 
 	const handleLogout = async () => {
 		await logout();
