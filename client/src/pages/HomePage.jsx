@@ -1,18 +1,9 @@
-import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAppStore } from "@/store/appStore";
 
 export default function HomePage() {
-	const { user } = useAuth();
-	const navigate = useNavigate();
-
-	useEffect(() => {
-		if (user) {
-			navigate("/dashboard");
-		}
-	}, [user, navigate]);
+	const { openAuthModal } = useAppStore();
 
 	return (
 		<div className="min-h-screen bg-white">
@@ -23,12 +14,19 @@ export default function HomePage() {
 							<h1 className="text-xl font-semibold">Previlace</h1>
 						</div>
 						<div className="flex items-center space-x-3">
-							<Link to="/login">
-								<Button variant="outline" size="sm">Sign In</Button>
-							</Link>
-							<Link to="/register">
-								<Button size="sm">Get Started</Button>
-							</Link>
+							<Button 
+								variant="outline" 
+								size="sm" 
+								onClick={() => openAuthModal('login')}
+							>
+								Sign In
+							</Button>
+							<Button 
+								size="sm" 
+								onClick={() => openAuthModal('register')}
+							>
+								Get Started
+							</Button>
 						</div>
 					</div>
 				</div>
@@ -44,12 +42,19 @@ export default function HomePage() {
 						and comprehensive career support for government service.
 					</p>
 					<div className="flex justify-center space-x-3">
-						<Link to="/register">
-							<Button size="lg">Start Learning</Button>
-						</Link>
-						<Link to="/login">
-							<Button variant="outline" size="lg">Sign In</Button>
-						</Link>
+						<Button 
+							size="lg" 
+							onClick={() => openAuthModal('register')}
+						>
+							Start Learning
+						</Button>
+						<Button 
+							variant="outline" 
+							size="lg" 
+							onClick={() => openAuthModal('login')}
+						>
+							Sign In
+						</Button>
 					</div>
 				</section>
 
@@ -122,9 +127,12 @@ export default function HomePage() {
 						<p className="text-gray-600 mb-6">
 							Join thousands of successful Civil Service Exam takers
 						</p>
-						<Link to="/register">
-							<Button size="lg">Create Your Free Account</Button>
-						</Link>
+						<Button 
+							size="lg" 
+							onClick={() => openAuthModal('register')}
+						>
+							Create Your Free Account
+						</Button>
 					</div>
 				</section>
 			</main>

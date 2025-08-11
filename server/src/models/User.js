@@ -46,6 +46,75 @@ const userSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+		isProfileComplete: {
+			type: Boolean,
+			default: false,
+		},
+		examType: {
+			type: String,
+			enum: ["Professional", "Subprofessional", ""],
+			default: "",
+		},
+		education: {
+			type: String,
+			default: "",
+		},
+		hasTakenExam: {
+			type: String,
+			enum: ["Yes", "No", ""],
+			default: "",
+		},
+		previousScore: {
+			type: String,
+			default: "",
+		},
+		reviewExperience: {
+			type: String,
+			enum: ["Self-study", "Review center (in person)", "None", ""],
+			default: "",
+		},
+		struggles: [{
+			type: String,
+			enum: ["Numerical Ability", "Verbal Ability", "General Information", "Clerical Ability", "Logic", "Grammar"]
+		}],
+		studyMode: [{
+			type: String,
+			enum: ["Video Lessons", "Text Modules", "Practice Quizzes", "Live Sessions"]
+		}],
+		studyTime: {
+			type: String,
+			enum: ["Morning", "Afternoon", "Evening", "Flexible", ""],
+			default: "",
+		},
+		hoursPerWeek: {
+			type: String,
+			default: "",
+		},
+		targetDate: {
+			type: String,
+			default: "",
+		},
+		reason: {
+			type: String,
+			enum: ["Government Job", "Career Advancement", "Personal Development", "Other", ""],
+			default: "",
+		},
+		targetScore: {
+			type: String,
+			default: "",
+		},
+		showLeaderboard: {
+			type: Boolean,
+			default: false,
+		},
+		receiveReminders: {
+			type: Boolean,
+			default: false,
+		},
+		studyBuddy: {
+			type: Boolean,
+			default: false,
+		},
 		emailVerificationToken: {
 			type: String,
 		},
@@ -189,6 +258,7 @@ userSchema.statics.findOrCreate = async function (criteria) {
 		firstName: criteria.firstName,
 		lastName: criteria.lastName,
 		isEmailVerified: true,
+		isProfileComplete: false,
 	});
 };
 

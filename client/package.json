@@ -4,10 +4,12 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"start": "vite",
+		"dev": "vite dev",
+		"start": "vite dev",
 		"build": "vite build",
 		"lint": "eslint .",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"serve": "vite preview"
 	},
 	"dependencies": {
 		"@radix-ui/react-slot": "^1.2.3",
@@ -16,8 +18,8 @@
 		"lucide-react": "^0.533.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
-		"react-router-dom": "^7.7.0",
-		"tailwind-merge": "^3.3.1"
+		"tailwind-merge": "^3.3.1",
+		"zustand": "^5.0.3"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.29.0",

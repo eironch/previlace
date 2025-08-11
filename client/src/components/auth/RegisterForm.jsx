@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
+import { useAppStore } from "@/store/appStore";
 
-export default function RegisterForm({ onToggleForm }) {
+export default function RegisterForm() {
 	const [formData, setFormData] = useState({
 		firstName: "",
 		lastName: "",
@@ -16,7 +17,8 @@ export default function RegisterForm({ onToggleForm }) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [validationErrors, setValidationErrors] = useState({});
 
-	const { register, openGoogleAuth, error, clearError } = useAuth();
+	const { register, handleGoogleAuth, error, clearError, isLoading } = useAuthStore();
+	const { setCurrentAuthForm, closeAuthModal } = useAppStore();
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -61,39 +63,40 @@ export default function RegisterForm({ onToggleForm }) {
 
 		try {
 			const { confirmPassword, ...registerData } = formData;
-			await register(registerData);
-		} catch (error) {
-			console.error("Registration failed:", error);
+			const result = await register(registerData);
+			if (result.success) {
+				closeAuthModal();
+			}
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
-	const handleGoogleAuth = async () => {
-		try {
-			await openGoogleAuth();
-		} catch (error) {
-			console.error("Google auth failed:", error);
-		}
+	const handleGoogleClick = () => {
+		closeAuthModal();
+		handleGoogleAuth();
 	};
 
+	const disabled = isSubmitting || isLoading;
+
 	return (
-		<Card className="w-full max-w-md">
-			<CardHeader className="text-center">
-				<CardTitle>Create Account</CardTitle>
-				<CardDescription>Sign up to get started with your account</CardDescription>
-			</CardHeader>
-			<CardContent className="space-y-4">
+		<div className="w-full max-w-md">
+			<div className="text-center mb-6">
+				<h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+				<p className="text-gray-600 mt-2">Sign up to get started with your account</p>
+			</div>
+			
+			<div className="space-y-4">
 				{error && (
-					<div className="p-3 text-sm border border-red-200 bg-red-50 text-red-700">
+					<div className="p-3 text-sm border border-red-200 bg-red-50 text-red-700 rounded-md">
 						{error}
 					</div>
 				)}
 
 				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="grid grid-cols-2 gap-2">
+					<div className="grid grid-cols-2 gap-3">
 						<div className="space-y-2">
-							<Label htmlFor="firstName">First Name</Label>
+							<label htmlFor="firstName" className="text-sm font-medium text-gray-700">First Name</label>
 							<Input
 								id="firstName"
 								name="firstName"
@@ -102,6 +105,8 @@ export default function RegisterForm({ onToggleForm }) {
 								value={formData.firstName}
 								onChange={handleChange}
 								required
+								disabled={disabled}
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
 							/>
 							{validationErrors.firstName && (
 								<p className="text-xs text-red-600">{validationErrors.firstName}</p>
@@ -109,7 +114,7 @@ export default function RegisterForm({ onToggleForm }) {
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="lastName">Last Name</Label>
+							<label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last Name</label>
 							<Input
 								id="lastName"
 								name="lastName"
@@ -118,6 +123,8 @@ export default function RegisterForm({ onToggleForm }) {
 								value={formData.lastName}
 								onChange={handleChange}
 								required
+								disabled={disabled}
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
 							/>
 							{validationErrors.lastName && (
 								<p className="text-xs text-red-600">{validationErrors.lastName}</p>
@@ -126,7 +133,7 @@ export default function RegisterForm({ onToggleForm }) {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="email">Email</Label>
+						<label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
 						<Input
 							id="email"
 							name="email"
@@ -135,6 +142,8 @@ export default function RegisterForm({ onToggleForm }) {
 							value={formData.email}
 							onChange={handleChange}
 							required
+							disabled={disabled}
+							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
 						/>
 						{validationErrors.email && (
 							<p className="text-xs text-red-600">{validationErrors.email}</p>
@@ -142,7 +151,7 @@ export default function RegisterForm({ onToggleForm }) {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="password">Password</Label>
+						<label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
 						<Input
 							id="password"
 							name="password"
@@ -151,6 +160,8 @@ export default function RegisterForm({ onToggleForm }) {
 							value={formData.password}
 							onChange={handleChange}
 							required
+							disabled={disabled}
+							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
 						/>
 						{validationErrors.password && (
 							<p className="text-xs text-red-600">{validationErrors.password}</p>
@@ -158,7 +169,7 @@ export default function RegisterForm({ onToggleForm }) {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="confirmPassword">Confirm Password</Label>
+						<label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</label>
 						<Input
 							id="confirmPassword"
 							name="confirmPassword"
@@ -167,48 +178,56 @@ export default function RegisterForm({ onToggleForm }) {
 							value={formData.confirmPassword}
 							onChange={handleChange}
 							required
+							disabled={disabled}
+							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
 						/>
 						{validationErrors.confirmPassword && (
 							<p className="text-xs text-red-600">{validationErrors.confirmPassword}</p>
 						)}
 					</div>
 
-					<Button type="submit" className="w-full" disabled={isSubmitting}>
-						{isSubmitting ? "Creating account..." : "Create Account"}
+					<Button 
+						type="submit" 
+						className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
+						disabled={disabled}
+					>
+						{disabled ? "Creating account..." : "Create Account"}
 					</Button>
 				</form>
 
 				<div className="relative">
 					<div className="absolute inset-0 flex items-center">
-						<span className="w-full border-t border-border" />
+						<span className="w-full border-t border-gray-300" />
 					</div>
 					<div className="relative flex justify-center text-xs uppercase">
-						<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+						<span className="bg-white px-2 text-gray-500">Or continue with</span>
 					</div>
 				</div>
 
 				<Button
 					type="button"
 					variant="outline"
-					className="w-full"
-					onClick={handleGoogleAuth}
+					className="w-full border border-gray-300 py-2 px-4 rounded-md hover:bg-gray-50 transition-colors"
+					onClick={handleGoogleClick}
+					disabled={disabled}
 				>
 					Continue with Google
 				</Button>
 
 				<div className="text-center">
-					<div className="text-sm text-muted-foreground">
+					<div className="text-sm text-gray-600">
 						Already have an account?{" "}
 						<button
 							type="button"
-							className="text-foreground hover:underline"
-							onClick={() => onToggleForm("login")}
+							className="text-gray-900 hover:underline font-medium"
+							onClick={() => setCurrentAuthForm("login")}
+							disabled={disabled}
 						>
 							Sign in
 						</button>
 					</div>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 }
