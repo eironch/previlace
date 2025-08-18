@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import helmet from "helmet";
@@ -13,107 +16,103 @@ import connectDB, { checkDatabaseConnection } from "./src/config/database.js";
 import authRoutes from "./src/routes/authRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import databaseRoutes from "./src/routes/databaseRoutes.js";
+import adminRoutes from "./src/routes/adminRoutes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
-
-dotenv.config();
+import { createServer } from "http";
+import socketService from "./src/services/socketService.js";
 
 const app = express();
 
 app.set("trust proxy", 1);
 
-app.use(helmet());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["set-cookie"],
+    optionsSuccessStatus: 200,
+  })
+);
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  })
+);
+
 app.use(mongoSanitize());
 app.use(generalLimiter);
 
 passport.use(
-	new GoogleStrategy(
-		{
-			clientID: process.env.GOOGLE_CLIENT_ID,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-			callbackURL: process.env.REDIRECT_URI,
-			accessType: "offline",
-		},
-		async (accessToken, refreshToken, profile, done) => {
-			try {
-				const user = await User.findOrCreate({
-					googleId: profile.id,
-					email: profile.emails[0].value,
-					firstName: profile.name.givenName,
-					lastName: profile.name.familyName,
-					avatar: profile.photos[0]?.value,
-				});
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.REDIRECT_URI,
+      accessType: "offline",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const user = await User.findOrCreate({
+          googleId: profile.id,
+          email: profile.emails[0].value,
+          firstName: profile.name.givenName,
+          lastName: profile.name.familyName,
+          avatar: profile.photos[0]?.value,
+        });
 
-				return done(null, { accessToken, refreshToken, profile, user });
-			} catch (err) {
-				return done(err);
-			}
-		}
-	)
+        return done(null, { accessToken, refreshToken, profile, user });
+      } catch (err) {
+        return done(err);
+      }
+    }
+  )
 );
 
 app.use(cookieParser());
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
-
-app.use(
-	cors({
-		origin: (origin, callback) => {
-			const allowedOrigins = [
-				"http://localhost:5173",
-				"http://127.0.0.1:5173",
-				process.env.CLIENT_URL
-			].filter(Boolean);
-			
-			if (!origin || allowedOrigins.includes(origin)) {
-				callback(null, true);
-			} else {
-				callback(new Error('Not allowed by CORS'));
-			}
-		},
-		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		credentials: true,
-		allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-		optionsSuccessStatus: 200
-	})
-);
-
 app.use(passport.initialize());
 
 app.get("/", (req, res) => {
-	res.json({
-		success: true,
-		message: "Previlace API is running",
-		version: "2.0.0",
-		environment: process.env.NODE_ENV
-	});
+  res.json({
+    success: true,
+    message: "Previlace API is running",
+    version: "2.0.0",
+    environment: process.env.NODE_ENV,
+  });
 });
 
 app.get("/api/health", (req, res) => {
-	const dbStatus = checkDatabaseConnection();
-	
-	res.json({
-		success: true,
-		message: "API is healthy",
-		timestamp: new Date().toISOString(),
-		environment: process.env.NODE_ENV,
-		database: {
-			status: dbStatus.state,
-			connected: dbStatus.isConnected,
-			host: dbStatus.host,
-			port: dbStatus.port,
-			name: dbStatus.name
-		}
-	});
+  const dbStatus = checkDatabaseConnection();
+
+  res.json({
+    success: true,
+    message: "API is healthy",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    database: {
+      status: dbStatus.state,
+      connected: dbStatus.isConnected,
+      host: dbStatus.host,
+      port: dbStatus.port,
+      name: dbStatus.name,
+    },
+  });
 });
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/database", databaseRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.all("*", (req, res, next) => {
-	next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 app.use(errorHandler);
@@ -121,54 +120,42 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 8080;
 
 const startServer = async () => {
-	try {
-		console.log(`Starting Previlace server in ${process.env.NODE_ENV} mode...`);
-		
-		await connectDB();
-		
-		const server = app.listen(PORT, () => {
-			console.log(`Server running on port ${PORT}`);
-			console.log(`Health check: http://localhost:${PORT}/api/health`);
-		});
+  try {
+    await connectDB();
 
-		server.on('error', (error) => {
-			if (error.code === 'EADDRINUSE') {
-				console.error(`Port ${PORT} is already in use`);
-			} else {
-				console.error('Server error:', error.message);
-			}
-			process.exit(1);
-		});
+    const httpServer = createServer(app);
+    socketService.initialize(httpServer);
 
-		const gracefulShutdown = (signal) => {
-			console.log(`Received ${signal}. Starting graceful shutdown...`);
-			
-			server.close(async () => {
-				console.log('HTTP server closed');
-				
-				try {
-					await mongoose.connection.close();
-					console.log('Database connection closed');
-					process.exit(0);
-				} catch (error) {
-					console.error('Error during database disconnection:', error);
-					process.exit(1);
-				}
-			});
+    httpServer.listen(PORT);
 
-			setTimeout(() => {
-				console.error('Could not close connections in time, forcefully shutting down');
-				process.exit(1);
-			}, 10000);
-		};
+    httpServer.on("error", (error) => {
+      if (error.code === "EADDRINUSE") {
+        process.exit(1);
+      } else {
+        process.exit(1);
+      }
+    });
 
-		process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-		process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    const gracefulShutdown = (signal) => {
+      httpServer.close(async () => {
+        try {
+          await mongoose.connection.close();
+          process.exit(0);
+        } catch (error) {
+          process.exit(1);
+        }
+      });
 
-	} catch (error) {
-		console.error("Failed to start server:", error.message);
-		process.exit(1);
-	}
+      setTimeout(() => {
+        process.exit(1);
+      }, 10000);
+    };
+
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+  } catch (error) {
+    process.exit(1);
+  }
 };
 
 startServer();
