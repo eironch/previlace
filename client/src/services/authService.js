@@ -23,6 +23,64 @@ const apiCall = async (endpoint, options = {}) => {
 	}
 };
 
+const apiClient = {
+	async get(endpoint, options = {}) {
+		const { params, ...restOptions } = options;
+		let url = endpoint;
+		
+		if (params) {
+			const searchParams = new URLSearchParams(params).toString();
+			url = `${endpoint}?${searchParams}`;
+		}
+		
+		const response = await apiCall(url, {
+			method: "GET",
+			...restOptions,
+		});
+		
+		return { data: response };
+	},
+
+	async post(endpoint, data = {}, options = {}) {
+		const response = await apiCall(endpoint, {
+			method: "POST",
+			body: JSON.stringify(data),
+			...options,
+		});
+		
+		return { data: response };
+	},
+
+	async patch(endpoint, data = {}, options = {}) {
+		const response = await apiCall(endpoint, {
+			method: "PATCH",
+			body: JSON.stringify(data),
+			...options,
+		});
+		
+		return { data: response };
+	},
+
+	async put(endpoint, data = {}, options = {}) {
+		const response = await apiCall(endpoint, {
+			method: "PUT",
+			body: JSON.stringify(data),
+			...options,
+		});
+		
+		return { data: response };
+	},
+
+	async delete(endpoint, options = {}) {
+		const response = await apiCall(endpoint, {
+			method: "DELETE",
+			...options,
+		});
+		
+		return { data: response };
+	},
+};
+
 export const authService = {
 	async login(credentials) {
 		try {
@@ -144,3 +202,5 @@ export const authService = {
 		window.location.href = `${API_BASE_URL}/api/auth/google`;
 	}
 };
+
+export default apiClient;

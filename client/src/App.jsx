@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
 import HomePage from "@/pages/HomePage";
-import DashboardPage from "@/pages/DashboardPage";
+import StudentPage from "@/pages/StudentPage";
+import AdminPage from "@/pages/AdminPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import AuthModal from "@/components/auth/AuthModal";
 
@@ -23,7 +24,11 @@ function App() {
 			return <OnboardingPage />;
 		}
 
-		return <DashboardPage />;
+		if (user?.role === "admin") {
+			return <AdminPage />;
+		}
+
+		return <StudentPage />;
 	};
 
 	return (

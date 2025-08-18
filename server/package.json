@@ -10,6 +10,7 @@
 		"prod": "node server.js",
 		"db:check": "node -e \"import('./src/utils/MongoHelper.js').then(m => console.log(m.default.generateStartupInstructions()))\"",
 		"health": "curl -s http://localhost:8080/api/health | node -p 'JSON.parse(require(\"fs\").readFileSync(0, \"utf8\")).database.status'",
+		"seed:admin": "node src/seeders/adminSeeder.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
@@ -24,7 +25,8 @@
 		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^8.0.3",
 		"passport": "^0.7.0",
-		"passport-google-oauth20": "^2.0.0"
+		"passport-google-oauth20": "^2.0.0",
+		"socket.io": "^4.8.1"
 	},
 	"devDependencies": {
 		"nodemon": "^3.1.10"

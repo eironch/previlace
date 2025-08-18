@@ -137,6 +137,16 @@ const userSchema = new mongoose.Schema(
 		lockUntil: {
 			type: Date,
 		},
+		isSuspended: {
+			type: Boolean,
+			default: false,
+		},
+		suspendedAt: {
+			type: Date,
+		},
+		suspensionReason: {
+			type: String,
+		},
 		refreshTokens: [
 			{
 				token: String,
@@ -262,8 +272,6 @@ userSchema.statics.findOrCreate = async function (criteria) {
 	});
 };
 
-userSchema.index({ email: 1 });
-userSchema.index({ googleId: 1 });
 userSchema.index({ emailVerificationToken: 1 });
 userSchema.index({ passwordResetToken: 1 });
 
