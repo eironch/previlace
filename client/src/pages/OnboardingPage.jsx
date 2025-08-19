@@ -43,7 +43,7 @@ export default function OnboardingPage() {
       try {
         await updateProfile({
           ...form,
-          isProfileComplete: true
+          isProfileComplete: true,
         });
         closeAuthModal();
       } catch (error) {
@@ -51,6 +51,28 @@ export default function OnboardingPage() {
       }
     } else {
       alert("You must agree to the terms.");
+    }
+  };
+
+  // ✅ Validation for each step
+  const canProceed = (step) => {
+    switch (step) {
+      case 1:
+        return form.examType !== "";
+      case 2:
+        return (
+          form.education !== "" &&
+          form.hasTakenExam !== "" &&
+          (form.hasTakenExam === "No" || form.previousScore !== "")
+        );
+      case 3:
+        return form.reviewExperience !== "";
+      case 4:
+        return form.struggles.length > 0 && form.studyMode.length > 0 && form.studyTime !== "";
+      case 5:
+        return form.hoursPerWeek !== "" && form.targetDate !== "" && form.reason !== "";
+      default:
+        return true;
     }
   };
 
@@ -91,28 +113,39 @@ export default function OnboardingPage() {
     },
     {
       content: (
-        <>
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Academic & Review Background</h2>
-          <label className="block mb-2 text-gray-700">Highest Educational Attainment:</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.education}
-            onChange={(e) => handleChange("education", e.target.value)}
-          />
-          <label className="block mb-2 text-gray-700">Have you taken the Civil Service Exam before?</label>
-          <div className="flex gap-4 mb-2">
-            {["Yes", "No"].map((ans) => (
-              <button
-                key={ans}
-                className={`px-4 py-2 border rounded-lg transition-colors ${
-                  form.hasTakenExam === ans ? "bg-gray-200" : "bg-white hover:bg-gray-50"
-                }`}
-                onClick={() => handleChange("hasTakenExam", ans)}
-              >
-                {ans}
-              </button>
-            ))}
+  <>
+    <h2 className="text-xl font-semibold mb-2 text-gray-900">Academic & Review Background</h2>
+
+    <label className="block mb-2 text-gray-700">Highest Educational Attainment:</label>
+    <select
+      className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
+      value={form.education}
+      onChange={(e) => handleChange("education", e.target.value)}
+    >
+      <option value="">Select</option>
+      <option value="High School Undergraduate">High School Undergraduate</option>
+      <option value="High School Graduate">High School Graduate</option>
+      <option value="College Undergraduate">College Undergraduate</option>
+      <option value="College Graduate">College Graduate</option>
+      <option value="Postgraduate / Master’s">Postgraduate / Master’s</option>
+      <option value="Doctorate / PhD">Doctorate / PhD</option>
+    </select>
+
+    <label className="block mb-2 text-gray-700">Have you taken the Civil Service Exam before?</label>
+    <div className="flex gap-4 mb-2">
+      {["Yes", "No"].map((ans) => (
+        <button
+          key={ans}
+          className={`px-4 py-2 border rounded-lg transition-colors ${
+            form.hasTakenExam === ans ? "bg-gray-200" : "bg-white hover:bg-gray-50"
+          }`}
+          onClick={() => handleChange("hasTakenExam", ans)}
+        >
+          {ans}
+        </button>
+      ))}
+   
+
           </div>
           {form.hasTakenExam === "Yes" && (
             <input
@@ -190,43 +223,59 @@ export default function OnboardingPage() {
     },
     {
       content: (
-        <>
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Goal Setting</h2>
-          <label className="block mb-2 text-gray-700">How many hours/week can you study?</label>
-          <input
-            type="number"
-            className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.hoursPerWeek}
-            onChange={(e) => handleChange("hoursPerWeek", e.target.value)}
-          />
-          <label className="block mb-2 text-gray-700">Target Exam Date</label>
-          <input
-            type="date"
-            className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.targetDate}
-            onChange={(e) => handleChange("targetDate", e.target.value)}
-          />
-          <label className="block mb-2 text-gray-700">Main Reason for Taking the Exam</label>
-          <select
-            className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.reason}
-            onChange={(e) => handleChange("reason", e.target.value)}
-          >
-            <option value="">Select</option>
-            <option value="Government Job">Government Job</option>
-            <option value="Career Advancement">Career Advancement</option>
-            <option value="Personal Development">Personal Development</option>
-            <option value="Other">Other</option>
-          </select>
-          <label className="block mb-2 text-gray-700">Target Score or Result (optional)</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.targetScore}
-            onChange={(e) => handleChange("targetScore", e.target.value)}
-          />
-        </>
-      ),
+  <>
+    <h2 className="text-xl font-semibold mb-2 text-gray-900">Goal Setting</h2>
+
+    <label className="block mb-2 text-gray-700">How many hours/week can you study?</label>
+    <select
+      className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
+      value={form.hoursPerWeek}
+      onChange={(e) => handleChange("hoursPerWeek", e.target.value)}
+    >
+      <option value="">Select</option>
+      <option value="1-5">1–5 hours</option>
+      <option value="6-10">6–10 hours</option>
+      <option value="11-15">11–15 hours</option>
+      <option value="16-20">16–20 hours</option>
+      <option value="21+">21+ hours</option>
+    </select>
+
+    <label className="block mb-2 text-gray-700">Target Exam Date</label>
+    <input
+      type="date"
+      className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
+      value={form.targetDate}
+      onChange={(e) => handleChange("targetDate", e.target.value)}
+    />
+
+    <label className="block mb-2 text-gray-700">Main Reason for Taking the Exam</label>
+    <select
+      className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
+      value={form.reason}
+      onChange={(e) => handleChange("reason", e.target.value)}
+    >
+      <option value="">Select</option>
+      <option value="Government Job">Government Job</option>
+      <option value="Career Advancement">Career Advancement</option>
+      <option value="Personal Development">Personal Development</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label className="block mb-2 text-gray-700">Target Score or Result</label>
+    <select
+      className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-black"
+      value={form.targetScore}
+      onChange={(e) => handleChange("targetScore", e.target.value)}
+    >
+      <option value="">Select</option>
+      <option value="Pass">Pass (≥80%)</option>
+      <option value="85+">85%+</option>
+      <option value="90+">90%+</option>
+      <option value="95+">95%+</option>
+    </select>
+  </>
+)
+
     },
     {
       content: (
@@ -273,7 +322,12 @@ export default function OnboardingPage() {
           </label>
           <button
             onClick={handleFinish}
-            className="px-6 py-2 bg-black text-white rounded-lg hover:opacity-90 transition-opacity"
+            disabled={!form.agreeTerms}
+            className={`px-6 py-2 rounded-lg transition-opacity ${
+              form.agreeTerms
+                ? "bg-black text-white hover:opacity-90"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
             Finish & Go to Dashboard
           </button>
@@ -284,16 +338,18 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-800 flex items-center justify-center px-4 py-12">
-      <div 
-        key={step}
-        className="w-full max-w-xl space-y-6 animate-fade-in"
-      >
+      <div key={step} className="w-full max-w-xl space-y-6 animate-fade-in">
         {steps[step].content}
-        {step < steps.length - 1 && (
+        {step > 0 && step < steps.length - 1 && ( 
           <div className="text-right">
             <button
               onClick={() => setStep(step + 1)}
-              className="mt-4 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+              disabled={!canProceed(step)}
+              className={`mt-4 px-4 py-2 border rounded-lg transition-colors ${
+                canProceed(step)
+                  ? "border-gray-300 hover:bg-gray-100"
+                  : "bg-gray-200 text-gray-500 cursor-not-allowed"
+              }`}
             >
               Next
             </button>
