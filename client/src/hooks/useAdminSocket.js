@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 import { useAuthStore } from "../store/authStore";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function useAdminSocket() {
   const [stats, setStats] = useState({
@@ -36,7 +36,9 @@ function useAdminSocket() {
 
       const [statsRes, usersRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/admin/stats`, { credentials: "include" }),
-        fetch(`${API_BASE_URL}/api/admin/users/recent`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/api/admin/users/recent`, {
+          credentials: "include",
+        }),
       ]);
 
       if (statsRes.ok) {
@@ -147,7 +149,7 @@ function useAdminSocket() {
     }
 
     fetchFallbackData();
-    
+
     const socketTimeout = setTimeout(() => {
       initializeSocket();
     }, 500);

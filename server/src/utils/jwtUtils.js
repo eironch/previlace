@@ -2,11 +2,11 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
 export const generateTokens = (payload) => {
-	const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+	const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
 		expiresIn: "15m",
 	});
 
-	const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+	const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
 		expiresIn: "30d",
 	});
 
@@ -14,11 +14,11 @@ export const generateTokens = (payload) => {
 };
 
 export const verifyAccessToken = (token) => {
-	return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+	return jwt.verify(token, process.env.JWT_SECRET);
 };
 
 export const verifyRefreshToken = (token) => {
-	return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+	return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
 };
 
 export const generateSecureToken = () => {

@@ -98,7 +98,7 @@ const updateUserStatus = catchAsync(async (req, res) => {
     throw new AppError("User not found", 404);
   }
 
-  if (user.role === "admin" && req.user.id !== userId) {
+  if (user.role === "admin" && req.user._id !== userId) {
     throw new AppError("Cannot modify another admin account", 403);
   }
 

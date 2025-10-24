@@ -14,7 +14,7 @@ export const validateName = (name) => {
 };
 
 export const validateRegister = (req, res, next) => {
-	const { email, password, firstName, lastName } = req.body;
+	const { email, password } = req.body;
 	const errors = [];
 
 	if (!email || !validateEmail(email)) {
@@ -23,14 +23,6 @@ export const validateRegister = (req, res, next) => {
 
 	if (!password || !validatePassword(password)) {
 		errors.push("Password must be at least 6 characters");
-	}
-
-	if (!firstName || !validateName(firstName)) {
-		errors.push("First name must be at least 2 characters");
-	}
-
-	if (!lastName || !validateName(lastName)) {
-		errors.push("Last name must be at least 2 characters");
 	}
 
 	if (errors.length > 0) {
@@ -50,6 +42,25 @@ export const validateLogin = (req, res, next) => {
 
 	if (!password) {
 		errors.push("Password is required");
+	}
+
+	if (errors.length > 0) {
+		return next(new AppError(errors.join(", "), 400));
+	}
+
+	next();
+};
+
+export const validateOnboarding = (req, res, next) => {
+	const { firstName, lastName } = req.body;
+	const errors = [];
+
+	if (!firstName || !validateName(firstName)) {
+		errors.push("First name must be at least 2 characters");
+	}
+
+	if (!lastName || !validateName(lastName)) {
+		errors.push("Last name must be at least 2 characters");
 	}
 
 	if (errors.length > 0) {

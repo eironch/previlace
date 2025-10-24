@@ -45,7 +45,7 @@ export function useAuth() {
     return await storeUpdatePassword(passwordData);
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = () => {
     handleGoogleAuth();
     return { success: true };
   };

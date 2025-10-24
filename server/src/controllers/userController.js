@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
 
 const getProfile = catchAsync(async (req, res, next) => {
-	const user = await User.findById(req.user.userId);
+	const user = await User.findById(req.user._id);
 
 	if (!user) {
 		return next(new AppError("User not found", 404));
@@ -47,7 +47,7 @@ const updateProfile = catchAsync(async (req, res, next) => {
 		}
 	});
 
-	const user = await User.findByIdAndUpdate(req.user.userId, updateData, {
+	const user = await User.findByIdAndUpdate(req.user._id, updateData, {
 		new: true,
 		runValidators: true,
 	});
@@ -68,13 +68,13 @@ const deleteAccount = catchAsync(async (req, res, next) => {
 		return next(new AppError("Password is required to delete account", 400));
 	}
 
-	const user = await User.findById(req.user.userId).select("+password");
+	const user = await User.findById(req.user._id).select("+password");
 
 	if (user.password && !(await user.comparePassword(password))) {
 		return next(new AppError("Password is incorrect", 400));
 	}
 
-	await User.findByIdAndDelete(req.user.userId);
+	await User.findByIdAndDelete(req.user._id);
 
 	res.clearCookie("accessToken");
 	res.clearCookie("refreshToken");
@@ -86,7 +86,7 @@ const deleteAccount = catchAsync(async (req, res, next) => {
 });
 
 const getActiveDevices = catchAsync(async (req, res, next) => {
-	const user = await User.findById(req.user.userId).select("refreshTokens");
+	const user = await User.findById(req.user._id).select("refreshTokens");
 
 	const activeDevices = user.refreshTokens
 		.filter((token) => token.expiresAt > new Date())
@@ -109,7 +109,7 @@ const getActiveDevices = catchAsync(async (req, res, next) => {
 const revokeDevice = catchAsync(async (req, res, next) => {
 	const { deviceId } = req.params;
 
-	const user = await User.findById(req.user.userId);
+	const user = await User.findById(req.user._id);
 	const tokenToRemove = user.refreshTokens.id(deviceId);
 
 	if (!tokenToRemove) {

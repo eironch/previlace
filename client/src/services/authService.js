@@ -1,206 +1,117 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+import apiClient from "./apiClient";
 
-const apiCall = async (endpoint, options = {}) => {
-	try {
-		const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
-			credentials: "include",
-			headers: {
-				"Content-Type": "application/json",
-				...options.headers,
-			},
-			...options,
-		});
-
-		const data = await response.json();
-
-		if (!response.ok) {
-			throw new Error(data.message || "An error occurred");
-		}
-
-		return data;
-	} catch (error) {
-		throw new Error(error.message || "Network error");
-	}
-};
-
-const apiClient = {
-	async get(endpoint, options = {}) {
-		const { params, ...restOptions } = options;
-		let url = endpoint;
-		
-		if (params) {
-			const searchParams = new URLSearchParams(params).toString();
-			url = `${endpoint}?${searchParams}`;
-		}
-		
-		const response = await apiCall(url, {
-			method: "GET",
-			...restOptions,
-		});
-		
-		return { data: response };
-	},
-
-	async post(endpoint, data = {}, options = {}) {
-		const response = await apiCall(endpoint, {
-			method: "POST",
-			body: JSON.stringify(data),
-			...options,
-		});
-		
-		return { data: response };
-	},
-
-	async patch(endpoint, data = {}, options = {}) {
-		const response = await apiCall(endpoint, {
-			method: "PATCH",
-			body: JSON.stringify(data),
-			...options,
-		});
-		
-		return { data: response };
-	},
-
-	async put(endpoint, data = {}, options = {}) {
-		const response = await apiCall(endpoint, {
-			method: "PUT",
-			body: JSON.stringify(data),
-			...options,
-		});
-		
-		return { data: response };
-	},
-
-	async delete(endpoint, options = {}) {
-		const response = await apiCall(endpoint, {
-			method: "DELETE",
-			...options,
-		});
-		
-		return { data: response };
-	},
-};
+let verificationPromise = null;
+let lastVerificationTime = 0;
+const VERIFICATION_CACHE_DURATION = 5 * 60 * 1000;
 
 export const authService = {
-	async login(credentials) {
-		try {
-			const data = await apiCall("/auth/login", {
-				method: "POST",
-				body: JSON.stringify(credentials),
-			});
-			
-			if (data?.data?.user) {
-				localStorage.setItem('user_data', JSON.stringify(data.data.user));
-				return { user: data.data.user };
-			}
-			
-			throw new Error('Invalid response format');
-		} catch (error) {
-			throw new Error(error.message || 'Login failed');
-		}
-	},
+  async login(credentials) {
+    const response = await apiClient.post("/auth/login", credentials);
+    const { data } = response.data;
 
-	async register(userData) {
-		try {
-			const data = await apiCall("/auth/register", {
-				method: "POST",
-				body: JSON.stringify(userData),
-			});
-			
-			if (data?.data?.user) {
-				localStorage.setItem('user_data', JSON.stringify(data.data.user));
-				return { user: data.data.user };
-			}
-			
-			throw new Error('Invalid response format');
-		} catch (error) {
-			throw new Error(error.message || 'Registration failed');
-		}
-	},
+    if (data?.user) {
+      localStorage.setItem("user_data", JSON.stringify(data.user));
+      return { user: data.user };
+    }
 
-	async logout() {
-		try {
-			await apiCall("/auth/logout", {
-				method: "POST",
-			});
-		} catch (error) {
-		} finally {
-			localStorage.removeItem('user_data');
-		}
-	},
+    throw new Error("Invalid response format");
+  },
 
-	async forgotPassword(email) {
-		try {
-			const data = await apiCall("/auth/forgot-password", {
-				method: "POST",
-				body: JSON.stringify({ email }),
-			});
-			return data;
-		} catch (error) {
-			throw error;
-		}
-	},
+  async register(userData) {
+    const response = await apiClient.post("/auth/register", userData);
+    const { data } = response.data;
 
-	async resetPassword(token, password) {
-		try {
-			const data = await apiCall("/auth/reset-password", {
-				method: "POST",
-				body: JSON.stringify({ token, password }),
-			});
-			return data;
-		} catch (error) {
-			throw error;
-		}
-	},
+    if (data?.user) {
+      localStorage.setItem("user_data", JSON.stringify(data.user));
+      return { user: data.user };
+    }
 
-	async updateProfile(profileData) {
-		try {
-			const data = await apiCall("/users/profile", {
-				method: "PATCH",
-				body: JSON.stringify(profileData),
-			});
-			
-			if (data?.data?.user) {
-				localStorage.setItem('user_data', JSON.stringify(data.data.user));
-				return { user: data.data.user };
-			}
-			
-			return data;
-		} catch (error) {
-			throw error;
-		}
-	},
+    throw new Error("Invalid response format");
+  },
 
-	async updatePassword(passwordData) {
-		try {
-			const data = await apiCall("/auth/update-password", {
-				method: "POST",
-				body: JSON.stringify(passwordData),
-			});
-			return data;
-		} catch (error) {
-			throw error;
-		}
-	},
+  async logout() {
+    try {
+      await apiClient.post("/auth/logout");
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Logout API error:", error);
+      }
+    } finally {
+      localStorage.removeItem("user_data");
+      verificationPromise = null;
+      lastVerificationTime = 0;
+    }
+  },
 
-	async verifyToken() {
-		try {
-			const data = await apiCall("/auth/me");
-			return data.data.user;
-		} catch (error) {
-			localStorage.removeItem('user_data');
-			throw new Error('Token verification failed');
-		}
-	},
+  async forgotPassword(email) {
+    const response = await apiClient.post("/auth/forgot-password", { email });
+    return response.data;
+  },
 
-	getStoredUser() {
-		const userData = localStorage.getItem('user_data');
-		return userData ? JSON.parse(userData) : null;
-	},
+  async resetPassword(token, password) {
+    const response = await apiClient.post("/auth/reset-password", {
+      token,
+      password,
+    });
+    return response.data;
+  },
 
-	openGoogleAuth() {
-		window.location.href = `${API_BASE_URL}/api/auth/google`;
-	}
+  async updateProfile(profileData) {
+    const response = await apiClient.patch("/users/profile", profileData);
+    const { data } = response.data;
+
+    if (data?.user) {
+      localStorage.setItem("user_data", JSON.stringify(data.user));
+      return { user: data.user };
+    }
+
+    return response.data;
+  },
+
+  async updatePassword(passwordData) {
+    const response = await apiClient.post("/auth/update-password", passwordData);
+    return response.data;
+  },
+
+  async verifyToken() {
+    const now = Date.now();
+    const storedUser = this.getStoredUser();
+
+    if (!storedUser) {
+      throw new Error("No stored user data");
+    }
+
+    if (now - lastVerificationTime < VERIFICATION_CACHE_DURATION && verificationPromise) {
+      return verificationPromise;
+    }
+
+    if (verificationPromise) {
+      return verificationPromise;
+    }
+
+    verificationPromise = (async () => {
+      try {
+        const response = await apiClient.get("/auth/me");
+        lastVerificationTime = now;
+        return response.data.data.user;
+      } catch (error) {
+        localStorage.removeItem("user_data");
+        verificationPromise = null;
+        lastVerificationTime = 0;
+        throw new Error("Token verification failed");
+      }
+    })();
+
+    return verificationPromise;
+  },
+
+  getStoredUser() {
+    const userData = localStorage.getItem("user_data");
+    return userData ? JSON.parse(userData) : null;
+  },
+
+  openGoogleAuth() {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
+  },
 };
-
-export default apiClient;

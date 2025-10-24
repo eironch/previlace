@@ -9,18 +9,14 @@ const cleanupExpiredEntries = () => {
   }
 };
 
-setInterval(cleanupExpiredEntries, 15 * 60 * 1000);
+setInterval(cleanupExpiredEntries, 10 * 60 * 1000);
 
 export const createRateLimit = (options = {}) => {
   const {
     windowMs = 15 * 60 * 1000,
     max = 100,
     message = "Too many requests, please try again later",
-    standardHeaders = true,
-    legacyHeaders = false,
     keyGenerator = (req) => req.ip,
-    skipSuccessfulRequests = false,
-    skipFailedRequests = false,
   } = options;
 
   return (req, res, next) => {
@@ -40,23 +36,12 @@ export const createRateLimit = (options = {}) => {
     rateLimitStore.set(key, record);
 
     const remaining = Math.max(0, max - record.count);
-    const resetTime = Math.ceil(record.resetTime / 1000);
 
-    if (standardHeaders) {
-      res.set({
-        "RateLimit-Limit": max,
-        "RateLimit-Remaining": remaining,
-        "RateLimit-Reset": new Date(record.resetTime).toISOString(),
-      });
-    }
-
-    if (legacyHeaders) {
-      res.set({
-        "X-RateLimit-Limit": max,
-        "X-RateLimit-Remaining": remaining,
-        "X-RateLimit-Reset": resetTime,
-      });
-    }
+    res.set({
+      "RateLimit-Limit": max,
+      "RateLimit-Remaining": remaining,
+      "RateLimit-Reset": new Date(record.resetTime).toISOString(),
+    });
 
     if (record.count > max) {
       return res.status(429).json({
@@ -72,29 +57,36 @@ export const createRateLimit = (options = {}) => {
 
 export const authLimiter = createRateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 50,
   message: "Too many authentication attempts, please try again in 15 minutes",
   keyGenerator: (req) => `auth:${req.ip}:${req.body?.email || "unknown"}`,
 });
 
 export const generalLimiter = createRateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 1000,
+  max: 10000,
   message: "Too many requests from this IP, please try again in 15 minutes",
 });
 
 export const adminLimiter = createRateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 20000,
+  max: 50000,
   message: "Admin rate limit exceeded, please try again in 1 hour",
   keyGenerator: (req) => `admin:${req.ip}:${req.user?._id || "unknown"}`,
 });
 
 export const statsLimiter = createRateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 50000,
+  max: 20000,
   message: "Stats endpoint rate limit exceeded",
   keyGenerator: (req) => `stats:${req.ip}:${req.user?._id || "unknown"}`,
+});
+
+export const questionLimiter = createRateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10000,
+  message: "Question endpoint rate limit exceeded",
+  keyGenerator: (req) => `questions:${req.ip}:${req.user?._id || "unknown"}`,
 });
 
 export const passwordResetLimiter = createRateLimit({

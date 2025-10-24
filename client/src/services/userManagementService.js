@@ -1,12 +1,12 @@
-import apiClient from "./authService";
+import apiClient from "./apiClient";
 
 const userManagementService = {
-  getAllUsers: async (params) => {
+  async getAllUsers(params) {
     const response = await apiClient.get("/admin/users", { params });
     return response.data;
   },
 
-  updateUserStatus: async (userId, action, reason = null) => {
+  async updateUserStatus(userId, action, reason = null) {
     const response = await apiClient.patch(`/admin/users/${userId}/status`, {
       action,
       reason,
@@ -14,7 +14,7 @@ const userManagementService = {
     return response.data;
   },
 
-  bulkUserAction: async (userIds, action, reason = null) => {
+  async bulkUserAction(userIds, action, reason = null) {
     const response = await apiClient.post("/admin/users/bulk-action", {
       userIds,
       action,
@@ -23,19 +23,19 @@ const userManagementService = {
     return response.data;
   },
 
-  getUserActivity: async (userId) => {
+  async getUserActivity(userId) {
     const response = await apiClient.get(`/admin/users/${userId}/activity`);
     return response.data;
   },
 
-  searchUsers: async (query) => {
+  async searchUsers(query) {
     const response = await apiClient.get("/admin/users/search", {
       params: { q: query },
     });
     return response.data;
   },
 
-  exportUsers: async (format = "json", filters = {}) => {
+  async exportUsers(format = "json", filters = {}) {
     const response = await apiClient.get("/admin/users/export", {
       params: { format, filters },
     });
