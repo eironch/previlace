@@ -154,7 +154,7 @@ const logout = catchAsync(async (req, res, next) => {
 });
 
 const logoutAll = catchAsync(async (req, res, next) => {
-	const user = await User.findById(req.user.userId);
+	const user = await User.findById(req.user._id);
 	if (user) {
 		user.refreshTokens = [];
 		await user.save();
@@ -234,7 +234,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
 });
 
 const resendEmailVerification = catchAsync(async (req, res, next) => {
-	const user = await User.findById(req.user.userId);
+	const user = await User.findById(req.user._id);
 	
 	if (user.isEmailVerified) {
 		return next(new AppError("Email already verified", 400));
@@ -256,7 +256,7 @@ const resendEmailVerification = catchAsync(async (req, res, next) => {
 });
 
 const getMe = catchAsync(async (req, res, next) => {
-	const user = await User.findById(req.user.userId);
+	const user = await User.findById(req.user._id);
 
 	if (!user) {
 		return next(new AppError("User not found", 404));
@@ -282,7 +282,7 @@ const getMe = catchAsync(async (req, res, next) => {
 const updatePassword = catchAsync(async (req, res, next) => {
 	const { currentPassword, newPassword } = req.body;
 
-	const user = await User.findById(req.user.userId).select("+password");
+	const user = await User.findById(req.user._id).select("+password");
 	
 	const isCurrentPasswordValid = await user.comparePassword(currentPassword);
 	if (!isCurrentPasswordValid) {

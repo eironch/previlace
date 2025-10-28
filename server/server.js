@@ -17,6 +17,19 @@ import authRoutes from "./src/routes/authRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import databaseRoutes from "./src/routes/databaseRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
+import questionTemplateRoutes from "./src/routes/questionTemplates.js";
+import manualQuestionRoutes from "./src/routes/manualQuestions.js";
+import testRoutes from "./src/routes/testRoutes.js";
+import examRoutes from "./src/routes/examRoutes.js";
+import bookmarkRoutes from "./src/routes/bookmarkRoutes.js";
+import analyticsRoutes from "./src/routes/analyticsRoutes.js";
+import flashcardRoutes from "./src/routes/flashcardRoutes.js";
+import mistakeTrackingRoutes from "./src/routes/mistakeTrackingRoutes.js";
+import achievementRoutes from "./src/routes/achievementRoutes.js";
+import leaderboardRoutes from "./src/routes/leaderboardRoutes.js";
+import challengeRoutes from "./src/routes/challengeRoutes.js";
+import studyGroupRoutes from "./src/routes/studyGroupRoutes.js";
+import seedRoutes from "./src/routes/seedRoutes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
@@ -110,6 +123,19 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/database", databaseRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/question-templates", questionTemplateRoutes);
+app.use("/api/manual-questions", manualQuestionRoutes);
+app.use("/api/tests", testRoutes);
+app.use("/api/exam", examRoutes);
+app.use("/api/bookmarks", bookmarkRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/flashcards", flashcardRoutes);
+app.use("/api/mistakes", mistakeTrackingRoutes);
+app.use("/api/achievements", achievementRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api/challenges", challengeRoutes);
+app.use("/api/study-groups", studyGroupRoutes);
+app.use("/api/seed", seedRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
@@ -117,9 +143,9 @@ app.all("*", (req, res, next) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
+async function startServer() {
   try {
     await connectDB();
 
@@ -136,7 +162,7 @@ const startServer = async () => {
       }
     });
 
-    const gracefulShutdown = (signal) => {
+    function gracefulShutdown(signal) {
       httpServer.close(async () => {
         try {
           await mongoose.connection.close();
@@ -149,14 +175,14 @@ const startServer = async () => {
       setTimeout(() => {
         process.exit(1);
       }, 10000);
-    };
+    }
 
     process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
     process.on("SIGINT", () => gracefulShutdown("SIGINT"));
   } catch (error) {
     process.exit(1);
   }
-};
+}
 
 startServer();
 

@@ -25,3 +25,5 @@ export const useAppStore = create((set, get) => ({
 		sidebarOpen: !state.sidebarOpen 
 	})),
 }));
+
+export default useAppStore;

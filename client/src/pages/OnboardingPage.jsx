@@ -1,301 +1,260 @@
 import { useState } from "react";
 import { useAppStore } from "@/store/appStore";
 import { useAuthStore } from "@/store/authStore";
+import { User, GraduationCap, Clock, Calendar } from "lucide-react";
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(0);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
+    fullName: "",
     examType: "",
-    education: "",
-    hasTakenExam: "",
-    previousScore: "",
-    reviewExperience: "",
-    struggles: [],
-    studyMode: [],
-    studyTime: "",
-    hoursPerWeek: "",
-    targetDate: "",
-    reason: "",
-    targetScore: "",
-    showLeaderboard: false,
-    receiveReminders: false,
-    studyBuddy: false,
+    targetExamDate: "",
+    weakSubjects: [],
+    studyModes: [],
+    preferredStudyTime: "",
+    dailyStudyHours: "",
     agreeTerms: false,
   });
 
   const { closeAuthModal } = useAppStore();
   const { updateProfile } = useAuthStore();
 
-  const handleChange = (key, value) => {
+  function handleChange(key, value) {
     setForm({ ...form, [key]: value });
-  };
+    if (key === "fullName") setError("");
+  }
 
-  const toggleCheckbox = (key, value) => {
+  function toggleArray(key, value) {
     const current = form[key];
     const updated = current.includes(value)
       ? current.filter((v) => v !== value)
       : [...current, value];
     setForm({ ...form, [key]: updated });
-  };
+  }
 
-  const handleFinish = async () => {
-    if (form.agreeTerms) {
-      try {
-        await updateProfile({
-          ...form,
-          isProfileComplete: true
-        });
-        closeAuthModal();
-      } catch (error) {
-        alert("Failed to save profile. Please try again.");
+  function nextStep() {
+    // validate basic information before proceeding
+    if (step === 1) {
+      if (!form.fullName) {
+        setError("Please provide your full name to continue.");
+        return;
       }
-    } else {
-      alert("You must agree to the terms.");
+      setError("");
     }
-  };
+
+    if (step < steps.length - 1) setStep(step + 1);
+  }
+
+  function prevStep() {
+    if (step > 0) {
+      setStep(step - 1);
+    }
+  }
+
+  async function handleFinish() {
+    if (!form.agreeTerms) {
+      setError("You must agree to the terms to continue.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      await updateProfile({
+        ...form,
+        isProfileComplete: true,
+      });
+      closeAuthModal();
+    } catch {
+      setError("Failed to save profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   const steps = [
     {
+      icon: User,
+      title: "Welcome to Previlace",
+      subtitle: "Your pathway to Civil Service success",
       content: (
-        <>
-          <h1 className="text-3xl font-bold mb-4 text-gray-900">Welcome Onboard!</h1>
-          <p className="text-gray-700 text-lg mb-6">Let's pass that exam together.</p>
-          <button
-            onClick={() => setStep(step + 1)}
-            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            Let's Get Started
-          </button>
-        </>
-      ),
-    },
-    {
-      content: (
-        <>
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">What are you studying for?</h2>
-          <div className="flex gap-4">
-            {["Professional", "Subprofessional"].map((type) => (
-              <button
-                key={type}
-                className={`px-4 py-2 border rounded-lg transition-colors ${
-                  form.examType === type ? "bg-gray-200" : "bg-white hover:bg-gray-50"
-                }`}
-                onClick={() => handleChange("examType", type)}
-              >
-                {type}
-              </button>
-            ))}
+        <div className="text-center">
+          <div className="mb-8 flex justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-black text-white">
+              <User size={32} />
+            </div>
           </div>
-        </>
+          <h1 className="mb-4 text-3xl font-bold text-gray-900">Welcome to Previlace</h1>
+          <p className="mb-8 text-lg text-gray-600">Let's personalize your study plan quickly.</p>
+          <button type="button" onClick={nextStep} className="rounded-lg bg-black px-8 py-3 text-white transition-opacity hover:opacity-90">Get Started</button>
+        </div>
       ),
     },
     {
+      icon: User,
+      title: "Essentials",
+      subtitle: "Identity & legal",
       content: (
-        <>
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Academic & Review Background</h2>
-          <label className="block mb-2 text-gray-700">Highest Educational Attainment:</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.education}
-            onChange={(e) => handleChange("education", e.target.value)}
-          />
-          <label className="block mb-2 text-gray-700">Have you taken the Civil Service Exam before?</label>
-          <div className="flex gap-4 mb-2">
-            {["Yes", "No"].map((ans) => (
-              <button
-                key={ans}
-                className={`px-4 py-2 border rounded-lg transition-colors ${
-                  form.hasTakenExam === ans ? "bg-gray-200" : "bg-white hover:bg-gray-50"
-                }`}
-                onClick={() => handleChange("hasTakenExam", ans)}
-              >
-                {ans}
-              </button>
-            ))}
+        <div className="space-y-6">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Full Name</label>
+            <input type="text" className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" value={form.fullName} onChange={(e) => handleChange("fullName", e.target.value)} placeholder="Enter your full name" />
           </div>
-          {form.hasTakenExam === "Yes" && (
-            <input
-              type="text"
-              placeholder="Previous score or result"
-              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-black"
-              value={form.previousScore}
-              onChange={(e) => handleChange("previousScore", e.target.value)}
-            />
-          )}
-        </>
-      ),
-    },
-    {
-      content: (
-        <>
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Review Experience</h2>
-          <select
-            className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.reviewExperience}
-            onChange={(e) => handleChange("reviewExperience", e.target.value)}
-          >
-            <option value="">Select one</option>
-            <option value="Self-study">Self-study</option>
-            <option value="Review center (in person)">Review center (in person)</option>
-            <option value="None">None</option>
-          </select>
-        </>
-      ),
-    },
-    {
-      content: (
-        <>
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Learning Preferences</h2>
-          <label className="block mb-1 text-gray-700">Subjects you struggle with most:</label>
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            {["Numerical Ability", "Verbal Ability", "General Information", "Clerical Ability", "Logic", "Grammar"].map((subject) => (
-              <label key={subject} className="flex items-center gap-2 text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={form.struggles.includes(subject)}
-                  onChange={() => toggleCheckbox("struggles", subject)}
-                />
-                {subject}
-              </label>
-            ))}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" value={form.email} onChange={(e) => handleChange("email", e.target.value)} placeholder="Enter your email" />
           </div>
-          <label className="block mb-1 text-gray-700">Preferred study mode:</label>
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            {["Video Lessons", "Text Modules", "Practice Quizzes", "Live Sessions"].map((mode) => (
-              <label key={mode} className="flex items-center gap-2 text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={form.studyMode.includes(mode)}
-                  onChange={() => toggleCheckbox("studyMode", mode)}
-                />
-                {mode}
-              </label>
-            ))}
+          <div>
+            <label className="flex items-start gap-3">
+              <input type="checkbox" checked={form.agreeTerms} onChange={(e) => handleChange("agreeTerms", e.target.checked)} className="mt-1 rounded" />
+              <div>
+                <div className="font-medium text-gray-900">Terms & Privacy Policy</div>
+                <div className="text-sm text-gray-600">I agree to the terms of service and privacy policy</div>
+              </div>
+            </label>
           </div>
-          <label className="block mb-1 text-gray-700">Preferred study time:</label>
-          <select
-            className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.studyTime}
-            onChange={(e) => handleChange("studyTime", e.target.value)}
-          >
-            <option value="">Select</option>
-            <option value="Morning">Morning</option>
-            <option value="Afternoon">Afternoon</option>
-            <option value="Evening">Evening</option>
-            <option value="Flexible">Flexible</option>
-          </select>
-        </>
+        </div>
       ),
     },
     {
+      icon: GraduationCap,
+      title: "Study Core",
+      subtitle: "Exam & weaknesses",
       content: (
-        <>
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Goal Setting</h2>
-          <label className="block mb-2 text-gray-700">How many hours/week can you study?</label>
-          <input
-            type="number"
-            className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.hoursPerWeek}
-            onChange={(e) => handleChange("hoursPerWeek", e.target.value)}
-          />
-          <label className="block mb-2 text-gray-700">Target Exam Date</label>
-          <input
-            type="date"
-            className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.targetDate}
-            onChange={(e) => handleChange("targetDate", e.target.value)}
-          />
-          <label className="block mb-2 text-gray-700">Main Reason for Taking the Exam</label>
-          <select
-            className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.reason}
-            onChange={(e) => handleChange("reason", e.target.value)}
-          >
-            <option value="">Select</option>
-            <option value="Government Job">Government Job</option>
-            <option value="Career Advancement">Career Advancement</option>
-            <option value="Personal Development">Personal Development</option>
-            <option value="Other">Other</option>
-          </select>
-          <label className="block mb-2 text-gray-700">Target Score or Result (optional)</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-black"
-            value={form.targetScore}
-            onChange={(e) => handleChange("targetScore", e.target.value)}
-          />
-        </>
+        <div className="space-y-6">
+          <div>
+            <label className="mb-3 block text-sm font-medium text-gray-700">Exam Level</label>
+            <div className="grid grid-cols-2 gap-4">
+              {[{ value: "Professional", desc: "Second-level positions" }, { value: "Sub-Professional", desc: "First-level positions" }].map((type) => (
+                <button type="button" key={type.value} className={`rounded-lg border-2 p-4 text-left transition-all focus:outline-none focus:ring-2 ${form.examType === type.value ? "border-black bg-black text-white" : "border-gray-200 hover:border-gray-300 bg-white text-gray-900"}`} onClick={() => handleChange("examType", type.value)}>
+                  <div className="font-medium">{type.value}</div>
+                  <div className="text-sm text-gray-400">{type.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Target Exam Date</label>
+            <input type="date" className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" value={form.targetExamDate} onChange={(e) => handleChange("targetExamDate", e.target.value)} />
+          </div>
+          <div>
+            <label className="mb-3 block text-sm font-medium text-gray-700">Weak Subjects</label>
+            <div className="grid grid-cols-2 gap-3">
+              {["Numerical Ability", "Verbal Ability", "General Information", "Clerical Ability", "Logic & Reasoning", "Reading Comprehension", "Grammar & Language", "Philippine Constitution"].map((subject) => (
+                <label key={subject} className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 p-3 transition-colors hover:bg-gray-50">
+                  <input type="checkbox" checked={form.weakSubjects.includes(subject)} onChange={() => toggleArray("weakSubjects", subject)} className="rounded" />
+                  <span className="text-sm text-gray-700">{subject}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
       ),
     },
     {
+      icon: Clock,
+      title: "Preferences",
+      subtitle: "Study habits",
       content: (
-        <>
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Optional Enhancements</h2>
-          <label className="flex items-center gap-2 mb-2 text-gray-700">
-            <input
-              type="checkbox"
-              checked={form.showLeaderboard}
-              onChange={(e) => handleChange("showLeaderboard", e.target.checked)}
-            />
-            Include me in the leaderboard
-          </label>
-          <label className="flex items-center gap-2 mb-2 text-gray-700">
-            <input
-              type="checkbox"
-              checked={form.receiveReminders}
-              onChange={(e) => handleChange("receiveReminders", e.target.checked)}
-            />
-            Receive reminders/motivational messages
-          </label>
-          <label className="flex items-center gap-2 mb-2 text-gray-700">
-            <input
-              type="checkbox"
-              checked={form.studyBuddy}
-              onChange={(e) => handleChange("studyBuddy", e.target.checked)}
-            />
-            Match me with a study buddy/group
-          </label>
-        </>
+        <div className="space-y-6">
+          <div>
+            <label className="mb-3 block text-sm font-medium text-gray-700">Preferred Study Methods</label>
+            <div className="grid grid-cols-2 gap-3">
+              {["Video Lessons", "Text-based Modules", "Practice Quizzes", "Interactive Flashcards", "Mock Exams", "Study Groups"].map((mode) => (
+                <label key={mode} className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 p-3 transition-colors hover:bg-gray-50">
+                  <input type="checkbox" checked={form.studyModes.includes(mode)} onChange={() => toggleArray("studyModes", mode)} className="rounded" />
+                  <span className="text-sm text-gray-700">{mode}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Preferred Study Time</label>
+            <select className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" value={form.preferredStudyTime} onChange={(e) => handleChange("preferredStudyTime", e.target.value)}>
+              <option value="">Select time</option>
+              <option value="Early Morning (5-8 AM)">Early Morning (5-8 AM)</option>
+              <option value="Morning (8-12 PM)">Morning (8-12 PM)</option>
+              <option value="Afternoon (12-6 PM)">Afternoon (12-6 PM)</option>
+              <option value="Evening (6-10 PM)">Evening (6-10 PM)</option>
+              <option value="Night (10 PM-12 AM)">Night (10 PM-12 AM)</option>
+              <option value="Flexible">Flexible</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Daily Study Hours</label>
+            <select className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" value={form.dailyStudyHours} onChange={(e) => handleChange("dailyStudyHours", e.target.value)}>
+              <option value="">Select hours</option>
+              <option value="1-2 hours">1-2 hours</option>
+              <option value="3-4 hours">3-4 hours</option>
+              <option value="5-6 hours">5-6 hours</option>
+              <option value="6+ hours">6+ hours</option>
+            </select>
+          </div>
+        </div>
       ),
     },
     {
+      icon: Calendar,
+      title: "Finish",
+      subtitle: "Complete setup",
       content: (
-        <>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">Privacy & Consent</h2>
-          <label className="flex items-center gap-2 mb-4 text-gray-700">
-            <input
-              type="checkbox"
-              checked={form.agreeTerms}
-              onChange={(e) => handleChange("agreeTerms", e.target.checked)}
-            />
-            I agree to the terms and privacy policy.
-          </label>
-          <button
-            onClick={handleFinish}
-            className="px-6 py-2 bg-black text-white rounded-lg hover:opacity-90 transition-opacity"
-          >
-            Finish & Go to Dashboard
-          </button>
-        </>
+        <div className="space-y-6">
+          {error && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+          <button onClick={handleFinish} disabled={isSubmitting || !form.agreeTerms} className="w-full rounded-lg bg-black px-6 py-4 text-white transition-opacity hover:opacity-90 disabled:opacity-50">{isSubmitting ? "Setting up your profile..." : "Complete Setup"}</button>
+        </div>
       ),
     },
   ];
 
+  const currentStep = steps[step];
+
   return (
-    <div className="min-h-screen bg-white text-gray-800 flex items-center justify-center px-4 py-12">
-      <div 
-        key={step}
-        className="w-full max-w-xl space-y-6 animate-fade-in"
-      >
-        {steps[step].content}
-        {step < steps.length - 1 && (
-          <div className="text-right">
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
+              <currentStep.icon size={20} />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">{currentStep.title}</h1>
+              <p className="text-sm text-gray-600">{currentStep.subtitle}</p>
+            </div>
+          </div>
+          <div className="text-sm text-gray-500">
+            {step + 1} of {steps.length}
+          </div>
+        </div>
+
+        <div className="mb-8 h-2 w-full rounded-full bg-gray-100">
+          <div
+            className="h-2 rounded-full bg-black transition-all duration-300"
+            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+
+        <div className="rounded-xl bg-white p-6 shadow-sm">
+          {currentStep.content}
+        </div>
+
+        {step > 0 && step < steps.length - 1 && (
+          <div className="mt-8 flex justify-between">
             <button
-              onClick={() => setStep(step + 1)}
-              className="mt-4 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+              type="button"
+              onClick={prevStep}
+              className="rounded-lg border border-gray-300 px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50"
             >
-              Next
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={nextStep}
+              className="rounded-lg bg-black px-6 py-3 text-white transition-opacity hover:opacity-90"
+            >
+              Continue
             </button>
           </div>
         )}

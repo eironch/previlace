@@ -1,0 +1,224 @@
+import ManualQuestion from "../models/ManualQuestion.js";
+import UserQuestionHistory from "../models/UserQuestionHistory.js";
+
+class QuestionSelectionService {
+  async selectQuestionsForSession(userId, config) {
+    const {
+      categories = [],
+      difficulty = "",
+      examLevel = "",
+      questionCount = 10,
+      mode = "practice"
+    } = config;
+
+    const query = this.buildBaseQuery(categories, difficulty, examLevel);
+    
+    if (mode === "spaced-repetition") {
+      return this.selectSpacedRepetitionQuestions(userId, query, questionCount);
+    }
+    
+    if (mode === "adaptive") {
+      return this.selectAdaptiveQuestions(userId, query, questionCount);
+    }
+
+    return this.selectRandomQuestions(userId, query, questionCount);
+  }
+
+  buildBaseQuery(categories, difficulty, examLevel) {
+    const query = { 
+      status: "published",
+      isActive: true 
+    };
+
+    if (categories && categories.length > 0) {
+      query.category = { $in: categories };
+    }
+
+    if (difficulty) {
+      query.difficulty = difficulty;
+    }
+
+    if (examLevel) {
+      query.examLevel = examLevel;
+    }
+
+    return query;
+  }
+
+  async selectRandomQuestions(userId, query, questionCount) {
+    const recentQuestions = await this.getRecentlyAnsweredQuestions(userId, 50);
+    
+    if (recentQuestions.length > 0) {
+      query._id = { $nin: recentQuestions };
+    }
+
+    const questions = await ManualQuestion.aggregate([
+      { $match: query },
+      { $sample: { size: questionCount * 2 } }
+    ]);
+
+    return questions.slice(0, questionCount);
+  }
+
+  async selectSpacedRepetitionQuestions(userId, query, questionCount) {
+    const dueQuestions = await UserQuestionHistory.aggregate([
+      {
+        $match: {
+          userId,
+          nextReviewDate: { $lte: new Date() },
+          masteryLevel: { $ne: "mastered" }
+        }
+      },
+      { $sort: { nextReviewDate: 1 } },
+      { $limit: questionCount }
+    ]);
+
+    if (dueQuestions.length < questionCount) {
+      const additionalCount = questionCount - dueQuestions.length;
+      const additionalQuestions = await this.selectRandomQuestions(
+        userId, 
+        query, 
+        additionalCount
+      );
+      
+      const dueQuestionIds = dueQuestions.map(q => q.questionId);
+      const questions = await ManualQuestion.find({
+        _id: { $in: dueQuestionIds }
+      });
+
+      return [...questions, ...additionalQuestions];
+    }
+
+    const questionIds = dueQuestions.map(q => q.questionId);
+    return ManualQuestion.find({ _id: { $in: questionIds } });
+  }
+
+  async selectAdaptiveQuestions(userId, query, questionCount) {
+    const userPerformance = await this.getUserPerformanceLevel(userId);
+    
+    const difficultyDistribution = this.calculateDifficultyDistribution(
+      userPerformance, 
+      questionCount
+    );
+
+    const questions = [];
+    
+    for (const [difficulty, count] of Object.entries(difficultyDistribution)) {
+      const difficultyQuery = { ...query, difficulty };
+      const difficultyQuestions = await this.selectRandomQuestions(
+        userId, 
+        difficultyQuery, 
+        count
+      );
+      questions.push(...difficultyQuestions);
+    }
+
+    return questions.slice(0, questionCount);
+  }
+
+  async getUserPerformanceLevel(userId) {
+    const recentHistory = await UserQuestionHistory.aggregate([
+      { $match: { userId } },
+      { $sort: { lastAttemptAt: -1 } },
+      { $limit: 20 },
+      {
+        $group: {
+          _id: null,
+          averageAccuracy: {
+            $avg: {
+              $cond: [
+                { $gt: ["$totalAttempts", 0] },
+                { $divide: ["$correctAttempts", "$totalAttempts"] },
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    return recentHistory[0]?.averageAccuracy || 0.5;
+  }
+
+  calculateDifficultyDistribution(performanceLevel, questionCount) {
+    if (performanceLevel >= 0.8) {
+      return {
+        beginner: Math.floor(questionCount * 0.1),
+        intermediate: Math.floor(questionCount * 0.3),
+        advanced: Math.floor(questionCount * 0.6)
+      };
+    } else if (performanceLevel >= 0.6) {
+      return {
+        beginner: Math.floor(questionCount * 0.2),
+        intermediate: Math.floor(questionCount * 0.6),
+        advanced: Math.floor(questionCount * 0.2)
+      };
+    } else {
+      return {
+        beginner: Math.floor(questionCount * 0.6),
+        intermediate: Math.floor(questionCount * 0.3),
+        advanced: Math.floor(questionCount * 0.1)
+      };
+    }
+  }
+
+  async getRecentlyAnsweredQuestions(userId, limit = 20) {
+    const recentHistory = await UserQuestionHistory.find({ userId })
+      .sort({ lastAttemptAt: -1 })
+      .limit(limit)
+      .select("questionId");
+    
+    return recentHistory.map(h => h.questionId);
+  }
+
+  async prioritizeWeakAreas(userId, questions) {
+    const weakAreas = await this.identifyWeakAreas(userId);
+    
+    if (weakAreas.length === 0) return questions;
+
+    const weakAreaQuestions = questions.filter(q => 
+      weakAreas.includes(q.category) || weakAreas.includes(q.subjectArea)
+    );
+
+    const otherQuestions = questions.filter(q => 
+      !weakAreas.includes(q.category) && !weakAreas.includes(q.subjectArea)
+    );
+
+    const prioritizedCount = Math.floor(questions.length * 0.7);
+    return [
+      ...weakAreaQuestions.slice(0, prioritizedCount),
+      ...otherQuestions.slice(0, questions.length - prioritizedCount)
+    ];
+  }
+
+  async identifyWeakAreas(userId) {
+    const categoryPerformance = await UserQuestionHistory.aggregate([
+      { $match: { userId, totalAttempts: { $gt: 2 } } },
+      {
+        $lookup: {
+          from: "manualquestions",
+          localField: "questionId",
+          foreignField: "_id",
+          as: "question"
+        }
+      },
+      { $unwind: "$question" },
+      {
+        $group: {
+          _id: "$question.category",
+          accuracy: {
+            $avg: {
+              $divide: ["$correctAttempts", "$totalAttempts"]
+            }
+          }
+        }
+      },
+      { $match: { accuracy: { $lt: 0.5 } } },
+      { $sort: { accuracy: 1 } }
+    ]);
+
+    return categoryPerformance.map(cp => cp._id);
+  }
+}
+
+export default new QuestionSelectionService();
