@@ -278,3 +278,5 @@ export const useAuthStore = create((set, get) => ({
     authService.openGoogleAuth();
   },
 }));
+
+export default useAuthStore;

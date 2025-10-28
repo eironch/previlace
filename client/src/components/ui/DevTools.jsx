@@ -1,114 +1,73 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
-import { useManualQuestionStore } from "@/store/manualQuestionStore";
+import apiClient from "@/services/apiClient";
 
 export default function DevTools() {
   const { user, set, logout } = useAuthStore();
   const { setShowAuthModal } = useAppStore();
-  const { createQuestion, fetchQuestions, fetchQuestionCounts, resetFilters } = useManualQuestionStore();
-  const [isCreatingTest, setIsCreatingTest] = useState(false);
+  const [isPopulating, setIsPopulating] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
-  const sampleQuestions = [
-    {
-      questionText: "What is the capital of the Philippines?",
-      questionType: "multiple_choice",
-      options: [
-        { text: "Manila", isCorrect: true },
-        { text: "Cebu", isCorrect: false },
-        { text: "Davao", isCorrect: false },
-        { text: "Iloilo", isCorrect: false },
-      ],
-      explanation: "Manila is the capital and second-most populous city of the Philippines.",
-      category: "General Information",
-      subjectArea: "General Information",
-      difficulty: "Beginner",
-      examLevel: "Both",
-      language: "English",
-      status: "draft",
-      metadata: {
-        source: "manual",
-        version: 1,
-      },
-    },
-    {
-      questionText: "The statement 'All government employees must pass the Civil Service Examination' is:",
-      questionType: "true_false",
-      options: [
-        { text: "True", isCorrect: false },
-        { text: "False", isCorrect: true },
-      ],
-      explanation: "Some positions are exempt from the Civil Service Examination requirement.",
-      category: "General Information",
-      subjectArea: "General Information",
-      difficulty: "Intermediate",
-      examLevel: "Professional",
-      language: "English",
-      status: "review",
-      metadata: {
-        source: "manual",
-        version: 1,
-      },
-    },
-    {
-      questionText: "Calculate 15% of 240.",
-      questionType: "numeric",
-      explanation: "15% of 240 = 0.15 × 240 = 36",
-      category: "Mathematics",
-      subjectArea: "Numerical Ability",
-      difficulty: "Beginner",
-      examLevel: "Both",
-      language: "English",
-      status: "draft",
-      metadata: {
-        source: "manual",
-        version: 1,
-      },
-    },
-  ];
+  async function handlePopulateTestData() {
+    if (!confirm("Populate database with test questions and achievements?")) {
+      return;
+    }
 
-  async function handleCreateTestQuestions() {
-    setIsCreatingTest(true);
-    
+    setIsPopulating(true);
     try {
-      for (const questionData of sampleQuestions) {
-        await createQuestion(questionData);
-      }
-
-      resetFilters();
-      const reviewFilter = { status: ["draft", "review"] };
-      await fetchQuestions(1, reviewFilter);
-      await fetchQuestionCounts(reviewFilter);
-
-      alert("Test questions created successfully!");
+      const response = await apiClient.post("/seed/populate");
+      alert(`Success: ${response.data.data.questionsCreated} questions and ${response.data.data.achievementsCreated} achievements created`);
+      window.location.reload();
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Error creating test questions:", error);
-      }
-      alert("Error creating test questions.");
+      alert(`Error: ${error.message}`);
     } finally {
-      setIsCreatingTest(false);
+      setIsPopulating(false);
     }
   }
 
-  const resetProfile = () => {
-    // reset profile-related localStorage and state
+  async function handleClearTestData() {
+    if (!confirm("This will delete ALL questions and achievements. Continue?")) {
+      return;
+    }
+
+    setIsClearing(true);
+    try {
+      await apiClient.delete("/seed/clear");
+      alert("Test data cleared successfully");
+      window.location.reload();
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsClearing(false);
+    }
+  }
+
+  function resetProfile() {
     localStorage.removeItem("user_data");
     set({ user: null, isAuthenticated: false });
-    alert("Profile data reset (local)");
-  };
+    alert("Profile data reset");
+  }
 
-  const clearLocalStorage = () => {
+  function clearLocalStorage() {
     localStorage.clear();
     alert("localStorage cleared");
-  };
+  }
 
-  const triggerLogout = async () => {
+  async function triggerLogout() {
     await logout();
     alert("Logged out");
-  };
+  }
 
-  const openAuth = () => setShowAuthModal(true);
+  function openAuth() {
+    setShowAuthModal(true);
+  }
+
+  function logUserToConsole() {
+    if (process.env.NODE_ENV === "development") {
+      console.log({ user });
+    }
+  }
 
   return (
     <div style={{ position: "fixed", right: 16, bottom: 16, zIndex: 9999 }}>
@@ -126,17 +85,49 @@ export default function DevTools() {
       </div>
 
       <div id="devtools-panel" style={{ display: "none", marginTop: 8 }}>
-        <div className="bg-white rounded-lg shadow-lg p-4 w-64 text-sm">
+        <div className="bg-white rounded-lg shadow-lg p-4 w-72 text-sm">
           <div className="mb-2 font-semibold">Dev Tools</div>
           <div className="space-y-2">
-            <button onClick={resetProfile} className="w-full rounded border px-2 py-1">Reset profile data</button>
-            <button onClick={clearLocalStorage} className="w-full rounded border px-2 py-1">Clear localStorage</button>
-            <button onClick={triggerLogout} className="w-full rounded border px-2 py-1">Logout</button>
-            <button onClick={openAuth} className="w-full rounded border px-2 py-1">Open auth modal</button>
-            <button onClick={() => location.reload()} className="w-full rounded border px-2 py-1">Reload page</button>
-            <button onClick={() => console.log({ user })} className="w-full rounded border px-2 py-1">Log user to console</button>
-            <button onClick={handleCreateTestQuestions} disabled={isCreatingTest} className="w-full rounded border px-2 py-1 bg-blue-100">
-              {isCreatingTest ? "Creating..." : "Add Test Questions"}
+            <button 
+              onClick={handlePopulateTestData} 
+              disabled={isPopulating}
+              className="w-full rounded border px-2 py-1 bg-green-100 hover:bg-green-200 disabled:opacity-50"
+            >
+              {isPopulating ? "Populating..." : "Populate Test Data"}
+            </button>
+            
+            <button 
+              onClick={handleClearTestData} 
+              disabled={isClearing}
+              className="w-full rounded border px-2 py-1 bg-red-100 hover:bg-red-200 disabled:opacity-50"
+            >
+              {isClearing ? "Clearing..." : "Clear Test Data"}
+            </button>
+
+            <div className="border-t my-2"></div>
+
+            <button onClick={resetProfile} className="w-full rounded border px-2 py-1 hover:bg-gray-100">
+              Reset profile data
+            </button>
+            
+            <button onClick={clearLocalStorage} className="w-full rounded border px-2 py-1 hover:bg-gray-100">
+              Clear localStorage
+            </button>
+            
+            <button onClick={triggerLogout} className="w-full rounded border px-2 py-1 hover:bg-gray-100">
+              Logout
+            </button>
+            
+            <button onClick={openAuth} className="w-full rounded border px-2 py-1 hover:bg-gray-100">
+              Open auth modal
+            </button>
+            
+            <button onClick={() => location.reload()} className="w-full rounded border px-2 py-1 hover:bg-gray-100">
+              Reload page
+            </button>
+            
+            <button onClick={logUserToConsole} className="w-full rounded border px-2 py-1 hover:bg-gray-100">
+              Log user to console
             </button>
           </div>
         </div>

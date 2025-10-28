@@ -296,6 +296,88 @@ const userSchema = new mongoose.Schema(
     suspensionReason: {
       type: String,
     },
+    studyPlan: {
+      targetExamDate: Date,
+      startDate: Date,
+      totalDays: Number,
+      dailyStudyTime: Number,
+      currentReadinessScore: Number,
+      weeklySchedule: [{
+        week: Number,
+        focus: String,
+        dailyTargets: {
+          type: Map,
+          of: {
+            studyTime: Number,
+            activities: [String],
+            primaryFocus: String,
+            questionsTarget: Number
+          }
+        },
+        goals: [String]
+      }],
+      milestones: [{
+        week: Number,
+        day: Number,
+        targetReadinessScore: Number,
+        description: String,
+        assessmentType: String,
+        completed: {
+          type: Boolean,
+          default: false
+        },
+        actualScore: Number
+      }],
+      recommendations: [{
+        type: String,
+        priority: String,
+        message: String,
+        actions: [String]
+      }],
+      adherenceLog: [{
+        week: Number,
+        day: String,
+        actualStudyTime: Number,
+        questionsCompleted: Number,
+        accuracy: Number,
+        category: String,
+        completedAt: Date
+      }],
+      adherenceRate: {
+        type: Number,
+        default: 0
+      },
+      lastUpdated: Date
+    },
+    performanceMetrics: {
+      overallAccuracy: {
+        type: Number,
+        default: 0
+      },
+      totalQuestionsAnswered: {
+        type: Number,
+        default: 0
+      },
+      totalStudyTime: {
+        type: Number,
+        default: 0
+      },
+      currentStreak: {
+        type: Number,
+        default: 0
+      },
+      longestStreak: {
+        type: Number,
+        default: 0
+      },
+      lastActivityDate: Date,
+      categoryStrengths: [String],
+      categoryWeaknesses: [String],
+      examReadinessScore: {
+        type: Number,
+        default: 0
+      }
+    },
     refreshTokens: [
       {
         token: String,

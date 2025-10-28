@@ -73,4 +73,6 @@ export const optionalAuth = async (req, res, next) => {
 	}
 };
 
+export const protect = authenticate;
+
 export default authenticate;

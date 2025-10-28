@@ -9,15 +9,31 @@ import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
 import LandingPage from "@/pages/LandingPage";
 import StudentPage from "@/pages/StudentPage";
-import TestInterface from "@/components/questionBank/TestInterface";
 import AdminPage from "@/pages/AdminPage";
 import OnboardingPage from "@/pages/OnboardingPage";
+import QuizSetupPage from "@/pages/quiz/QuizSetupPage";
+import QuizSessionPage from "@/pages/quiz/QuizSessionPage";
+import QuizResultsPage from "@/pages/quiz/QuizResultsPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
+import MockExamPage from "@/pages/MockExamPage";
+import AchievementsPage from "@/pages/AchievementsPage";
+import LeaderboardPage from "@/pages/LeaderboardPage";
+import PerformancePage from "@/pages/PerformancePage";
+import ExamReadinessPage from "@/pages/ExamReadinessPage";
+import SpacedRepetitionPage from "@/pages/SpacedRepetitionPage";
+import StudyPlanPage from "@/pages/StudyPlanPage";
+import StudyStreakPage from "@/pages/StudyStreakPage";
+import ChallengePage from "@/pages/ChallengePage";
+import JobsPage from "@/pages/JobsPage";
+import ResumeBuilderPage from "@/pages/ResumeBuilderPage";
+import InterviewPrepPage from "@/pages/InterviewPrepPage";
 import AuthModal from "@/components/auth/AuthModal";
-import { mathService } from "@/services/mathService";
 import DevTools from "@/components/ui/DevTools";
+import { mathService } from "@/services/mathService";
 
 function App() {
-  const { isAuthenticated, user, isLoading, initializeAuth, isInitialized } = useAuthStore();
+  const { isAuthenticated, user, isLoading, initializeAuth, isInitialized } =
+    useAuthStore();
   const { showAuthModal } = useAppStore();
 
   useEffect(() => {
@@ -129,10 +145,145 @@ function App() {
           />
 
           <Route
-            path="/test"
+            path="/dashboard/quiz"
             element={
               <DashboardRoute>
-                <TestInterface />
+                <QuizSetupPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/quiz-session"
+            element={
+              <DashboardRoute>
+                <QuizSessionPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/results"
+            element={
+              <DashboardRoute>
+                <QuizResultsPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/analytics"
+            element={
+              <DashboardRoute>
+                <AnalyticsPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/achievements"
+            element={
+              <DashboardRoute>
+                <AchievementsPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/leaderboard"
+            element={
+              <DashboardRoute>
+                <LeaderboardPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/mock-exam"
+            element={
+              <DashboardRoute>
+                <MockExamPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/performance"
+            element={
+              <DashboardRoute>
+                <PerformancePage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/exam-readiness"
+            element={
+              <DashboardRoute>
+                <ExamReadinessPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/spaced-repetition"
+            element={
+              <DashboardRoute>
+                <SpacedRepetitionPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/study-plan"
+            element={
+              <DashboardRoute>
+                <StudyPlanPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/study-streak"
+            element={
+              <DashboardRoute>
+                <StudyStreakPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/challenges"
+            element={
+              <DashboardRoute>
+                <ChallengePage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/jobs"
+            element={
+              <DashboardRoute>
+                <JobsPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/resume"
+            element={
+              <DashboardRoute>
+                <ResumeBuilderPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/interview-prep"
+            element={
+              <DashboardRoute>
+                <InterviewPrepPage />
               </DashboardRoute>
             }
           />

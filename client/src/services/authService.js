@@ -32,10 +32,6 @@ export const authService = {
   async logout() {
     try {
       await apiClient.post("/auth/logout");
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Logout API error:", error);
-      }
     } finally {
       localStorage.removeItem("user_data");
       verificationPromise = null;
@@ -111,7 +107,12 @@ export const authService = {
   },
 
   openGoogleAuth() {
-    const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    window.location.href = `${API_BASE_URL}/api/auth/google`;
+    let baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    
+    if (baseUrl.endsWith("/api")) {
+      baseUrl = baseUrl.slice(0, -4);
+    }
+    
+    window.location.href = `${baseUrl}/api/auth/google`;
   },
 };
