@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Button from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import Badge from "@/components/ui/badge";
+import Progress from "@/components/ui/progress";
 import { Calendar, Clock, Brain, RotateCcw, CheckCircle } from "lucide-react";
 import useExamStore from "@/store/examStore";
 import QuizInterface from "@/components/exam/QuizInterface";

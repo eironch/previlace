@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+import Spinner from "@/components/ui/spinner";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
