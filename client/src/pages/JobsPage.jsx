@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import Button from "@/components/ui/button";
+import Button from "@/components/ui/button1";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card1";
 
 function JobsPage() {
   const navigate = useNavigate();

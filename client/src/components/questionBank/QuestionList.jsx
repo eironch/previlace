@@ -16,8 +16,8 @@ import {
   Loader,
   CheckCircle,
 } from "lucide-react";
-import Button from "../ui/button";
-import Input from "../ui/Input";
+import Button from "../ui/button1";
+import Input from "../ui/input1";
 import Select from "../ui/Select";
 
 function QuestionList({

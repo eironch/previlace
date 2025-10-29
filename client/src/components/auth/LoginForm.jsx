@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "@/components/ui/button";
-import Input from "@/components/ui/Input";
+import Button from "@/components/ui/button1";
+import Input from "@/components/ui/input1";
 import Label from "@/components/ui/Label";
 import {
   Card,
@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card1";
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
 

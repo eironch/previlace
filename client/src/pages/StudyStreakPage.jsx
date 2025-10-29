@@ -1,8 +1,13 @@
 import { useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Button from "@/components/ui/button";
-import Badge from "@/components/ui/badge";
-import Progress from "@/components/ui/progress";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card1";
+import Button from "@/components/ui/button1";
+import Badge from "@/components/ui/badge1";
+import Progress from "@/components/ui/progress1";
 import {
   Calendar,
   Zap,

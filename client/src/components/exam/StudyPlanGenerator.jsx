@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import Button from "../ui/button";
-import { Input } from "../ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card1";
+import Button from "../ui/button1";
+import { Input } from "../ui/input1";
 import Label from "../ui/label";
-import { Badge } from "../ui/badge";
-import { Progress } from "../ui/progress";
+import { Badge } from "../ui/badge1";
+import { Progress } from "../ui/progress1";
 import {
   Calendar,
   Target,

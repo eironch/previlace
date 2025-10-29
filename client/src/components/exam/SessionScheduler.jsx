@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Calendar, Clock, Users, X } from "lucide-react";
-import Button from "../ui/button";
-import { Input } from "../ui/input";
+import Button from "../ui/button1";
+import { Input } from "../ui/input1";
 import { TextArea } from "../ui/TextArea";
 import useStudyGroupStore from "../../store/studyGroupStore";
 
