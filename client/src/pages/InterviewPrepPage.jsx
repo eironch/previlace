@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import Button from "@/components/ui/button1";
+import Button from "@/components/ui/Button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card1";
+} from "@/components/ui/Card";
 
 function InterviewPrepPage() {
   const navigate = useNavigate();

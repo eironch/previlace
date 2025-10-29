@@ -1,12 +1,7 @@
 import { useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card1";
-import Badge from "@/components/ui/badge1";
-import Progress from "@/components/ui/progress1";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import Progress from "@/components/ui/Progress";
 import {
   Trophy,
   Award,

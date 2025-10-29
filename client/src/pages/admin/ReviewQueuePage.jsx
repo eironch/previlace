@@ -3,7 +3,7 @@ import { ClipboardCheck, RefreshCw, Loader } from "lucide-react";
 import { useReviewQuestionStore } from "@/store/reviewQuestionStore";
 import QuestionList from "@/components/questionBank/QuestionList";
 import ReviewActionModal from "@/components/questionBank/ReviewActionModal";
-import Button from "@/components/ui/button1";
+import Button from "@/components/ui/Button";
 
 function ReviewQueuePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
