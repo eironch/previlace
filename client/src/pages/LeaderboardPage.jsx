@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Button from "@/components/ui/button";
-import Badge from "@/components/ui/badge";
-import { Avatar } from "@/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card1";
+import Button from "@/components/ui/button1";
+import Badge from "@/components/ui/badge1";
+import { Avatar } from "@/components/ui/avatar1";
 import {
   Crown,
   Trophy,

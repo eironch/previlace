@@ -6,7 +6,7 @@ import {
   Send,
   Loader,
 } from "lucide-react";
-import Button from "../ui/button";
+import Button from "../ui/button1";
 
 function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
   const [action, setAction] = useState(null);

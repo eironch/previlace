@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin, Users, Loader } from "lucide-react";
-import Button from "../ui/button";
-import { Input } from "../ui/input";
+import Button from "../ui/button1";
+import { Input } from "../ui/input1";
 import useStudyGroupStore from "../../store/studyGroupStore";
 
 export default function StudyGroupBrowser() {
