@@ -40,16 +40,31 @@ const app = express();
 
 app.set("trust proxy", 1);
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://previlace.vercel.app",
+];
+
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "https://previlace.vercel.app"],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: ["set-cookie"],
     optionsSuccessStatus: 200,
+    preflightContinue: false,
   })
 );
+
+app.options("*", cors());
 
 app.use(
   helmet({
@@ -60,6 +75,13 @@ app.use(
 
 app.use(mongoSanitize());
 app.use(generalLimiter);
+
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
 
 passport.use(
   new GoogleStrategy(
@@ -92,8 +114,12 @@ app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(passport.initialize());
 
+app.head((req, res) => {
+  res.status(200).end();
+});
+
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
     message: "Previlace API is running",
     version: "2.0.0",
@@ -101,10 +127,11 @@ app.get("/", (req, res) => {
   });
 });
 
+app.options("/api/health", cors());
 app.get("/api/health", (req, res) => {
   const dbStatus = checkDatabaseConnection();
 
-  res.json({
+  res.status(200).json({
     success: true,
     message: "API is healthy",
     timestamp: new Date().toISOString(),
@@ -137,7 +164,12 @@ app.use("/api/challenges", challengeRoutes);
 app.use("/api/study-groups", studyGroupRoutes);
 app.use("/api/seed", seedRoutes);
 
+app.options("*", cors());
+
 app.all("*", (req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
@@ -180,6 +212,9 @@ async function startServer() {
     process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
     process.on("SIGINT", () => gracefulShutdown("SIGINT"));
   } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error("Server startup error:", error);
+    }
     process.exit(1);
   }
 }

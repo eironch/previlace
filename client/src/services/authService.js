@@ -9,9 +9,10 @@ export const authService = {
     const response = await apiClient.post("/auth/login", credentials);
     const { data } = response.data;
 
-    if (data?.user) {
-      localStorage.setItem("user_data", JSON.stringify(data.user));
-      return { user: data.user };
+    if (data?.user && data?.accessToken) {
+      const userData = { ...data.user, accessToken: data.accessToken };
+      localStorage.setItem("user_data", JSON.stringify(userData));
+      return { user: userData };
     }
 
     throw new Error("Invalid response format");
@@ -21,9 +22,10 @@ export const authService = {
     const response = await apiClient.post("/auth/register", userData);
     const { data } = response.data;
 
-    if (data?.user) {
-      localStorage.setItem("user_data", JSON.stringify(data.user));
-      return { user: data.user };
+    if (data?.user && data?.accessToken) {
+      const userWithToken = { ...data.user, accessToken: data.accessToken };
+      localStorage.setItem("user_data", JSON.stringify(userWithToken));
+      return { user: userWithToken };
     }
 
     throw new Error("Invalid response format");
@@ -57,8 +59,13 @@ export const authService = {
     const { data } = response.data;
 
     if (data?.user) {
-      localStorage.setItem("user_data", JSON.stringify(data.user));
-      return { user: data.user };
+      const storedUser = this.getStoredUser();
+      const userData = {
+        ...data.user,
+        accessToken: storedUser?.accessToken,
+      };
+      localStorage.setItem("user_data", JSON.stringify(userData));
+      return { user: userData };
     }
 
     return response.data;
@@ -77,7 +84,10 @@ export const authService = {
       throw new Error("No stored user data");
     }
 
-    if (now - lastVerificationTime < VERIFICATION_CACHE_DURATION && verificationPromise) {
+    if (
+      now - lastVerificationTime < VERIFICATION_CACHE_DURATION &&
+      verificationPromise
+    ) {
       return verificationPromise;
     }
 
@@ -89,7 +99,8 @@ export const authService = {
       try {
         const response = await apiClient.get("/auth/me");
         lastVerificationTime = now;
-        return response.data.data.user;
+        const userData = response.data.data.user;
+        return { ...userData, accessToken: storedUser.accessToken };
       } catch (error) {
         localStorage.removeItem("user_data");
         verificationPromise = null;
@@ -108,11 +119,11 @@ export const authService = {
 
   openGoogleAuth() {
     let baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    
+
     if (baseUrl.endsWith("/api")) {
       baseUrl = baseUrl.slice(0, -4);
     }
-    
+
     window.location.href = `${baseUrl}/api/auth/google`;
   },
 };

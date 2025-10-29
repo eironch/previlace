@@ -72,6 +72,7 @@ const register = catchAsync(async (req, res, next) => {
 	res.status(201).json({
 		success: true,
 		data: {
+			accessToken,
 			user: {
 				id: user._id,
 				email: user.email,
@@ -120,6 +121,7 @@ const login = catchAsync(async (req, res, next) => {
 	res.json({
 		success: true,
 		data: {
+			accessToken,
 			user: {
 				id: user._id,
 				email: user.email,
@@ -344,6 +346,7 @@ const googleCallbackSuccess = catchAsync(async (req, res, next) => {
 
 	const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
 	const userData = encodeURIComponent(JSON.stringify({
+		accessToken,
 		id: req.user.user._id,
 		email: req.user.user.email,
 		firstName: req.user.user.firstName,
