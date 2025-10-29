@@ -20,4 +20,4 @@ function Progress({ className, value, ...props }) {
   );
 }
 
-export { Progress };
+export default Progress;
