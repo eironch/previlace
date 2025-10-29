@@ -9,23 +9,12 @@ import { catchAsync } from "../utils/AppError.js";
 
 dotenv.config();
 
-const generateTokens = (userId) => {
-	const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET, {
-		expiresIn: process.env.JWT_EXPIRE || "1h",
-	});
-
-	const refreshToken = jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, {
-		expiresIn: process.env.JWT_REFRESH_EXPIRE || "30d",
-	});
-
-	return { accessToken, refreshToken };
-};
-
 const setTokenCookies = (res, accessToken, refreshToken) => {
+	const isProduction = process.env.NODE_ENV === "production";
 	const cookieOptions = {
 		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+		secure: isProduction,
+		sameSite: isProduction ? "None" : "Lax",
 	};
 
 	res.cookie("accessToken", accessToken, {
@@ -38,6 +27,20 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
 		maxAge: 30 * 24 * 60 * 60 * 1000,
 	});
 };
+
+const generateTokens = (userId) => {
+	const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET, {
+		expiresIn: process.env.JWT_EXPIRE || "1h",
+	});
+
+	const refreshToken = jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, {
+		expiresIn: process.env.JWT_REFRESH_EXPIRE || "30d",
+	});
+
+	return { accessToken, refreshToken };
+};
+
+
 
 const register = catchAsync(async (req, res, next) => {
 	const { email, password, firstName, lastName } = req.body;
@@ -81,7 +84,9 @@ const register = catchAsync(async (req, res, next) => {
 				isProfileComplete: user.isProfileComplete,
 				role: user.role || 'user',
 				avatar: user.avatar
-			}
+			},
+			accessToken,
+			refreshToken
 		}
 	});
 });
@@ -129,7 +134,9 @@ const login = catchAsync(async (req, res, next) => {
 				isProfileComplete: user.isProfileComplete,
 				role: user.role || 'user',
 				avatar: user.avatar
-			}
+			},
+			accessToken,
+			refreshToken
 		}
 	});
 });
@@ -148,8 +155,14 @@ const logout = catchAsync(async (req, res, next) => {
 		}
 	}
 
-	res.clearCookie("accessToken");
-	res.clearCookie("refreshToken");
+	res.clearCookie("accessToken", {
+		secure: process.env.NODE_ENV === "production",
+		sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+	});
+	res.clearCookie("refreshToken", {
+		secure: process.env.NODE_ENV === "production",
+		sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+	});
 	res.json({ success: true, message: "Logged out successfully" });
 });
 
@@ -160,8 +173,14 @@ const logoutAll = catchAsync(async (req, res, next) => {
 		await user.save();
 	}
 
-	res.clearCookie("accessToken");
-	res.clearCookie("refreshToken");
+	res.clearCookie("accessToken", {
+		secure: process.env.NODE_ENV === "production",
+		sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+	});
+	res.clearCookie("refreshToken", {
+		secure: process.env.NODE_ENV === "production",
+		sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+	});
 	res.json({ success: true, message: "Logged out from all devices" });
 });
 
@@ -295,6 +314,52 @@ const updatePassword = catchAsync(async (req, res, next) => {
 	res.json({ success: true, message: "Password updated successfully" });
 });
 
+const refreshToken = catchAsync(async (req, res, next) => {
+	const { refreshToken } = req.cookies;
+
+	if (!refreshToken) {
+		return next(new AppError("Refresh token required", 401));
+	}
+
+	try {
+		const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+		const user = await User.findById(decoded.userId);
+
+		if (!user) {
+			return next(new AppError("User not found", 401));
+		}
+
+		const isRefreshTokenValid = user.refreshTokens.some(
+			tokenObj => tokenObj.token === refreshToken && tokenObj.expiresAt > new Date()
+		);
+
+		if (!isRefreshTokenValid) {
+			return next(new AppError("Invalid or expired refresh token", 401));
+		}
+
+		const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokens(user._id);
+
+		await user.removeRefreshToken(refreshToken);
+		await user.addRefreshToken(
+			newRefreshToken,
+			req.headers["user-agent"],
+			req.ip || req.connection.remoteAddress
+		);
+
+		setTokenCookies(res, newAccessToken, newRefreshToken);
+
+		res.json({
+			success: true,
+			data: {
+				accessToken: newAccessToken,
+				refreshToken: newRefreshToken
+			}
+		});
+	} catch (error) {
+		return next(new AppError("Invalid refresh token", 401));
+	}
+});
+
 const googleAuth = passport.authenticate("google", {
 	scope: ["profile", "email"],
 	session: false,
@@ -325,11 +390,11 @@ const googleCallbackSuccess = catchAsync(async (req, res, next) => {
 		req.ip || req.connection.remoteAddress
 	);
 
+	const isProduction = process.env.NODE_ENV === "production";
 	const cookieOptions = {
 		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-		domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : undefined,
+		secure: isProduction,
+		sameSite: isProduction ? "None" : "Lax",
 	};
 
 	res.cookie("accessToken", accessToken, {
@@ -353,8 +418,13 @@ const googleCallbackSuccess = catchAsync(async (req, res, next) => {
 		isProfileComplete: req.user.user.isProfileComplete,
 		role: req.user.user.role || 'user'
 	}));
+	
+	const tokenData = encodeURIComponent(JSON.stringify({
+		accessToken,
+		refreshToken
+	}));
 
-	res.redirect(`${clientUrl}?auth=success&user=${userData}`);
+	res.redirect(`${clientUrl}?auth=success&user=${userData}&tokens=${tokenData}`);
 });
 
 export default {
@@ -368,6 +438,7 @@ export default {
 	resendEmailVerification,
 	getMe,
 	updatePassword,
+	refreshToken,
 	googleAuth,
 	googleCallback,
 	googleCallbackSuccess,

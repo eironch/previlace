@@ -7,7 +7,14 @@ dotenv.config();
 
 export const authenticate = async (req, res, next) => {
 	try {
-		const { accessToken } = req.cookies;
+		let accessToken;
+
+		const authHeader = req.headers['authorization'] || req.headers['x-auth-token'];
+		if (authHeader && authHeader.startsWith('Bearer ')) {
+			accessToken = authHeader.substring(7);
+		} else if (req.cookies?.accessToken) {
+			accessToken = req.cookies.accessToken;
+		}
 
 		if (!accessToken) {
 			return res.status(401).json({
@@ -56,7 +63,14 @@ export const restrictTo = (...roles) => {
 
 export const optionalAuth = async (req, res, next) => {
 	try {
-		const { accessToken } = req.cookies;
+		let accessToken;
+
+		const authHeader = req.headers['authorization'] || req.headers['x-auth-token'];
+		if (authHeader && authHeader.startsWith('Bearer ')) {
+			accessToken = authHeader.substring(7);
+		} else if (req.cookies?.accessToken) {
+			accessToken = req.cookies.accessToken;
+		}
 
 		if (accessToken) {
 			const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);

@@ -23,12 +23,20 @@ export const useAuthStore = create((set, get) => ({
       const urlParams = new URLSearchParams(window.location.search);
       const authStatus = urlParams.get("auth");
       const userData = urlParams.get("user");
+      const tokenData = urlParams.get("tokens");
       const error = urlParams.get("error");
 
       if (authStatus === "success" && userData) {
         try {
           const user = JSON.parse(decodeURIComponent(userData));
+          
+          if (tokenData) {
+            const tokens = JSON.parse(decodeURIComponent(tokenData));
+            authService.setTokens(tokens.accessToken, tokens.refreshToken);
+          }
+          
           localStorage.setItem("user_data", JSON.stringify(user));
+          
           set({
             user,
             isAuthenticated: true,
@@ -39,9 +47,6 @@ export const useAuthStore = create((set, get) => ({
           window.history.replaceState({}, document.title, window.location.pathname);
           return;
         } catch (parseError) {
-          if (process.env.NODE_ENV === "development") {
-            console.error("Authentication data parsing failed:", parseError);
-          }
           set({
             error: "Authentication data error. Please try logging in again.",
             isLoading: false,
@@ -55,7 +60,7 @@ export const useAuthStore = create((set, get) => ({
       }
 
       if (error) {
-        localStorage.removeItem("user_data");
+        authService.clearTokens();
         set({
           error: "Authentication failed. Please try again.",
           isLoading: false,
@@ -90,10 +95,7 @@ export const useAuthStore = create((set, get) => ({
           isInitialized: true,
         });
       } catch (verificationError) {
-        if (process.env.NODE_ENV === "development") {
-          console.error("Token verification failed:", verificationError);
-        }
-        localStorage.removeItem("user_data");
+        authService.clearTokens();
         set({
           isLoading: false,
           isAuthenticated: false,
@@ -112,7 +114,6 @@ export const useAuthStore = create((set, get) => ({
 
     try {
       const { user } = await authService.login(credentials);
-      localStorage.setItem("user_data", JSON.stringify(user));
       
       set({
         user,
@@ -124,9 +125,6 @@ export const useAuthStore = create((set, get) => ({
 
       return { success: true };
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Login failed:", error);
-      }
       set({
         isLoading: false,
         error: error.message,
@@ -143,7 +141,6 @@ export const useAuthStore = create((set, get) => ({
 
     try {
       const { user } = await authService.register(userData);
-      localStorage.setItem("user_data", JSON.stringify(user));
 
       set({
         user,
@@ -156,9 +153,6 @@ export const useAuthStore = create((set, get) => ({
       window.location.href = "/onboarding";
       return { success: true };
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Registration failed:", error);
-      }
       set({
         isLoading: false,
         error: error.message,
@@ -181,7 +175,6 @@ export const useAuthStore = create((set, get) => ({
         console.error("Logout failed:", logoutError);
       }
     } finally {
-      localStorage.removeItem("user_data");
       set({
         user: null,
         isAuthenticated: false,
@@ -203,10 +196,7 @@ export const useAuthStore = create((set, get) => ({
       set({ user, isAuthenticated: true });
       return { success: true };
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Session verification failed:", error);
-      }
-      localStorage.removeItem("user_data");
+      authService.clearTokens();
       set({
         user: null,
         isAuthenticated: false,
@@ -221,9 +211,6 @@ export const useAuthStore = create((set, get) => ({
       const result = await authService.forgotPassword(email);
       return { success: true, data: result };
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Forgot password failed:", error);
-      }
       return { success: false, error: error.message };
     }
   },
@@ -233,9 +220,6 @@ export const useAuthStore = create((set, get) => ({
       const result = await authService.resetPassword(token, password);
       return { success: true, data: result };
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Reset password failed:", error);
-      }
       return { success: false, error: error.message };
     }
   },
@@ -253,9 +237,6 @@ export const useAuthStore = create((set, get) => ({
 
       return { success: true, user };
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Profile update failed:", error);
-      }
       return { success: false, error: error.message };
     }
   },
@@ -265,9 +246,6 @@ export const useAuthStore = create((set, get) => ({
       const result = await authService.updatePassword(passwordData);
       return { success: true, data: result };
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Password update failed:", error);
-      }
       return { success: false, error: error.message };
     }
   },

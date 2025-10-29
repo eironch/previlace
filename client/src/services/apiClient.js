@@ -61,11 +61,11 @@ class RequestQueue {
 const requestQueue = new RequestQueue();
 
 function getAuthHeaders() {
-  const { user } = useAuthStore.getState();
+  const accessToken = localStorage.getItem("access_token");
   
-  if (user?.accessToken) {
+  if (accessToken) {
     return {
-      Authorization: `Bearer ${user.accessToken}`,
+      "Authorization": `Bearer ${accessToken}`,
     };
   }
   
@@ -84,6 +84,45 @@ async function apiCall(endpoint, options = {}) {
     },
     ...options,
   });
+
+  if (response.status === 401 && !endpoint.includes("/auth/")) {
+    try {
+      const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (refreshResponse.ok) {
+        const refreshData = await refreshResponse.json();
+        if (refreshData.data?.accessToken) {
+          localStorage.setItem("access_token", refreshData.data.accessToken);
+          
+          const retryHeaders = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${refreshData.data.accessToken}`,
+            ...options.headers,
+          };
+
+          const retryResponse = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+            ...options,
+            credentials: "include",
+            headers: retryHeaders,
+          });
+
+          if (retryResponse.ok) {
+            return await retryResponse.json();
+          }
+        }
+      }
+    } catch (refreshError) {
+      const { logout } = useAuthStore.getState();
+      logout();
+      throw new Error("Authentication required. Please login again.");
+    }
+  }
 
   const data = await response.json();
 
