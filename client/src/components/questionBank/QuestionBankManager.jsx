@@ -4,7 +4,7 @@ import { useQuestionBankStore } from "../../store/questionBankStore";
 import QuestionTypeSelection from "./QuestionTypeSelection";
 import QuestionCreationForm from "./QuestionCreationForm";
 import QuestionList from "./QuestionList";
-import Button from "../ui/Button";
+import Button from "../ui/button";
 
 function QuestionBankManager() {
   const [currentView, setCurrentView] = useState("questions");
@@ -19,10 +19,7 @@ function QuestionBankManager() {
   async function refreshData() {
     setIsRefreshing(true);
     try {
-      await Promise.all([
-        fetchQuestions(1),
-        fetchQuestionCounts(),
-      ]);
+      await Promise.all([fetchQuestions(1), fetchQuestionCounts()]);
     } finally {
       setIsRefreshing(false);
     }
@@ -100,7 +97,10 @@ function QuestionBankManager() {
         </div>
       </div>
 
-      <QuestionList useQuestionStore={useQuestionBankStore} statusFilter={["approved", "published"]} />
+      <QuestionList
+        useQuestionStore={useQuestionBankStore}
+        statusFilter={["approved", "published"]}
+      />
     </div>
   );
 }

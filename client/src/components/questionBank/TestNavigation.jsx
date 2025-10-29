@@ -1,11 +1,18 @@
 import { useState } from "react";
 import { useTestStore } from "../../store/testStore";
-import Button from "../ui/Button";
-import { ChevronLeft, ChevronRight, Flag, CheckCircle2, Circle, AlertTriangle } from "lucide-react";
+import Button from "../ui/button";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  CheckCircle2,
+  Circle,
+  AlertTriangle,
+} from "lucide-react";
 
 function TestNavigation() {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
-  
+
   const {
     testQuestions,
     currentQuestionIndex,
@@ -38,11 +45,13 @@ function TestNavigation() {
     <div className="space-y-6">
       <div className="rounded-lg bg-white p-4 shadow-sm">
         <h3 className="mb-3 text-lg font-semibold text-black">Test Progress</h3>
-        
+
         <div className="mb-4">
           <div className="mb-2 flex justify-between text-sm">
             <span className="text-gray-600">Progress</span>
-            <span className="font-medium text-black">{Math.round(progress)}%</span>
+            <span className="font-medium text-black">
+              {Math.round(progress)}%
+            </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-gray-200">
             <div
@@ -68,7 +77,7 @@ function TestNavigation() {
 
       <div className="rounded-lg bg-white p-4 shadow-sm">
         <h3 className="mb-3 text-lg font-semibold text-black">Questions</h3>
-        
+
         <div className="grid grid-cols-5 gap-2">
           {testQuestions.map((question, index) => (
             <button
@@ -105,7 +114,7 @@ function TestNavigation() {
             <ChevronLeft className="h-4 w-4" />
             Previous
           </Button>
-          
+
           <Button
             onClick={nextQuestion}
             disabled={!canGoNext}
@@ -120,8 +129,10 @@ function TestNavigation() {
         <Button
           onClick={handleSubmitClick}
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2"
-          variant={answeredCount === testQuestions.length ? "default" : "outline"}
+          className="flex w-full items-center justify-center gap-2"
+          variant={
+            answeredCount === testQuestions.length ? "default" : "outline"
+          }
         >
           <Flag className="h-4 w-4" />
           {isSubmitting ? "Submitting..." : "Submit Test"}
@@ -129,12 +140,15 @@ function TestNavigation() {
 
         {showSubmitConfirm && (
           <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="mb-3 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <span className="font-medium text-orange-800">Confirm Submission</span>
+              <span className="font-medium text-orange-800">
+                Confirm Submission
+              </span>
             </div>
-            <p className="text-sm text-orange-700 mb-4">
-              Are you sure you want to submit your test? This action cannot be undone.
+            <p className="mb-4 text-sm text-orange-700">
+              Are you sure you want to submit your test? This action cannot be
+              undone.
             </p>
             <div className="flex gap-2">
               <Button

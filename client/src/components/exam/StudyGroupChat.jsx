@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Send, MoreVertical, Reply2, Smile, Pin } from "lucide-react";
-import { Button } from "../ui/button";
+import Button from "../ui/button";
 import { Input } from "../ui/input";
 import useStudyGroupStore from "../../store/studyGroupStore";
 import useAuthStore from "../../store/authStore";
@@ -61,11 +61,11 @@ export default function StudyGroupChat({ groupId }) {
         </h3>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 p-6">
+      <div className="flex-1 space-y-4 overflow-y-auto p-6">
         {loading ? (
-          <div className="text-center py-8 text-slate-600">Loading...</div>
+          <div className="py-8 text-center text-slate-600">Loading...</div>
         ) : messages.length === 0 ? (
-          <div className="text-center py-12 text-slate-600">
+          <div className="py-12 text-center text-slate-600">
             No messages yet. Start the conversation!
           </div>
         ) : (
@@ -146,7 +146,7 @@ function ChatMessage({ message, isOwn, onDelete, onReply }) {
           </div>
         )}
 
-        <div className="break-words text-sm">{message.content}</div>
+        <div className="text-sm break-words">{message.content}</div>
 
         <div className="relative mt-2 flex items-center justify-between">
           <span className="text-xs opacity-75">
@@ -165,7 +165,7 @@ function ChatMessage({ message, isOwn, onDelete, onReply }) {
             </button>
 
             {showActions && (
-              <div className="absolute right-0 top-full mt-1 flex flex-col gap-1 rounded-lg border border-slate-200 bg-white shadow-lg">
+              <div className="absolute top-full right-0 mt-1 flex flex-col gap-1 rounded-lg border border-slate-200 bg-white shadow-lg">
                 <button
                   onClick={() => {
                     onReply();

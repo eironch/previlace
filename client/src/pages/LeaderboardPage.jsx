@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { Crown, Trophy, Medal, Users, TrendingUp, Target, Zap } from "lucide-react";
+import {
+  Crown,
+  Trophy,
+  Medal,
+  Users,
+  TrendingUp,
+  Target,
+  Zap,
+} from "lucide-react";
 import useLeaderboardStore from "@/store/leaderboardStore";
 import useAuthStore from "@/store/authStore";
 
@@ -111,7 +119,9 @@ function LeaderboardPage() {
           return (
             <Button
               key={category.key}
-              variant={selectedCategory === category.key ? "default" : "outline"}
+              variant={
+                selectedCategory === category.key ? "default" : "outline"
+              }
               onClick={() => setSelectedCategory(category.key)}
               className="flex items-center gap-2"
             >

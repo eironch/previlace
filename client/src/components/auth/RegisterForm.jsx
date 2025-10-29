@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import Input from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import {
@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
+} from "@/components/ui/card";
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
 

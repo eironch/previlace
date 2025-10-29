@@ -16,7 +16,7 @@ import {
   Loader,
   CheckCircle,
 } from "lucide-react";
-import Button from "../ui/Button";
+import Button from "../ui/button";
 import Input from "../ui/Input";
 import Select from "../ui/Select";
 
@@ -26,8 +26,14 @@ function QuestionList({
   showReviewActions = false,
   onSelectForReview,
 }) {
-  const { questions, pagination, isLoading, deleteQuestion, duplicateQuestion, sendBackToReview } =
-    useQuestionStore();
+  const {
+    questions,
+    pagination,
+    isLoading,
+    deleteQuestion,
+    duplicateQuestion,
+    sendBackToReview,
+  } = useQuestionStore();
 
   const [showFilters, setShowFilters] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -148,7 +154,7 @@ function QuestionList({
     <div className="space-y-6">
       <div className="flex gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
           <Input
             placeholder="Search questions..."
             className="pl-10"
@@ -209,7 +215,10 @@ function QuestionList({
               { value: "", label: "All Categories" },
               { value: "Vocabulary", label: "Vocabulary" },
               { value: "Grammar", label: "Grammar" },
-              { value: "Reading Comprehension", label: "Reading Comprehension" },
+              {
+                value: "Reading Comprehension",
+                label: "Reading Comprehension",
+              },
               { value: "Mathematics", label: "Mathematics" },
               { value: "General Information", label: "General Information" },
               { value: "Clerical", label: "Clerical" },
@@ -360,7 +369,7 @@ function QuestionList({
                   {question.reviewHistory &&
                     question.reviewHistory.length > 0 && (
                       <div className="mt-3 space-y-2 border-t pt-3">
-                        <p className="text-xs font-medium uppercase text-gray-500">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Review History
                         </p>
                         {question.reviewHistory.map((review, idx) => (
@@ -391,7 +400,9 @@ function QuestionList({
                                     : "Changes Requested"}
                               </span>
                               {review.notes && (
-                                <p className="mt-1 text-gray-600">{review.notes}</p>
+                                <p className="mt-1 text-gray-600">
+                                  {review.notes}
+                                </p>
                               )}
                             </div>
                             <div className="text-right text-gray-500">
@@ -400,7 +411,9 @@ function QuestionList({
                                 {review.reviewerId?.lastName}
                               </p>
                               <p>
-                                {new Date(review.reviewedAt).toLocaleDateString()}
+                                {new Date(
+                                  review.reviewedAt
+                                ).toLocaleDateString()}
                               </p>
                             </div>
                           </div>
@@ -416,10 +429,7 @@ function QuestionList({
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">
                 Showing {(pagination.currentPage - 1) * 20 + 1} to{" "}
-                {Math.min(
-                  pagination.currentPage * 20,
-                  pagination.totalItems
-                )}{" "}
+                {Math.min(pagination.currentPage * 20, pagination.totalItems)}{" "}
                 of {pagination.totalItems} questions
               </div>
 
@@ -442,18 +452,22 @@ function QuestionList({
       )}
 
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
           <div className="rounded-lg bg-white p-6 shadow-lg">
             <div className="mb-4 flex items-center gap-2">
               {showReviewActions ? (
                 <>
                   <AlertTriangle className="h-5 w-5 text-red-600" />
-                  <h3 className="text-lg font-semibold text-black">Delete Question</h3>
+                  <h3 className="text-lg font-semibold text-black">
+                    Delete Question
+                  </h3>
                 </>
               ) : (
                 <>
                   <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                  <h3 className="text-lg font-semibold text-black">Send Back to Review</h3>
+                  <h3 className="text-lg font-semibold text-black">
+                    Send Back to Review
+                  </h3>
                 </>
               )}
             </div>
@@ -493,7 +507,7 @@ function QuestionList({
       )}
 
       {duplicateConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
           <div className="rounded-lg bg-white p-6 shadow-lg">
             <div className="mb-4 flex items-center gap-2">
               <Copy className="h-5 w-5 text-black" />
@@ -515,7 +529,7 @@ function QuestionList({
               <Button
                 onClick={handleDuplicateConfirm}
                 disabled={duplicateLoading}
-                className="bg-black text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="bg-black text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
               >
                 {duplicateLoading ? (
                   <Loader className="h-4 w-4 animate-spin" />

@@ -11,7 +11,7 @@ import {
   Target,
   ArrowLeft,
 } from "lucide-react";
-import Button from "../ui/Button";
+import Button from "../ui/button";
 import Input from "../ui/Input";
 import Select from "../ui/Select";
 
@@ -33,7 +33,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "grammar",
     name: "Grammar",
-    subjectArea: "Verbal Ability", 
+    subjectArea: "Verbal Ability",
     description: "Sentence structure, parts of speech, and language rules",
     icon: FileText,
     examLevel: "Both",
@@ -50,7 +50,7 @@ const QUESTION_CATEGORIES = [
     subjectArea: "Verbal Ability",
     description: "Understanding and analyzing written passages",
     icon: Book,
-    examLevel: "Both", 
+    examLevel: "Both",
     difficulty: "Intermediate",
     hasOptions: true,
     maxOptions: 4,
@@ -122,11 +122,16 @@ function QuestionTypeSelection({ onSelectType, onBack }) {
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const filteredCategories = QUESTION_CATEGORIES.filter((category) => {
-    const matchesSearch = category.name.toLowerCase().includes(search.toLowerCase()) ||
-                         category.description.toLowerCase().includes(search.toLowerCase());
-    const matchesLevel = !examLevel || category.examLevel === examLevel || category.examLevel === "Both";
-    const matchesCategory = !selectedCategory || category.id === selectedCategory;
-    
+    const matchesSearch =
+      category.name.toLowerCase().includes(search.toLowerCase()) ||
+      category.description.toLowerCase().includes(search.toLowerCase());
+    const matchesLevel =
+      !examLevel ||
+      category.examLevel === examLevel ||
+      category.examLevel === "Both";
+    const matchesCategory =
+      !selectedCategory || category.id === selectedCategory;
+
     return matchesSearch && matchesLevel && matchesCategory;
   });
 
@@ -145,13 +150,15 @@ function QuestionTypeSelection({ onSelectType, onBack }) {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-black">Create Question</h1>
-            <p className="text-gray-600">Choose a question type to get started</p>
+            <p className="text-gray-600">
+              Choose a question type to get started
+            </p>
           </div>
         </div>
 
         <div className="mb-8 flex gap-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
+            <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
             <Input
               placeholder="Search question types..."
               className="pl-10"
@@ -202,11 +209,17 @@ function QuestionTypeSelection({ onSelectType, onBack }) {
                       <IconComponent className="h-6 w-6 text-black" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-black">{category.name}</h3>
-                      <p className="text-sm text-gray-500">{category.subjectArea}</p>
+                      <h3 className="font-semibold text-black">
+                        {category.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {category.subjectArea}
+                      </p>
                     </div>
                   </div>
-                  <p className="mb-2 text-sm text-gray-600">{category.description}</p>
+                  <p className="mb-2 text-sm text-gray-600">
+                    {category.description}
+                  </p>
                   <div className="flex items-center gap-2">
                     <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
                       {category.examLevel}

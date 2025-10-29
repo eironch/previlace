@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin, Users, Loader } from "lucide-react";
-import { Button } from "../ui/button";
+import Button from "../ui/button";
 import { Input } from "../ui/input";
 import useStudyGroupStore from "../../store/studyGroupStore";
 
@@ -47,7 +47,7 @@ export default function StudyGroupBrowser() {
         <div className="mb-8 flex flex-col gap-4 rounded-lg bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+              <Search className="absolute top-3 left-3 h-5 w-5 text-slate-400" />
               <Input
                 placeholder="Search groups..."
                 value={search}
@@ -93,7 +93,7 @@ export default function StudyGroupBrowser() {
             </div>
 
             {publicGroups.length === 0 && (
-              <div className="text-center py-12">
+              <div className="py-12 text-center">
                 <p className="text-slate-600">
                   No groups found. Try adjusting your search.
                 </p>
@@ -110,18 +110,19 @@ export default function StudyGroupBrowser() {
                   Previous
                 </Button>
 
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(
-                  (pageNum) => (
-                    <Button
-                      key={pageNum}
-                      variant={pageNum === page ? "default" : "outline"}
-                      onClick={() => setPage(pageNum)}
-                      className="min-w-10"
-                    >
-                      {pageNum}
-                    </Button>
-                  )
-                )}
+                {Array.from(
+                  { length: pagination.totalPages },
+                  (_, i) => i + 1
+                ).map((pageNum) => (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === page ? "default" : "outline"}
+                    onClick={() => setPage(pageNum)}
+                    className="min-w-10"
+                  >
+                    {pageNum}
+                  </Button>
+                ))}
 
                 <Button
                   variant="outline"

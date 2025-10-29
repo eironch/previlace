@@ -8,7 +8,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import StandardHeader from "@/components/ui/StandardHeader";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import useExamStore from "@/store/examStore";
 
 function ExamReadinessPage() {

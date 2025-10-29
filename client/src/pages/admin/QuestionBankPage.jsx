@@ -4,7 +4,7 @@ import { useQuestionBankStore } from "@/store/questionBankStore";
 import QuestionTypeSelection from "@/components/questionBank/QuestionTypeSelection";
 import QuestionCreationForm from "@/components/questionBank/QuestionCreationForm";
 import QuestionList from "@/components/questionBank/QuestionList";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 
 function QuestionBankPage() {
   const [currentView, setCurrentView] = useState("questions");

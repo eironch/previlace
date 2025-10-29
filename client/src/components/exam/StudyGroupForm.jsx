@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Users, Settings, MessageSquare, Calendar } from "lucide-react";
-import { Button } from "../ui/button";
+import Button from "../ui/button";
 import { Input } from "../ui/input";
 import { TextArea } from "../ui/TextArea";
 import useStudyGroupStore from "../../store/studyGroupStore";
@@ -65,10 +65,12 @@ export default function StudyGroupForm({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
       <div className="max-h-screen w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
         <div className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-6">
-          <h2 className="text-2xl font-bold text-slate-900">Create Study Group</h2>
+          <h2 className="text-2xl font-bold text-slate-900">
+            Create Study Group
+          </h2>
           <button
             onClick={onClose}
             className="rounded-lg p-1 text-slate-600 hover:bg-slate-100"
@@ -241,9 +243,7 @@ export default function StudyGroupForm({ onClose, onSuccess }) {
                       onClick={() =>
                         setFormData({
                           ...formData,
-                          rules: formData.rules.filter(
-                            (_, idx) => idx !== i
-                          ),
+                          rules: formData.rules.filter((_, idx) => idx !== i),
                         })
                       }
                       className="text-slate-400 hover:text-slate-600"

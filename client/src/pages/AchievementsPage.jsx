@@ -2,7 +2,16 @@ import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Award, Target, Zap, Star, Crown, Medal, Gift } from "lucide-react";
+import {
+  Trophy,
+  Award,
+  Target,
+  Zap,
+  Star,
+  Crown,
+  Medal,
+  Gift,
+} from "lucide-react";
 import useAchievementStore from "@/store/achievementStore";
 
 function AchievementsPage() {
@@ -162,7 +171,7 @@ function AchievementsPage() {
                   key={userAchievement._id}
                   className={`relative overflow-hidden ${getRarityColor(achievement.rarityLevel)}`}
                 >
-                  <div className="absolute right-2 top-2">
+                  <div className="absolute top-2 right-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
                       <Trophy className="h-4 w-4 text-white" />
                     </div>
@@ -170,7 +179,7 @@ function AchievementsPage() {
 
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="rounded-lg bg-white bg-opacity-50 p-3">
+                      <div className="bg-opacity-50 rounded-lg bg-white p-3">
                         <Icon className="h-8 w-8" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -184,7 +193,7 @@ function AchievementsPage() {
                         <div className="flex items-center justify-between">
                           <Badge
                             variant="outline"
-                            className="capitalize bg-white bg-opacity-50"
+                            className="bg-opacity-50 bg-white capitalize"
                           >
                             {achievement.rarityLevel}
                           </Badge>
@@ -302,7 +311,7 @@ function AchievementsPage() {
                         <div className="flex items-center justify-between">
                           <Badge
                             variant="outline"
-                            className="bg-gray-100 capitalize text-gray-600"
+                            className="bg-gray-100 text-gray-600 capitalize"
                           >
                             {achievement.rarityLevel}
                           </Badge>
