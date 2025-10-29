@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Trophy, Clock, Target, User } from "lucide-react";
-import Button from "../ui/button1";
+import Button from "../ui/Button";
 import useChallengeStore from "../../store/challengeStore";
 import useAuthStore from "../../store/authStore";
 
