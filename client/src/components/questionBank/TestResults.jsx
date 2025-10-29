@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTestStore } from "../../store/testStore";
 import MathRenderer from "../ui/MathRenderer";
-import Button from "../ui/button1";
+import Button from "../ui/Button";
 import {
   Trophy,
   Target,

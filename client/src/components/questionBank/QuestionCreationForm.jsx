@@ -9,8 +9,8 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import Button from "../ui/button1";
-import Input from "../ui/input1";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
 import TextArea from "../ui/TextArea";
 import Select from "../ui/Select";
 import QuestionPreview from "./QuestionPreview";

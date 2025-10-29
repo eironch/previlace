@@ -4,7 +4,7 @@ import TestQuestion from "./TestQuestion";
 import TestTimer from "./TestTimer";
 import TestNavigation from "./TestNavigation";
 import TestResults from "./TestResults";
-import Button from "../ui/button1";
+import Button from "../ui/Button";
 import { Play, Settings } from "lucide-react";
 
 function TestInterface() {

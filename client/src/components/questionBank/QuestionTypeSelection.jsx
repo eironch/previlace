@@ -11,8 +11,8 @@ import {
   Target,
   ArrowLeft,
 } from "lucide-react";
-import Button from "../ui/button1";
-import Input from "../ui/input1";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
 import Select from "../ui/Select";
 
 const QUESTION_CATEGORIES = [
