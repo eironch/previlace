@@ -3,14 +3,19 @@ import { ClipboardCheck, RefreshCw, Loader, CheckCircle } from "lucide-react";
 import { useReviewQuestionStore } from "../../store/reviewQuestionStore";
 import QuestionList from "../questionBank/QuestionList";
 import ReviewActionModal from "../questionBank/ReviewActionModal";
-import Button from "../ui/Button";
+import Button from "../ui/button";
 
 function ReviewManager() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const { fetchQuestions, fetchQuestionCounts, approveQuestion, rejectQuestion, requestChanges } =
-    useReviewQuestionStore();
+  const {
+    fetchQuestions,
+    fetchQuestionCounts,
+    approveQuestion,
+    rejectQuestion,
+    requestChanges,
+  } = useReviewQuestionStore();
 
   async function refreshData() {
     setIsRefreshing(true);
@@ -50,7 +55,9 @@ function ReviewManager() {
           <ClipboardCheck className="h-6 w-6 text-black" />
           <div>
             <h2 className="text-xl font-semibold text-black">Review Queue</h2>
-            <p className="text-gray-600">Review and approve questions awaiting publication</p>
+            <p className="text-gray-600">
+              Review and approve questions awaiting publication
+            </p>
           </div>
         </div>
         <Button

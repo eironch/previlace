@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
+} from "@/components/ui/card";
 
 function ResumeBuilderPage() {
   const navigate = useNavigate();

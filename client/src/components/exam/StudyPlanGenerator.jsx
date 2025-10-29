@@ -1,11 +1,18 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
+import Button from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
-import { Calendar, Target, Clock, CheckCircle, AlertCircle, BookOpen } from "lucide-react";
+import {
+  Calendar,
+  Target,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  BookOpen,
+} from "lucide-react";
 import useExamStore from "../../store/examStore";
 
 function StudyPlanGenerator() {
@@ -22,7 +29,7 @@ function StudyPlanGenerator() {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
-      day: "numeric"
+      day: "numeric",
     });
   }
 
@@ -36,8 +43,10 @@ function StudyPlanGenerator() {
   function getWeekProgress(weekNumber, totalWeeks) {
     const today = new Date();
     const planStart = new Date(studyPlan?.startDate);
-    const currentWeek = Math.ceil((today - planStart) / (1000 * 60 * 60 * 24 * 7));
-    
+    const currentWeek = Math.ceil(
+      (today - planStart) / (1000 * 60 * 60 * 24 * 7)
+    );
+
     if (weekNumber < currentWeek) return 100;
     if (weekNumber === currentWeek) return 50;
     return 0;
@@ -56,11 +65,14 @@ function StudyPlanGenerator() {
 
   if (!studyPlan) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="mx-auto max-w-4xl p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Study Plan Generator</h1>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">
+            Study Plan Generator
+          </h1>
           <p className="text-gray-600">
-            Create a personalized study plan based on your target exam date and performance
+            Create a personalized study plan based on your target exam date and
+            performance
           </p>
         </div>
 
@@ -79,18 +91,24 @@ function StudyPlanGenerator() {
                 type="date"
                 value={targetDate}
                 onChange={(e) => setTargetDate(e.target.value)}
-                min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
-                max={new Date(Date.now() + 365 * 86400000).toISOString().split('T')[0]}
+                min={
+                  new Date(Date.now() + 86400000).toISOString().split("T")[0]
+                }
+                max={
+                  new Date(Date.now() + 365 * 86400000)
+                    .toISOString()
+                    .split("T")[0]
+                }
               />
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{error}</p>
+              <div className="rounded-md border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
 
-            <Button 
+            <Button
               onClick={handleGenerate}
               disabled={!targetDate || loading}
               className="w-full"
@@ -99,9 +117,11 @@ function StudyPlanGenerator() {
               {loading ? "Generating Plan..." : "Generate Study Plan"}
             </Button>
 
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">What Your Study Plan Includes:</h3>
-              <ul className="space-y-1 text-blue-800 text-sm">
+            <div className="rounded-lg bg-blue-50 p-4">
+              <h3 className="mb-2 font-semibold text-blue-900">
+                What Your Study Plan Includes:
+              </h3>
+              <ul className="space-y-1 text-sm text-blue-800">
                 <li>• Weekly study schedule tailored to your weak areas</li>
                 <li>• Daily question targets and study time goals</li>
                 <li>• Progress milestones and assessments</li>
@@ -116,24 +136,32 @@ function StudyPlanGenerator() {
   }
 
   const daysRemaining = getDaysRemaining(studyPlan.targetExamDate);
-  const currentWeek = Math.ceil((new Date() - new Date(studyPlan.startDate)) / (1000 * 60 * 60 * 24 * 7));
+  const currentWeek = Math.ceil(
+    (new Date() - new Date(studyPlan.startDate)) / (1000 * 60 * 60 * 24 * 7)
+  );
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Study Plan</h1>
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+          Your Study Plan
+        </h1>
         <p className="text-gray-600">
           Personalized study schedule for your Civil Service Examination
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Days Remaining</p>
-                <p className="text-2xl font-bold text-gray-900">{daysRemaining}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Days Remaining
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {daysRemaining}
+                </p>
               </div>
               <Calendar className="h-8 w-8 text-blue-600" />
             </div>
@@ -158,8 +186,12 @@ function StudyPlanGenerator() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Daily Study Time</p>
-                <p className="text-2xl font-bold text-gray-900">{studyPlan.dailyStudyTime}m</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Daily Study Time
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {studyPlan.dailyStudyTime}m
+                </p>
               </div>
               <Clock className="h-8 w-8 text-purple-600" />
             </div>
@@ -170,8 +202,12 @@ function StudyPlanGenerator() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Readiness Score</p>
-                <p className="text-2xl font-bold text-gray-900">{studyPlan.currentReadinessScore}%</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Readiness Score
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {studyPlan.currentReadinessScore}%
+                </p>
               </div>
               <BookOpen className="h-8 w-8 text-yellow-600" />
             </div>
@@ -179,7 +215,7 @@ function StudyPlanGenerator() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Weekly Schedule</CardTitle>
@@ -187,23 +223,32 @@ function StudyPlanGenerator() {
           <CardContent>
             <div className="space-y-4">
               {studyPlan.weeklySchedule?.map((week) => (
-                <div key={week.week} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
+                <div key={week.week} className="rounded-lg border p-4">
+                  <div className="mb-3 flex items-center justify-between">
                     <h3 className="font-semibold">Week {week.week}</h3>
-                    <Badge variant={week.week === currentWeek ? "default" : "outline"}>
+                    <Badge
+                      variant={
+                        week.week === currentWeek ? "default" : "outline"
+                      }
+                    >
                       {week.focus}
                     </Badge>
                   </div>
-                  
+
                   <div className="mb-2">
-                    <Progress 
-                      value={getWeekProgress(week.week, studyPlan.weeklySchedule.length)} 
+                    <Progress
+                      value={getWeekProgress(
+                        week.week,
+                        studyPlan.weeklySchedule.length
+                      )}
                       className="h-2"
                     />
                   </div>
 
                   <div className="text-sm text-gray-600">
-                    <p><strong>Goals:</strong> {week.goals?.join(", ")}</p>
+                    <p>
+                      <strong>Goals:</strong> {week.goals?.join(", ")}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -218,7 +263,10 @@ function StudyPlanGenerator() {
           <CardContent>
             <div className="space-y-4">
               {studyPlan.milestones?.map((milestone) => (
-                <div key={milestone.week} className="flex items-start gap-3 p-3 border rounded-lg">
+                <div
+                  key={milestone.week}
+                  className="flex items-start gap-3 rounded-lg border p-3"
+                >
                   <div className="mt-1">
                     {milestone.completed ? (
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -228,14 +276,25 @@ function StudyPlanGenerator() {
                   </div>
                   <div className="flex-1">
                     <h4 className="font-medium">{milestone.description}</h4>
-                    <p className="text-sm text-gray-600">Week {milestone.week}, Day {milestone.day}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline">{milestone.assessmentType}</Badge>
+                    <p className="text-sm text-gray-600">
+                      Week {milestone.week}, Day {milestone.day}
+                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Badge variant="outline">
+                        {milestone.assessmentType}
+                      </Badge>
                       <Badge variant="secondary">
                         Target: {milestone.targetReadinessScore}%
                       </Badge>
                       {milestone.actualScore && (
-                        <Badge variant={milestone.actualScore >= milestone.targetReadinessScore ? "success" : "destructive"}>
+                        <Badge
+                          variant={
+                            milestone.actualScore >=
+                            milestone.targetReadinessScore
+                              ? "success"
+                              : "destructive"
+                          }
+                        >
                           Actual: {milestone.actualScore}%
                         </Badge>
                       )}
@@ -256,7 +315,10 @@ function StudyPlanGenerator() {
           <CardContent>
             <div className="space-y-3">
               {studyPlan.recommendations.map((rec, index) => (
-                <div key={index} className={`p-4 rounded-lg border ${getPriorityColor(rec.priority)}`}>
+                <div
+                  key={index}
+                  className={`rounded-lg border p-4 ${getPriorityColor(rec.priority)}`}
+                >
                   <div className="flex items-start gap-3">
                     <Badge variant="outline" className="capitalize">
                       {rec.priority} Priority
@@ -264,7 +326,7 @@ function StudyPlanGenerator() {
                     <div className="flex-1">
                       <p className="font-medium">{rec.message}</p>
                       {rec.actions && rec.actions.length > 0 && (
-                        <ul className="mt-2 text-sm space-y-1">
+                        <ul className="mt-2 space-y-1 text-sm">
                           {rec.actions.map((action, actionIndex) => (
                             <li key={actionIndex}>• {action}</li>
                           ))}
@@ -287,10 +349,7 @@ function StudyPlanGenerator() {
         >
           Generate New Plan
         </Button>
-        <Button
-          onClick={() => window.location.reload()}
-          className="flex-1"
-        >
+        <Button onClick={() => window.location.reload()} className="flex-1">
           Update Progress
         </Button>
       </div>

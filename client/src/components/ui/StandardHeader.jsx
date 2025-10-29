@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { ArrowLeft, LogOut } from "lucide-react";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 
 function StandardHeader({ title, showBack = false, backPath = "/dashboard" }) {
   const navigate = useNavigate();

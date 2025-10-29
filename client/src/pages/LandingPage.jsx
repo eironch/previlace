@@ -1,10 +1,10 @@
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/Card";
+} from "@/components/ui/card";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store/appStore";

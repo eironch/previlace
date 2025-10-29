@@ -1,6 +1,12 @@
 import { useState } from "react";
-import { AlertTriangle, CheckCircle, XCircle, Send, Loader } from "lucide-react";
-import Button from "../ui/Button";
+import {
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Send,
+  Loader,
+} from "lucide-react";
+import Button from "../ui/button";
 
 function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
   const [action, setAction] = useState(null);
@@ -24,28 +30,28 @@ function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
   if (!question) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg">
         <div className="mb-6 flex items-center justify-between border-b pb-4">
           <h3 className="text-lg font-semibold text-black">Review Question</h3>
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
             ✕
           </Button>
         </div>
 
         <div className="mb-6 space-y-4">
           <div>
-            <p className="text-xs font-medium uppercase text-gray-500">Question</p>
+            <p className="text-xs font-medium text-gray-500 uppercase">
+              Question
+            </p>
             <p className="mt-2 text-base text-black">{question.questionText}</p>
           </div>
 
           {question.options && question.options.length > 0 && (
             <div>
-              <p className="text-xs font-medium uppercase text-gray-500">Options</p>
+              <p className="text-xs font-medium text-gray-500 uppercase">
+                Options
+              </p>
               <div className="mt-2 space-y-2">
                 {question.options.map((option, idx) => (
                   <div
@@ -73,22 +79,30 @@ function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
           )}
 
           <div>
-            <p className="text-xs font-medium uppercase text-gray-500">Explanation</p>
+            <p className="text-xs font-medium text-gray-500 uppercase">
+              Explanation
+            </p>
             <p className="mt-2 text-sm text-gray-700">{question.explanation}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 border-t pt-4 md:grid-cols-4">
             <div>
               <p className="text-xs text-gray-500">Difficulty</p>
-              <p className="text-sm font-medium text-black">{question.difficulty}</p>
+              <p className="text-sm font-medium text-black">
+                {question.difficulty}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Category</p>
-              <p className="text-sm font-medium text-black">{question.category}</p>
+              <p className="text-sm font-medium text-black">
+                {question.category}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Exam Level</p>
-              <p className="text-sm font-medium text-black">{question.examLevel}</p>
+              <p className="text-sm font-medium text-black">
+                {question.examLevel}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Quality Score</p>
@@ -183,11 +197,7 @@ function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
         )}
 
         <div className="flex justify-end gap-3 border-t pt-6">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
 
@@ -212,7 +222,7 @@ function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
                     : action === "rejected"
                       ? "bg-red-600 hover:bg-red-700"
                       : "bg-yellow-600 hover:bg-yellow-700"
-                } disabled:bg-gray-400 disabled:cursor-not-allowed`}
+                } disabled:cursor-not-allowed disabled:bg-gray-400`}
               >
                 {isSubmitting ? (
                   <Loader className="h-4 w-4 animate-spin" />

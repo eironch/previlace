@@ -9,7 +9,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import Button from "../ui/Button";
+import Button from "../ui/button";
 import Input from "../ui/Input";
 import TextArea from "../ui/TextArea";
 import Select from "../ui/Select";
@@ -33,7 +33,9 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
     subjectArea: questionType.subjectArea,
     category: questionType.name,
     examLevel:
-      questionType.examLevel === "Both" ? "Professional" : questionType.examLevel,
+      questionType.examLevel === "Both"
+        ? "Professional"
+        : questionType.examLevel,
     language: "English",
     tags: [],
     passageText: "",
@@ -92,7 +94,7 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
   function removeTag(tag) {
     updateFormData(
       "tags",
-      formData.tags.filter((t) => t !== tag),
+      formData.tags.filter((t) => t !== tag)
     );
   }
 
@@ -282,9 +284,9 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
               {formData.options.map((option, index) => (
                 <div
                   key={index}
-                  className={`cursor-pointer rounded-lg p-4 transition-all duration-200 hover:shadow-sm border-2 ${
+                  className={`cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 hover:shadow-sm ${
                     option.isCorrect
-                      ? "border-black ring-2 ring-black bg-white"
+                      ? "border-black bg-white ring-2 ring-black"
                       : "border-gray-300 bg-white"
                   }`}
                   onClick={() => updateOption(index, "isCorrect", true)}

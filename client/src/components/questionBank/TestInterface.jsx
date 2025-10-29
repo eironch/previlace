@@ -4,7 +4,7 @@ import TestQuestion from "./TestQuestion";
 import TestTimer from "./TestTimer";
 import TestNavigation from "./TestNavigation";
 import TestResults from "./TestResults";
-import Button from "../ui/Button";
+import Button from "../ui/button";
 import { Play, Settings } from "lucide-react";
 
 function TestInterface() {
@@ -34,7 +34,7 @@ function TestInterface() {
   useEffect(() => {
     return () => {
       if (isActive) {
-      resetTest();
+        resetTest();
       }
     };
   }, []);
@@ -68,8 +68,12 @@ function TestInterface() {
         <div className="mx-auto max-w-2xl px-6 py-12">
           <div className="rounded-lg bg-white p-8 shadow-sm">
             <div className="mb-8 text-center">
-              <h1 className="mb-2 text-3xl font-bold text-black">Start New Test</h1>
-              <p className="text-gray-600">Configure your practice test settings</p>
+              <h1 className="mb-2 text-3xl font-bold text-black">
+                Start New Test
+              </h1>
+              <p className="text-gray-600">
+                Configure your practice test settings
+              </p>
             </div>
 
             {error && (
@@ -80,7 +84,9 @@ function TestInterface() {
 
             <div className="space-y-6">
               <div>
-                <label className="mb-2 block text-sm font-medium text-black">Test Title</label>
+                <label className="mb-2 block text-sm font-medium text-black">
+                  Test Title
+                </label>
                 <input
                   type="text"
                   value={config.title}
@@ -92,7 +98,9 @@ function TestInterface() {
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-black">Exam Level</label>
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    Exam Level
+                  </label>
                   <select
                     value={config.examLevel}
                     onChange={(e) => updateConfig("examLevel", e.target.value)}
@@ -105,7 +113,9 @@ function TestInterface() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-black">Category</label>
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    Category
+                  </label>
                   <select
                     value={config.category}
                     onChange={(e) => updateConfig("category", e.target.value)}
@@ -115,31 +125,45 @@ function TestInterface() {
                     <option value="Mathematics">Mathematics</option>
                     <option value="Vocabulary">Vocabulary</option>
                     <option value="Grammar">Grammar</option>
-                    <option value="Reading Comprehension">Reading Comprehension</option>
-                    <option value="General Information">General Information</option>
+                    <option value="Reading Comprehension">
+                      Reading Comprehension
+                    </option>
+                    <option value="General Information">
+                      General Information
+                    </option>
                     <option value="Clerical">Clerical</option>
-                    <option value="Analytical Reasoning">Analytical Reasoning</option>
+                    <option value="Analytical Reasoning">
+                      Analytical Reasoning
+                    </option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-black">Subject Area</label>
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    Subject Area
+                  </label>
                   <select
                     value={config.subjectArea}
-                    onChange={(e) => updateConfig("subjectArea", e.target.value)}
+                    onChange={(e) =>
+                      updateConfig("subjectArea", e.target.value)
+                    }
                     className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:outline-none"
                   >
                     <option value="">All Subject Areas</option>
                     <option value="Verbal Ability">Verbal Ability</option>
                     <option value="Numerical Ability">Numerical Ability</option>
-                    <option value="General Information">General Information</option>
+                    <option value="General Information">
+                      General Information
+                    </option>
                     <option value="Clerical Ability">Clerical Ability</option>
                     <option value="Logic">Logic</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-black">Difficulty</label>
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    Difficulty
+                  </label>
                   <select
                     value={config.difficulty}
                     onChange={(e) => updateConfig("difficulty", e.target.value)}
@@ -153,25 +177,33 @@ function TestInterface() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-black">Number of Questions</label>
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    Number of Questions
+                  </label>
                   <input
                     type="number"
                     min="5"
                     max="50"
                     value={config.questionCount}
-                    onChange={(e) => updateConfig("questionCount", parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateConfig("questionCount", parseInt(e.target.value))
+                    }
                     className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-black">Time Limit (minutes)</label>
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    Time Limit (minutes)
+                  </label>
                   <input
                     type="number"
                     min="5"
                     max="180"
                     value={config.timeLimit / 60}
-                    onChange={(e) => updateConfig("timeLimit", parseInt(e.target.value) * 60)}
+                    onChange={(e) =>
+                      updateConfig("timeLimit", parseInt(e.target.value) * 60)
+                    }
                     className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:outline-none"
                   />
                 </div>
@@ -179,7 +211,7 @@ function TestInterface() {
 
               <Button
                 onClick={handleStartTest}
-                className="w-full flex items-center justify-center gap-2 py-3"
+                className="flex w-full items-center justify-center gap-2 py-3"
               >
                 <Play className="h-5 w-5" />
                 Start Test
@@ -210,13 +242,15 @@ function TestInterface() {
               <Settings className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-semibold text-black">{currentTest.title}</h1>
+              <h1 className="text-xl font-semibold text-black">
+                {currentTest.title}
+              </h1>
               <p className="text-sm text-gray-600">
                 Question {currentQuestionIndex + 1} of {testQuestions.length}
               </p>
             </div>
           </div>
-          
+
           <TestTimer />
         </div>
       </div>
@@ -226,7 +260,7 @@ function TestInterface() {
           <div className="lg:col-span-3">
             <TestQuestion question={currentQuestion} />
           </div>
-          
+
           <div className="lg:col-span-1">
             <TestNavigation />
           </div>

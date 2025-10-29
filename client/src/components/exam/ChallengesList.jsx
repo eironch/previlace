@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Trophy, Clock, Target, User } from "lucide-react";
-import { Button } from "../ui/button";
+import Button from "../ui/button";
 import useChallengeStore from "../../store/challengeStore";
 import useAuthStore from "../../store/authStore";
 
@@ -80,7 +80,7 @@ export default function ChallengesList() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-slate-600">
+          <div className="py-12 text-center text-slate-600">
             Loading challenges...
           </div>
         ) : (
@@ -147,7 +147,8 @@ export default function ChallengesList() {
 }
 
 function ChallengeCard({ challenge, status, onAccept, onDecline }) {
-  const isChallenger = challenge.challengerId?._id === useAuthStore((state) => state.user?._id);
+  const isChallenger =
+    challenge.challengerId?._id === useAuthStore((state) => state.user?._id);
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -191,11 +192,7 @@ function ChallengeCard({ challenge, status, onAccept, onDecline }) {
           >
             Accept
           </Button>
-          <Button
-            onClick={onDecline}
-            variant="outline"
-            className="flex-1"
-          >
+          <Button onClick={onDecline} variant="outline" className="flex-1">
             Decline
           </Button>
         </div>
@@ -212,8 +209,7 @@ function ChallengeCard({ challenge, status, onAccept, onDecline }) {
 
 function CompletedChallengeCard({ challenge }) {
   const isWinner =
-    challenge.winner?.toString() ===
-    useAuthStore((state) => state.user?._id);
+    challenge.winner?.toString() === useAuthStore((state) => state.user?._id);
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -255,7 +251,9 @@ function ScoreComparison({ label, score, opponentLabel, opponentScore }) {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-600">Score:</span>
-          <span className="font-semibold text-slate-900">{score?.percentage || 0}%</span>
+          <span className="font-semibold text-slate-900">
+            {score?.percentage || 0}%
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-600">Time:</span>

@@ -1,9 +1,17 @@
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Zap, Target, TrendingUp, Flame, Clock, CheckCircle } from "lucide-react";
+import {
+  Calendar,
+  Zap,
+  Target,
+  TrendingUp,
+  Flame,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
 import useStudyStreakStore from "@/store/studyStreakStore";
 
 function StudyStreakPage() {
@@ -127,7 +135,7 @@ function StudyStreakPage() {
               {getStreakTitle(currentStreak)}
             </Badge>
 
-            <div className="mt-6 rounded-lg bg-white bg-opacity-50 p-4">
+            <div className="bg-opacity-50 mt-6 rounded-lg bg-white p-4">
               <p className="text-sm font-medium text-gray-700">
                 {getMotivationalMessage(currentStreak, todayCompleted)}
               </p>

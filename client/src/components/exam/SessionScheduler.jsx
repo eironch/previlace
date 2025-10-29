@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Calendar, Clock, Users, X } from "lucide-react";
-import { Button } from "../ui/button";
+import Button from "../ui/button";
 import { Input } from "../ui/input";
 import { TextArea } from "../ui/TextArea";
 import useStudyGroupStore from "../../store/studyGroupStore";
@@ -51,7 +51,7 @@ export default function SessionScheduler({ groupId, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
       <div className="max-h-screen w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
         <div className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-6">
           <h2 className="text-2xl font-bold text-slate-900">
@@ -201,9 +201,7 @@ export default function SessionScheduler({ groupId, onClose, onSuccess }) {
                       onClick={() =>
                         setFormData({
                           ...formData,
-                          topics: formData.topics.filter(
-                            (_, idx) => idx !== i
-                          ),
+                          topics: formData.topics.filter((_, idx) => idx !== i),
                         })
                       }
                       className="hover:text-purple-900"
