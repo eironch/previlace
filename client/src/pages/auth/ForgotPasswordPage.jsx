@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Button from "@/components/ui/button1";
-import Input from "@/components/ui/input1";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card1";
+} from "@/components/ui/Card";
 import Spinner from "@/components/ui/spinner";
 
 export default function ForgotPasswordPage() {

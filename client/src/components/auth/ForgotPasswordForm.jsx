@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Button from "@/components/ui/button1";
-import Input from "@/components/ui/input1";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";

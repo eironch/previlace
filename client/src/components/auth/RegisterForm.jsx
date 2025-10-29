@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Button from "@/components/ui/button1";
-import Input from "@/components/ui/input1";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
 import {
   Card,
@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card1";
+} from "@/components/ui/Card";
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
 
