@@ -30,6 +30,7 @@ import leaderboardRoutes from "./src/routes/leaderboardRoutes.js";
 import challengeRoutes from "./src/routes/challengeRoutes.js";
 import studyGroupRoutes from "./src/routes/studyGroupRoutes.js";
 import seedRoutes from "./src/routes/seedRoutes.js";
+import testimonialRoutes from "./src/routes/testimonialRoutes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
@@ -136,6 +137,8 @@ app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/challenges", challengeRoutes);
 app.use("/api/study-groups", studyGroupRoutes);
 app.use("/api/seed", seedRoutes);
+app.use("/api/testimonials", testimonialRoutes);
+app.use("/api/public/testimonials", testimonialRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

@@ -14,6 +14,7 @@ import useAdminSocket from "../hooks/useAdminSocket";
 import UserManagement from "../components/admin/UserManagement";
 import QuestionBankManager from "../components/questionBank/QuestionBankManager";
 import ReviewManager from "../components/admin/ReviewManager";
+import TestimonialsManager from "../components/admin/TestimonialsManager";
 
 function AdminPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -29,12 +30,15 @@ function AdminPage() {
 
   const optimizedStats = useMemo(() => {
     if (!stats?.overview) return null;
-    
+
     const current = stats.overview;
     const previous = stats.previousMonth || {
       totalUsers: Math.max(0, Math.floor(current.totalUsers * 0.85)),
       activeLearners: Math.max(0, Math.floor(current.activeLearners * 0.80)),
-      completedProfiles: Math.max(0, Math.floor(current.completedProfiles * 0.75)),
+      completedProfiles: Math.max(
+        0,
+        Math.floor(current.completedProfiles * 0.75)
+      ),
       activeStudents: Math.max(0, Math.floor(current.activeStudents * 0.82)),
     };
 
@@ -62,9 +66,18 @@ function AdminPage() {
       ),
       growth: {
         totalUsers: calculateGrowth(current.totalUsers, previous.totalUsers),
-        activeLearners: calculateGrowth(current.activeLearners, previous.activeLearners),
-        completedProfiles: calculateGrowth(current.completedProfiles, previous.completedProfiles),
-        activeStudents: calculateGrowth(current.activeStudents, previous.activeStudents),
+        activeLearners: calculateGrowth(
+          current.activeLearners,
+          previous.activeLearners
+        ),
+        completedProfiles: calculateGrowth(
+          current.completedProfiles,
+          previous.completedProfiles
+        ),
+        activeStudents: calculateGrowth(
+          current.activeStudents,
+          previous.activeStudents
+        ),
       },
     };
   }, [stats]);
@@ -103,11 +116,12 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8 flex items-center justify-between">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Header - Made flex-col on small screens, then items-center/justify-between on large screens */}
+        <div className="mb-8 flex flex-col items-start justify-between sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center space-x-3">
-              <h1 className="text-3xl font-bold text-black">
+              <h1 className="text-2xl font-bold text-black sm:text-3xl">
                 Admin Dashboard
               </h1>
               <div
@@ -121,7 +135,8 @@ function AdminPage() {
               Monitor system performance and user engagement
             </p>
           </div>
-          <div className="flex items-center space-x-4">
+          {/* User Info and Sign Out - Added mt-4 for small screen spacing */}
+          <div className="mt-4 flex items-center space-x-4 sm:mt-0">
             <div className="text-right">
               <p className="text-sm font-medium text-black">
                 {user?.firstName} {user?.lastName}
@@ -133,68 +148,57 @@ function AdminPage() {
               className="flex items-center space-x-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
             >
               <LogOut className="h-4 w-4" />
-              <span>Sign Out</span>
+              <span className="hidden sm:inline">Sign Out</span>
+              <span className="inline sm:hidden">Out</span>
             </button>
           </div>
         </div>
 
-        <div className="mb-8 border-b border-gray-200">
+        {/* Navigation Tabs - Added overflow-x-auto for small screens to prevent wrap/break */}
+        <div className="mb-8 overflow-x-auto border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "dashboard"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "analytics"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              Performance Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab("users")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "users"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              User Management
-            </button>
-            <button
-              onClick={() => setActiveTab("questionbank")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "questionbank"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              Question Bank
-            </button>
-            <button
-              onClick={() => setActiveTab("review")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "review"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              Review
-            </button>
+            <TabButton
+              title="Dashboard"
+              activeTab={activeTab}
+              tabName="dashboard"
+              setActiveTab={setActiveTab}
+            />
+            <TabButton
+              title="Performance Analytics"
+              activeTab={activeTab}
+              tabName="analytics"
+              setActiveTab={setActiveTab}
+            />
+            <TabButton
+              title="User Management"
+              activeTab={activeTab}
+              tabName="users"
+              setActiveTab={setActiveTab}
+            />
+            <TabButton
+              title="Question Bank"
+              activeTab={activeTab}
+              tabName="questionbank"
+              setActiveTab={setActiveTab}
+            />
+            <TabButton
+              title="Review"
+              activeTab={activeTab}
+              tabName="review"
+              setActiveTab={setActiveTab}
+            />
+            <TabButton
+              title="Testimonials"
+              activeTab={activeTab}
+              tabName="testimonials"
+              setActiveTab={setActiveTab}
+            />
           </nav>
         </div>
 
         {activeTab === "dashboard" && (
           <div className="space-y-8">
+            {/* Stats Cards: 1 column on small, 2 on medium, 4 on large */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               <StatsCard
                 title="Total Users"
@@ -222,16 +226,19 @@ function AdminPage() {
               />
             </div>
 
+            {/* Charts: 1 column on small, 2 on large */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <ExamTypeChart data={stats?.examTypes || []} />
               <EducationChart data={stats?.education || []} />
             </div>
 
+            {/* Recent Users & Trend: 1 column on small, 2 on large */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <RecentUsers users={recentUsers} />
               <RegistrationTrend data={stats?.monthlyRegistrations || []} />
             </div>
 
+            {/* Struggles & Study Modes: 1 column on small, 2 on large */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <StrugglesChart data={stats?.struggles || []} />
               <StudyModesChart data={stats?.studyModes || []} />
@@ -267,8 +274,26 @@ function AdminPage() {
         {activeTab === "questionbank" && <QuestionBankManager />}
 
         {activeTab === "review" && <ReviewManager />}
+
+        {activeTab === "testimonials" && <TestimonialsManager />}
       </div>
     </div>
+  );
+}
+
+// Helper component for Navigation Tabs
+function TabButton({ title, activeTab, tabName, setActiveTab }) {
+  return (
+    <button
+      onClick={() => setActiveTab(tabName)}
+      className={`whitespace-nowrap border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
+        activeTab === tabName
+          ? "border-black text-black"
+          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+      }`}
+    >
+      {title}
+    </button>
   );
 }
 
@@ -326,8 +351,9 @@ function ExamTypeChart({ data }) {
               <span className="text-sm font-medium text-gray-700">
                 {item._id}
               </span>
-              <div className="flex items-center space-x-3">
-                <div className="h-2 w-32 rounded-full bg-gray-200">
+              <div className="flex w-full items-center space-x-3 sm:w-auto">
+                {/* Progress bar width made responsive with w-full on small screens */}
+                <div className="h-2 w-full rounded-full bg-gray-200 sm:w-32">
                   <div
                     className="h-2 rounded-full bg-black"
                     style={{ width: `${(item.count / maxCount) * 100}%` }}
@@ -365,8 +391,9 @@ function EducationChart({ data }) {
               <span className="text-sm font-medium text-gray-700">
                 {item._id}
               </span>
-              <div className="flex items-center space-x-3">
-                <div className="h-2 w-32 rounded-full bg-gray-200">
+              <div className="flex w-full items-center space-x-3 sm:w-auto">
+                {/* Progress bar width made responsive with w-full on small screens */}
+                <div className="h-2 w-full rounded-full bg-gray-200 sm:w-32">
                   <div
                     className="h-2 rounded-full bg-black"
                     style={{ width: `${(item.count / maxCount) * 100}%` }}
@@ -404,8 +431,9 @@ function StrugglesChart({ data }) {
               <span className="text-sm font-medium text-gray-700">
                 {item._id}
               </span>
-              <div className="flex items-center space-x-3">
-                <div className="h-2 w-32 rounded-full bg-gray-200">
+              <div className="flex w-full items-center space-x-3 sm:w-auto">
+                {/* Progress bar width made responsive with w-full on small screens */}
+                <div className="h-2 w-full rounded-full bg-gray-200 sm:w-32">
                   <div
                     className="h-2 rounded-full bg-black"
                     style={{ width: `${(item.count / maxCount) * 100}%` }}
@@ -445,8 +473,9 @@ function StudyModesChart({ data }) {
               <span className="text-sm font-medium text-gray-700">
                 {item._id}
               </span>
-              <div className="flex items-center space-x-3">
-                <div className="h-2 w-32 rounded-full bg-gray-200">
+              <div className="flex w-full items-center space-x-3 sm:w-auto">
+                {/* Progress bar width made responsive with w-full on small screens */}
+                <div className="h-2 w-full rounded-full bg-gray-200 sm:w-32">
                   <div
                     className="h-2 rounded-full bg-black"
                     style={{ width: `${(item.count / maxCount) * 100}%` }}
@@ -477,7 +506,7 @@ function RecentUsers({ users }) {
       </div>
       <div className="space-y-4">
         {users.length > 0 ? (
-          users.map((user) => (
+          users.slice(0, 5).map((user) => (
             <div
               key={user._id}
               className="flex items-center justify-between border-b border-gray-100 py-2 last:border-0"
@@ -489,7 +518,7 @@ function RecentUsers({ users }) {
                 <p className="text-xs text-gray-500">{user.email}</p>
               </div>
               <div className="text-right">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-end space-x-2">
                   <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600">
                     {user.examType || "No Type"}
                   </span>
@@ -535,14 +564,15 @@ function RegistrationTrend({ data }) {
               <span className="text-sm font-medium text-gray-700">
                 {new Date(
                   item._id.year,
-                  item._id.month - 1,
+                  item._id.month - 1
                 ).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "short",
                 })}
               </span>
-              <div className="flex items-center space-x-3">
-                <div className="h-2 w-32 rounded-full bg-gray-200">
+              <div className="flex w-full items-center space-x-3 sm:w-auto">
+                {/* Progress bar width made responsive with w-full on small screens */}
+                <div className="h-2 w-full rounded-full bg-gray-200 sm:w-32">
                   <div
                     className="h-2 rounded-full bg-black"
                     style={{ width: `${(item.count / maxCount) * 100}%` }}
