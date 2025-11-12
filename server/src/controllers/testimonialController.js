@@ -1,11 +1,20 @@
-// src/controllers/testimonialController.js (FINALIZED)
+// src/controllers/testimonialController.js (FINALIZED & CORRECTED)
 
 import Testimonial from '../models/Testimonial.js';
 import { AppError } from '../utils/AppError.js'; 
+import mongoose from 'mongoose'; // Needed for ObjectId checks, good practice
 
-// Helper function to update status and notes
+// --- HELPER FUNCTION ---
+
+/**
+ * @desc Helper function to update testimonial status, used by approve/reject/requestChanges
+ */
 const updateTestimonialStatus = async (id, status, adminNotes, req, res) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, error: 'Invalid testimonial ID.' });
+        }
+        
         const testimonial = await Testimonial.findById(id);
 
         if (!testimonial) {
@@ -14,6 +23,7 @@ const updateTestimonialStatus = async (id, status, adminNotes, req, res) => {
 
         testimonial.status = status;
         testimonial.adminNotes = adminNotes;
+        // Ensure admin ID is stored for accountability
         testimonial.approvedBy = req.user.id; 
 
         await testimonial.save();
@@ -24,22 +34,23 @@ const updateTestimonialStatus = async (id, status, adminNotes, req, res) => {
             message: `Testimonial status updated to '${status}'.`
         });
     } catch (err) {
-        console.error(err);
+        console.error("Error in updateTestimonialStatus:", err);
         res.status(500).json({ success: false, error: 'Server Error during status update' });
     }
 };
 
-// --- ROUTE HANDLERS ---
+// --- ROUTE HANDLERS (CRUD & Actions) ---
 
 /**
- * @desc    Get all APPROVED testimonials for public display
- * @route   GET /api/public/testimonials
- * @access  Public
+ * @desc Get all APPROVED testimonials for public display
+ * @route GET /api/public/testimonials/approved
+ * @access Public
  */
 const getApprovedTestimonials = async (req, res) => {
     try {
+        // Find only approved and select public-facing fields
         const testimonials = await Testimonial.find({ status: 'approved' })
-            .select('content userName userAvatar submittedAt') 
+            .select('content userName role rating userAvatar submittedAt') 
             .sort({ submittedAt: -1 })
             .limit(10); 
 
@@ -49,19 +60,28 @@ const getApprovedTestimonials = async (req, res) => {
             count: testimonials.length,
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, error: 'Server Error fetching approved testimonials' });
+        // 🚨 FIX: Explicitly set 500 status and return JSON. 
+        // This prevents the error from bubbling up to a generic HTML error handler.
+        console.error("Public Fetch Error:", err);
+        return res.status(500).json({ 
+            success: false, 
+            error: 'Internal Server Error while fetching public testimonials.' 
+        });
     }
 };
-
 /**
- * @desc    Get all testimonials (admin view)
- * @route   GET /api/testimonials
- * @access  Private (Admin only)
+ * @desc Get all testimonials (admin view)
+ * @route GET /api/testimonials
+ * @access Private (Admin only)
  */
 const getTestimonials = async (req, res) => {
     try {
-        const testimonials = await Testimonial.find({})
+        // Allows filtering by status via query param (e.g., ?status=pending)
+        const filter = req.query.status && req.query.status !== 'all' 
+            ? { status: req.query.status } 
+            : {};
+
+        const testimonials = await Testimonial.find(filter)
             .sort({ status: 1, submittedAt: -1 }) 
             .populate('user', 'email firstName lastName');
 
@@ -77,50 +97,23 @@ const getTestimonials = async (req, res) => {
 };
 
 /**
- * @desc    Approve a testimonial
- * @route   POST /api/testimonials/:id/approve
- * @access  Private (Admin only)
+ * @desc Submit a new testimonial
+ * @route POST /api/testimonials
+ * @access Private (Authenticated User)
  */
-const approveTestimonial = async (req, res) => { // 💡 ADDED DECLARATION
-    const { notes } = req.body;
-    await updateTestimonialStatus(req.params.id, 'approved', notes, req, res);
-};
-
-/**
- * @desc    Reject a testimonial
- * @route   POST /api/testimonials/:id/reject
- * @access  Private (Admin only)
- */
-const rejectTestimonial = async (req, res) => { // 💡 ADDED DECLARATION
-    const { notes } = req.body;
-    await updateTestimonialStatus(req.params.id, 'rejected', notes, req, res);
-};
-
-/**
- * @desc    Request changes on a testimonial
- * @route   POST /api/testimonials/:id/request-changes
- * @access  Private (Admin only)
- */
-const requestChanges = async (req, res) => { // 💡 ADDED DECLARATION
-    const { notes } = req.body;
-    await updateTestimonialStatus(req.params.id, 'changes_requested', notes, req, res);
-};
-
-/**
- * @desc    Submit a new testimonial
- * @route   POST /api/testimonials
- * @access  Private (Authenticated User)
- */
-const submitTestimonial = async (req, res) => { // 💡 ADDED DECLARATION
+const submitTestimonial = async (req, res) => {
     try {
-        const { content } = req.body;
+        // ✅ CRITICAL FIX: Destructure role and rating from req.body
+        const { content, role, rating } = req.body; 
         
         const newTestimonial = await Testimonial.create({
             content,
+            role, 
+            rating, 
             user: req.user.id,
             userName: `${req.user.firstName} ${req.user.lastName}`,
             userAvatar: req.user.avatarUrl || '',
-            status: 'pending'
+            status: 'pending' // Always defaults to pending
         });
 
         res.status(201).json({ success: true, data: newTestimonial });
@@ -135,16 +128,40 @@ const submitTestimonial = async (req, res) => { // 💡 ADDED DECLARATION
 };
 
 /**
- * @desc    Update a testimonial (Admin editing content)
- * @route   PUT /api/testimonials/:id
- * @access  Private (Admin only)
+ * @desc Approve a testimonial
+ */
+const approveTestimonial = async (req, res) => {
+    const { notes } = req.body;
+    await updateTestimonialStatus(req.params.id, 'approved', notes, req, res);
+};
+
+/**
+ * @desc Reject a testimonial
+ */
+const rejectTestimonial = async (req, res) => {
+    const { notes } = req.body;
+    await updateTestimonialStatus(req.params.id, 'rejected', notes, req, res);
+};
+
+/**
+ * @desc Request changes on a testimonial
+ */
+const requestChanges = async (req, res) => {
+    const { notes } = req.body;
+    await updateTestimonialStatus(req.params.id, 'changes_requested', notes, req, res);
+};
+
+/**
+ * @desc Update a testimonial (Admin editing content)
+ * @route PUT /api/testimonials/:id
+ * @access Private (Admin only)
  */
 const updateTestimonial = async (req, res, next) => {
-    const { content, userName, role } = req.body;
+    const { content, userName, role, rating } = req.body;
     try {
         const testimonial = await Testimonial.findByIdAndUpdate(
             req.params.id,
-            { content, userName, role, updatedAt: Date.now() },
+            { content, userName, role, rating, updatedAt: Date.now() },
             { new: true, runValidators: true }
         );
 
@@ -159,9 +176,9 @@ const updateTestimonial = async (req, res, next) => {
 };
 
 /**
- * @desc    Delete a testimonial
- * @route   DELETE /api/testimonials/:id
- * @access  Private (Admin only)
+ * @desc Delete a testimonial
+ * @route DELETE /api/testimonials/:id
+ * @access Private (Admin only)
  */
 const deleteTestimonial = async (req, res, next) => {
     try {
@@ -178,8 +195,8 @@ const deleteTestimonial = async (req, res, next) => {
 };
 
 
-// 💡 FINAL FIX: Export the single default object 
-// This object is now placed AFTER all function declarations, resolving the ReferenceError.
+// --- FINAL EXPORT ---
+
 const TestimonialController = {
     getTestimonials,
     getApprovedTestimonials,

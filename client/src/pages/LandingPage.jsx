@@ -25,7 +25,6 @@ import {
   Layers,
   Repeat,
   Send,
-  // Removed X, AlertCircle, Check imports as they are used inside the local modal component
 } from "lucide-react";
 
 // Function to fetch ONLY approved testimonials from the public endpoint
@@ -48,7 +47,6 @@ export default function LandingPage() {
   const navigate = useNavigate();
   
   const [approvedTestimonials, setApprovedTestimonials] = useState([]);
-  // Changed initial state to false so the modal isn't open immediately on load
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false); 
 
   // Function to load and refresh testimonials
@@ -57,17 +55,15 @@ export default function LandingPage() {
     setApprovedTestimonials(data);
   };
 
-  // 💡 REMOVED THE REDIRECTION LOGIC (useEffect)
-
-  // 💡 FETCH APPROVED TESTIMONIALS on mount
+  // FETCH APPROVED TESTIMONIALS on mount
   useEffect(() => {
     loadTestimonials();
   }, []);
   
-  // 💡 CONDITION FOR DISPLAYING SUBMISSION BUTTON
+  // CONDITION FOR DISPLAYING SUBMISSION BUTTON
   const showSubmitTestimonialButton = isAuthenticated && user?.role !== 'admin' && user?.isProfileComplete;
 
-  // 💡 FUNCTION TO HANDLE AUTHENTICATED BUTTON CLICK
+  // FUNCTION TO HANDLE AUTHENTICATED BUTTON CLICK
   const handleStartLearningClick = () => {
     if (user.role === 'admin') {
       navigate('/admin');
@@ -136,7 +132,7 @@ export default function LandingPage() {
               </div>
               <h1 className="text-xl font-semibold">Previlace</h1>
             </div>
-            {/* 💡 HEADER BUTTON CHANGE */}
+            {/* HEADER BUTTON CHANGE */}
             {isAuthenticated ? <DashboardButton /> : <AuthButtons />}
           </div>
         </div>
@@ -157,7 +153,7 @@ export default function LandingPage() {
             practice confidently, and find opportunities that match your goals.
           </p>
           
-          {/* 💡 HERO BUTTON CHANGE */}
+          {/* HERO BUTTON CHANGE */}
           <div className="flex justify-center space-x-3">
             {isAuthenticated ? (
               <DashboardButton size="lg" />
@@ -227,11 +223,11 @@ export default function LandingPage() {
             </p>
           </div>
           
-         {/* Submission Button - Enhanced Look (Black Theme) */}
-            {showSubmitTestimonialButton && (
+           {/* Submission Button - Enhanced Look (Black Theme) */}
+             {showSubmitTestimonialButton && (
                 <div className="flex justify-center mb-10">
                     <Button 
-                        // 💡 Using explicit black background and white text
+                        // Using explicit black background and white text
                         className="bg-black text-white hover:bg-gray-800 active:bg-gray-900 transition-all duration-150 shadow-lg hover:shadow-xl transform hover:scale-[1.02] border border-gray-900" 
                         onClick={() => setIsSubmissionModalOpen(true)}
                     >
@@ -262,7 +258,8 @@ export default function LandingPage() {
                             </div>
                             <div>
                                 <div className="text-sm font-semibold">
-                                    {testimonial.userName || "Anonymous User"}
+                                    {/* CORRECTED LINE: Better check for empty or null name */}
+                                    {testimonial.userName && testimonial.userName.trim() !== '' ? testimonial.userName : "Anonymous User"}
                                 </div>
                                 <div className="text-xs text-gray-500">
                                     {testimonial.role || "Verified Learner"}
@@ -292,7 +289,7 @@ export default function LandingPage() {
               Join thousands of successful Civil Service Exam passers and begin
               your path toward a government career today.
             </p>
-            {/* 💡 CTA BUTTON CHANGE */}
+            {/* CTA BUTTON CHANGE */}
             {isAuthenticated ? (
                 <DashboardButton size="lg" variant="outline" className="border-white text-black hover:bg-white" />
             ) : (

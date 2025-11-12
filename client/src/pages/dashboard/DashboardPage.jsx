@@ -47,8 +47,23 @@ function DashboardPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold">Previlace</h1>
-            </div>
+            {/* 💡 CHANGE: Converted div to button for clickability, using onClick and Tailwind styling */}
+            <button
+                onClick={() => navigate('/')} // Navigate to the root/landing page
+                className="flex items-center space-x-3 focus:outline-none" // Ensure focus style is handled
+            >
+                {/* Your original logo icon/div, treated as a child of the button */}
+                <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-black">
+                    {/* Assuming the Target icon is here based on your LandingPage.jsx */}
+                    {/* <Target className="h-4 w-4 text-white" /> */} 
+                </div>
+
+                {/* The app name itself */}
+                <h1 className="text-xl font-semibold text-black hover:text-gray-700 transition-colors">
+                    Previlace
+                </h1>
+            </button>
+        </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
                 {user?.firstName} {user?.lastName}
