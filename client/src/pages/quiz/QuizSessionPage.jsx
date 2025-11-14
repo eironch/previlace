@@ -79,9 +79,9 @@ function QuizSessionPage() {
       } else {
         await pauseSession();
       }
-    } catch (err) {
+    } catch (error) {
       if (import.meta.env.DEV) {
-        console.error("Failed to pause/resume session:", err);
+        console.error("Failed to pause/resume session:", error);
       }
     }
   }
@@ -91,9 +91,9 @@ function QuizSessionPage() {
     try {
       await completeSession();
       navigate("/dashboard/results");
-    } catch (err) {
+    } catch (error) {
       if (import.meta.env.DEV) {
-        console.error("Failed to submit quiz:", err);
+        console.error("Failed to submit quiz:", error);
       }
     }
   }
@@ -102,18 +102,18 @@ function QuizSessionPage() {
     try {
       await completeSession();
       navigate("/dashboard/results");
-    } catch (err) {
+    } catch (error) {
       if (import.meta.env.DEV) {
-        console.error("Auto-submit failed:", err);
+        console.error("Auto-submit failed:", error);
       }
     }
   }
 
   if (!currentSession || loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
           <p className="text-gray-600">Loading quiz...</p>
         </div>
       </div>
@@ -121,8 +121,8 @@ function QuizSessionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="sticky top-0 z-50 border-b bg-white shadow-sm">
+    <div className="min-h-screen bg-white">
+      <div className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -136,7 +136,7 @@ function QuizSessionPage() {
                   </div>
                   {unansweredCount > 0 && (
                     <div className="flex items-center gap-1">
-                      <Flag className="h-4 w-4 text-orange-600" />
+                      <Flag className="h-4 w-4 text-gray-600" />
                       <span>{unansweredCount} remaining</span>
                     </div>
                   )}
@@ -149,7 +149,7 @@ function QuizSessionPage() {
               
               <button
                 onClick={() => setShowNavigation(!showNavigation)}
-                className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 lg:hidden"
+                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 lg:hidden"
               >
                 {showNavigation ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
                 Questions
@@ -157,9 +157,9 @@ function QuizSessionPage() {
             </div>
           </div>
 
-          <div className="mt-2 h-1 bg-gray-200 rounded-full">
+          <div className="mt-2 h-1 rounded-full bg-gray-200">
             <div 
-              className="h-1 bg-blue-600 rounded-full transition-all"
+              className="h-1 rounded-full bg-black transition-all"
               style={{ width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%` }}
             />
           </div>
@@ -167,22 +167,22 @@ function QuizSessionPage() {
       </div>
 
       {isPaused ? (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
-          <div className="rounded-lg bg-white p-8 shadow-lg text-center max-w-md">
-            <Clock className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Quiz Paused</h2>
-            <p className="text-gray-600 mb-6">Your quiz has been paused. Click resume to continue.</p>
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <div className="mx-4 max-w-md rounded-lg border border-gray-200 bg-white p-8 text-center shadow-lg">
+            <Clock className="mx-auto mb-4 h-12 w-12 text-yellow-600" />
+            <h2 className="mb-2 text-xl font-bold text-gray-900">Quiz Paused</h2>
+            <p className="mb-6 text-gray-600">Your quiz has been paused. Click resume to continue.</p>
             <div className="flex gap-3">
               <button
                 onClick={() => navigate("/dashboard")}
-                className="flex-1 rounded-lg border border-gray-300 py-2 px-4 font-medium text-gray-700 hover:bg-gray-50"
+                className="flex-1 rounded-lg border border-gray-200 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
               >
                 Exit Quiz
               </button>
               <button
                 onClick={handlePauseResume}
                 disabled={loading}
-                className="flex-1 rounded-lg bg-blue-600 py-2 px-4 font-medium text-white hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-black px-4 py-2 font-medium text-white hover:bg-gray-800 disabled:opacity-50"
               >
                 <Play className="h-4 w-4" />
                 Resume Quiz
@@ -193,9 +193,9 @@ function QuizSessionPage() {
       ) : (
         <div className="mx-auto max-w-7xl px-4 py-6">
           <div className="flex gap-6">
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="space-y-6">
-                <div className="rounded-lg bg-white p-6 shadow-sm">
+                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <QuestionDisplay 
                     question={currentQuestion}
                     questionNumber={currentQuestionIndex + 1}
@@ -204,7 +204,7 @@ function QuizSessionPage() {
                   />
                 </div>
 
-                <div className="rounded-lg bg-white p-6 shadow-sm">
+                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <AnswerInput
                     question={currentQuestion}
                     selectedAnswer={answers[currentQuestion?._id]?.answer}
@@ -217,7 +217,7 @@ function QuizSessionPage() {
                   <button
                     onClick={previousQuestion}
                     disabled={currentQuestionIndex === 0}
-                    className="flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous
@@ -234,7 +234,7 @@ function QuizSessionPage() {
                   ) : (
                     <button
                       onClick={nextQuestion}
-                      className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+                      className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />
@@ -255,7 +255,7 @@ function QuizSessionPage() {
               </div>
             </div>
 
-            <div className="hidden lg:block w-80 space-y-4">
+            <div className="hidden w-80 space-y-4 lg:block">
               <QuestionNavigation
                 questions={sessionQuestions}
                 currentIndex={currentQuestionIndex}
@@ -263,13 +263,13 @@ function QuizSessionPage() {
                 onNavigate={handleQuestionNavigation}
               />
               
-              <div className="rounded-lg bg-white p-4 shadow-sm">
-                <h3 className="font-medium text-gray-900 mb-3">Quiz Controls</h3>
+              <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                <h3 className="mb-3 font-medium text-gray-900">Quiz Controls</h3>
                 <div className="space-y-2">
                   <button
                     onClick={handlePauseResume}
                     disabled={loading}
-                    className="w-full rounded-lg bg-yellow-600 py-2 text-sm font-medium text-white hover:bg-yellow-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-yellow-600 py-2 text-sm font-medium text-white hover:bg-yellow-700 disabled:opacity-50"
                   >
                     {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                     {isPaused ? "Resume" : "Pause"} Quiz
@@ -277,7 +277,7 @@ function QuizSessionPage() {
                   
                   <button
                     onClick={() => setShowConfirmSubmit(true)}
-                    className="w-full rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700 flex items-center justify-center gap-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700"
                   >
                     <Send className="h-4 w-4" />
                     Submit Quiz
@@ -285,7 +285,7 @@ function QuizSessionPage() {
                   
                   <button
                     onClick={() => setShowConfirmExit(true)}
-                    className="w-full rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
                     <X className="h-4 w-4" />
                     Exit Quiz
@@ -299,16 +299,16 @@ function QuizSessionPage() {
 
       {showConfirmSubmit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="rounded-lg bg-white p-6 shadow-xl max-w-md mx-4">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="mx-4 max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center gap-3">
               <Send className="h-6 w-6 text-green-600" />
               <h3 className="text-lg font-bold text-gray-900">Submit Quiz?</h3>
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className="mb-4 text-gray-600">
               Are you sure you want to submit your quiz? You have answered {answeredCount} out of {totalQuestions} questions.
             </p>
             {unansweredCount > 0 && (
-              <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-3 mb-4">
+              <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                 <div className="flex items-center gap-2">
                   <Flag className="h-4 w-4 text-yellow-600" />
                   <p className="text-sm text-yellow-800">
@@ -320,14 +320,14 @@ function QuizSessionPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmSubmit(false)}
-                className="flex-1 rounded-lg border border-gray-300 py-2 font-medium text-gray-700 hover:bg-gray-50"
+                className="flex-1 rounded-lg border border-gray-200 py-2 font-medium text-gray-700 hover:bg-gray-50"
               >
                 Continue Quiz
               </button>
               <button
                 onClick={handleSubmitQuiz}
                 disabled={loading}
-                className="flex-1 rounded-lg bg-green-600 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-50"
               >
                 {loading ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -343,18 +343,18 @@ function QuizSessionPage() {
 
       {showConfirmExit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="rounded-lg bg-white p-6 shadow-xl max-w-md mx-4">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="mx-4 max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center gap-3">
               <X className="h-6 w-6 text-red-600" />
               <h3 className="text-lg font-bold text-gray-900">Exit Quiz?</h3>
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className="mb-4 text-gray-600">
               Are you sure you want to exit? Your progress will be lost and this quiz session will be terminated.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmExit(false)}
-                className="flex-1 rounded-lg border border-gray-300 py-2 font-medium text-gray-700 hover:bg-gray-50"
+                className="flex-1 rounded-lg border border-gray-200 py-2 font-medium text-gray-700 hover:bg-gray-50"
               >
                 Stay in Quiz
               </button>
@@ -374,8 +374,8 @@ function QuizSessionPage() {
 
 function QuestionNavigation({ questions, currentIndex, answers, onNavigate }) {
   return (
-    <div className="rounded-lg bg-white p-4 shadow-sm">
-      <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 font-medium text-gray-900">
         <Menu className="h-4 w-4" />
         Question Navigation
       </h3>
@@ -390,15 +390,15 @@ function QuestionNavigation({ questions, currentIndex, answers, onNavigate }) {
               onClick={() => onNavigate(index)}
               className={`relative h-8 w-8 rounded text-xs font-medium transition-all ${
                 isCurrent
-                  ? "bg-blue-600 text-white"
+                  ? "bg-black text-white"
                   : isAnswered
-                  ? "bg-green-100 text-green-800 hover:bg-green-200"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "border border-green-500 bg-green-50 text-green-800 hover:bg-green-100"
+                  : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
               }`}
             >
               {index + 1}
               {isAnswered && !isCurrent && (
-                <CheckCircle2 className="absolute -top-1 -right-1 h-3 w-3 text-green-600" />
+                <CheckCircle2 className="absolute -right-1 -top-1 h-3 w-3 text-green-600" />
               )}
             </button>
           );
@@ -407,15 +407,15 @@ function QuestionNavigation({ questions, currentIndex, answers, onNavigate }) {
       <div className="mt-3 text-xs text-gray-600">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
-            <div className="h-2 w-2 rounded bg-blue-600"></div>
+            <div className="h-2 w-2 rounded bg-black"></div>
             <span>Current</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="h-2 w-2 rounded bg-green-100 border border-green-300"></div>
+            <div className="h-2 w-2 rounded border border-green-500 bg-green-50"></div>
             <span>Answered</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="h-2 w-2 rounded bg-gray-100 border border-gray-300"></div>
+            <div className="h-2 w-2 rounded border border-gray-200 bg-white"></div>
             <span>Unanswered</span>
           </div>
         </div>

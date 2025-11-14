@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Filter,
@@ -19,6 +19,7 @@ import {
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Select from "../ui/Select";
+import { useDebounce } from "../../hooks/useDebounce";
 
 function QuestionList({
   useQuestionStore,
@@ -33,6 +34,9 @@ function QuestionList({
     deleteQuestion,
     duplicateQuestion,
     sendBackToReview,
+    setPage,
+    setSearchQuery,
+    setFilters: setStoreFilters,
   } = useQuestionStore();
 
   const [showFilters, setShowFilters] = useState(false);
@@ -48,6 +52,16 @@ function QuestionList({
     questionType: "",
     source: "",
   });
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  useEffect(() => {
+    setSearchQuery(debouncedSearch);
+  }, [debouncedSearch, setSearchQuery]);
+
+  function handleApplyFilters() {
+    setStoreFilters(filters);
+  }
 
   async function handleDeleteConfirm() {
     if (deleteConfirm) {
@@ -248,6 +262,7 @@ function QuestionList({
               { value: "Subprofessional", label: "Sub-Professional" },
             ]}
           />
+          <Button onClick={handleApplyFilters}>Apply Filters</Button>
         </div>
       )}
 
@@ -434,7 +449,11 @@ function QuestionList({
               </div>
 
               <div className="flex items-center gap-2">
-                <Button variant="ghost" disabled={!pagination.hasPrevPage}>
+                <Button
+                  variant="ghost"
+                  disabled={!pagination.hasPrevPage}
+                  onClick={() => setPage(pagination.currentPage - 1)}
+                >
                   Previous
                 </Button>
 
@@ -442,7 +461,11 @@ function QuestionList({
                   Page {pagination.currentPage} of {pagination.totalPages}
                 </span>
 
-                <Button variant="ghost" disabled={!pagination.hasNextPage}>
+                <Button
+                  variant="ghost"
+                  disabled={!pagination.hasNextPage}
+                  onClick={() => setPage(pagination.currentPage + 1)}
+                >
                   Next
                 </Button>
               </div>

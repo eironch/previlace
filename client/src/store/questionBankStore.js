@@ -15,8 +15,20 @@ export const useQuestionBankStore = create((set, get) => ({
     hasNextPage: false,
     hasPrevPage: false,
   },
+  searchQuery: "",
+  activeFilters: {
+    category: "",
+    difficulty: "",
+    examLevel: "",
+    questionType: "",
+    source: "",
+  },
 
-  fetchQuestions: async (page = 1) => {
+  fetchQuestions: async ({
+    page = 1,
+    search = "",
+    filters = {},
+  } = {}) => {
     set({ isLoading: true, error: null });
 
     try {
@@ -24,6 +36,8 @@ export const useQuestionBankStore = create((set, get) => ({
         status: ["approved", "published"],
         page,
         limit: 20,
+        search,
+        ...filters,
       });
 
       set({
@@ -168,7 +182,20 @@ export const useQuestionBankStore = create((set, get) => ({
   },
 
   setPage: (page) => {
-    get().fetchQuestions(page);
+    const { searchQuery, activeFilters } = get();
+    get().fetchQuestions({ page, search: searchQuery, filters: activeFilters });
+  },
+
+  setSearchQuery: (search) => {
+    set({ searchQuery: search });
+    const { activeFilters } = get();
+    get().fetchQuestions({ page: 1, search, filters: activeFilters });
+  },
+
+  setFilters: (filters) => {
+    set({ activeFilters: filters });
+    const { searchQuery } = get();
+    get().fetchQuestions({ page: 1, search: searchQuery, filters });
   },
 
   sendBackToReview: async (id) => {

@@ -17,6 +17,8 @@ router.use(protect);
 
 router.post("/start", validateQuizConfig, examController.startQuizSession);
 router.post("/mock-exam", examController.startMockExam);
+router.post("/subject-quiz", examController.startSubjectQuiz);
+router.post("/topic-quiz", examController.startTopicQuiz);
 router.post("/:sessionId/answer", validateAnswerSubmission, examController.submitAnswer);
 router.post("/:sessionId/complete", examController.completeQuizSession);
 router.post("/:sessionId/pause", examController.pauseQuizSession);

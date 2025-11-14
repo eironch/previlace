@@ -6,6 +6,7 @@ import questionSelectionService from "../services/questionSelectionService.js";
 import spacedRepetitionService from "../services/spacedRepetitionService.js";
 import performanceAnalysisService from "../services/performanceAnalysisService.js";
 import studyPlanService from "../services/studyPlanService.js";
+import adaptiveQuizService from "../services/adaptiveQuizService.js";
 
 const startQuizSession = catchAsync(async (req, res, next) => {
   const {
@@ -477,6 +478,111 @@ const getReviewSchedule = catchAsync(async (req, res, next) => {
   });
 });
 
+const startSubjectQuiz = catchAsync(async (req, res, next) => {
+  const { subjectId, examLevel, questionCount = 20 } = req.body;
+
+  if (!subjectId) {
+    return next(new AppError("Subject ID is required", 400));
+  }
+
+  const quizData = await adaptiveQuizService.createSubjectQuiz(
+    req.user._id,
+    subjectId,
+    examLevel,
+    questionCount
+  );
+
+  const session = await QuizSession.create({
+    userId: req.user._id,
+    mode: "subject",
+    title: "Subject Quiz",
+    config: {
+      subjectId,
+      examLevel,
+      questionCount: quizData.questions.length,
+      difficulty: quizData.difficulty,
+      isAdaptive: true,
+    },
+    questions: quizData.questions.map((q) => q._id),
+  });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      session: {
+        _id: session._id,
+        title: session.title,
+        mode: session.mode,
+        timeLimit: session.config.timeLimit,
+        questionCount: session.questions.length,
+        difficulty: quizData.difficulty,
+        weakTopics: quizData.weakTopics,
+      },
+      questions: quizData.questions.map((q) => ({
+        _id: q._id,
+        questionText: q.questionText,
+        questionMath: q.questionMath,
+        options: q.options,
+        difficulty: q.difficulty,
+        category: q.category,
+        subjectArea: q.subjectArea,
+      })),
+    },
+  });
+});
+
+const startTopicQuiz = catchAsync(async (req, res, next) => {
+  const { topicId, examLevel, questionCount = 10 } = req.body;
+
+  if (!topicId) {
+    return next(new AppError("Topic ID is required", 400));
+  }
+
+  const quizData = await adaptiveQuizService.createTopicQuiz(
+    req.user._id,
+    topicId,
+    examLevel,
+    questionCount
+  );
+
+  const session = await QuizSession.create({
+    userId: req.user._id,
+    mode: "topic",
+    title: "Topic Quiz",
+    config: {
+      topicId,
+      examLevel,
+      questionCount: quizData.questions.length,
+      difficulty: quizData.difficulty,
+      isAdaptive: true,
+    },
+    questions: quizData.questions.map((q) => q._id),
+  });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      session: {
+        _id: session._id,
+        title: session.title,
+        mode: session.mode,
+        timeLimit: session.config.timeLimit,
+        questionCount: session.questions.length,
+        difficulty: quizData.difficulty,
+      },
+      questions: quizData.questions.map((q) => ({
+        _id: q._id,
+        questionText: q.questionText,
+        questionMath: q.questionMath,
+        options: q.options,
+        difficulty: q.difficulty,
+        category: q.category,
+        subjectArea: q.subjectArea,
+      })),
+    },
+  });
+});
+
 export default {
   startQuizSession,
   submitAnswer,
@@ -487,6 +593,8 @@ export default {
   resumeQuizSession,
   getUserStats,
   startMockExam,
+  startSubjectQuiz,
+  startTopicQuiz,
   getPerformanceAnalytics,
   getExamReadiness,
   generateStudyPlan,

@@ -25,6 +25,9 @@ import StudyPlanPage from "@/pages/StudyPlanPage";
 import StudyStreakPage from "@/pages/StudyStreakPage";
 import ChallengePage from "@/pages/ChallengePage";
 import JobsPage from "@/pages/JobsPage";
+import SubjectsPage from "@/pages/SubjectsPage";
+import SubjectDetailPage from "@/pages/SubjectDetailPage";
+import TopicDetailPage from "@/pages/TopicDetailPage";
 import ResumeBuilderPage from "@/pages/ResumeBuilderPage";
 import InterviewPrepPage from "@/pages/InterviewPrepPage";
 import AuthModal from "@/components/auth/AuthModal";
@@ -284,6 +287,33 @@ function App() {
             element={
               <DashboardRoute>
                 <InterviewPrepPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/subjects"
+            element={
+              <DashboardRoute>
+                <SubjectsPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/subjects/:id"
+            element={
+              <DashboardRoute>
+                <SubjectDetailPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/topics/:id"
+            element={
+              <DashboardRoute>
+                <TopicDetailPage />
               </DashboardRoute>
             }
           />

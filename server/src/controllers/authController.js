@@ -99,17 +99,11 @@ const login = catchAsync(async (req, res, next) => {
 		return next(new AppError("Invalid credentials", 401));
 	}
 
-	if (user.isLocked) {
-		return next(new AppError("Account temporarily locked", 423));
-	}
-
 	const isPasswordValid = await user.comparePassword(password);
 	if (!isPasswordValid) {
-		await user.incLoginAttempts();
 		return next(new AppError("Invalid credentials", 401));
 	}
 
-	await user.resetLoginAttempts();
 	await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
 
 	const { accessToken, refreshToken } = generateTokens(user._id);
@@ -152,6 +146,9 @@ const logout = catchAsync(async (req, res, next) => {
 				await user.removeRefreshToken(refreshToken);
 			}
 		} catch (error) {
+			if (process.env.NODE_ENV === "development") {
+				console.error("Refresh token removal error:", error);
+			}
 		}
 	}
 

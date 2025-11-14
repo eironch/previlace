@@ -19,7 +19,7 @@ function QuestionBankManager() {
   async function refreshData() {
     setIsRefreshing(true);
     try {
-      await Promise.all([fetchQuestions(1), fetchQuestionCounts()]);
+      await Promise.all([fetchQuestions(), fetchQuestionCounts()]);
     } finally {
       setIsRefreshing(false);
     }
