@@ -30,8 +30,8 @@ const topicSchema = new mongoose.Schema(
     },
     difficulty: {
       type: String,
-      enum: ["beginner", "intermediate", "advanced"],
-      default: "intermediate",
+      enum: ["Beginner", "Intermediate", "Advanced"],
+      default: "Intermediate",
     },
     estimatedMinutes: {
       type: Number,

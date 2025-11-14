@@ -64,7 +64,7 @@ const learningService = {
 
   startSubjectQuiz: async (subjectId, examLevel, questionCount = 20) => {
     try {
-      const response = await apiClient.post("/exams/subject-quiz", {
+      const response = await apiClient.post("/exam/subject-quiz", {
         subjectId,
         examLevel,
         questionCount,
@@ -80,7 +80,7 @@ const learningService = {
 
   startTopicQuiz: async (topicId, examLevel, questionCount = 10) => {
     try {
-      const response = await apiClient.post("/exams/topic-quiz", {
+      const response = await apiClient.post("/exam/topic-quiz", {
         topicId,
         examLevel,
         questionCount,

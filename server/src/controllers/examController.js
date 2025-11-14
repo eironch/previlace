@@ -337,14 +337,19 @@ const startMockExam = catchAsync(async (req, res, next) => {
     mockExamConfig
   );
 
-  if (questions.length < mockExamConfig.questionCount) {
+  const availableCount = questions.length;
+  const requiredCount = mockExamConfig.questionCount;
+
+  if (availableCount < 20) {
     return next(
       new AppError(
-        "Insufficient questions available for mock exam",
+        "Not enough questions available to start mock exam. Please contact administrator.",
         400
       )
     );
   }
+
+  const finalQuestionCount = Math.min(availableCount, requiredCount);
 
   const session = await QuizSession.create({
     userId: req.user._id,

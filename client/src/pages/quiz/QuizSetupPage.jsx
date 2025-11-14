@@ -28,6 +28,11 @@ function QuizSetupPage() {
   }
 
   async function handleStartQuiz() {
+    if (setupConfig.mode === "mock") {
+      navigate("/dashboard/mock-exam");
+      return;
+    }
+
     const config = {
       ...setupConfig,
       categories: selectedCategories.length > 0 ? selectedCategories : [],

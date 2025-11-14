@@ -34,6 +34,18 @@ const validationResultSchema = new mongoose.Schema({
 
 const manualQuestionSchema = new mongoose.Schema(
   {
+    subjectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subject",
+      required: true,
+      index: true,
+    },
+    topicId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Topic",
+      required: true,
+      index: true,
+    },
     templateId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "QuestionTemplate",
@@ -149,7 +161,7 @@ const manualQuestionSchema = new mongoose.Schema(
     examLevel: {
       type: String,
       required: true,
-      enum: ["Professional", "Subprofessional", "Both"],
+      enum: ["Professional", "Sub-Professional", "Both"],
       index: true,
     },
     language: {

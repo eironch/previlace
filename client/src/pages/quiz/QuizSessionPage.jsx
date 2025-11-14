@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Menu, X, Flag, Clock, CheckCircle2, Pause, Play, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, X, Flag, Clock, CheckCircle2, Send } from "lucide-react";
 import useExamStore from "@/store/examStore";
 import QuestionDisplay from "@/components/exam/QuestionDisplay";
 import QuizTimer from "@/components/exam/QuizTimer";
 import AnswerInput from "@/components/exam/AnswerInput";
+import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function QuizSessionPage() {
   const navigate = useNavigate();
   const [showNavigation, setShowNavigation] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
-  const [showConfirmExit, setShowConfirmExit] = useState(false);
   const [timeWarningShown, setTimeWarningShown] = useState(false);
   
   const {
@@ -19,7 +19,6 @@ function QuizSessionPage() {
     currentSession,
     answers,
     sessionActive,
-    isPaused,
     loading,
     timeRemaining,
     getCurrentQuestion,
@@ -27,8 +26,6 @@ function QuizSessionPage() {
     nextQuestion,
     previousQuestion,
     updateAnswer,
-    pauseSession,
-    resumeSession,
     completeSession
   } = useExamStore();
 
@@ -39,7 +36,7 @@ function QuizSessionPage() {
 
   useEffect(() => {
     if (!currentSession && !loading) {
-      navigate("/dashboard/quiz");
+      navigate("/dashboard/subjects");
     }
   }, [currentSession, loading, navigate]);
 
@@ -72,20 +69,6 @@ function QuizSessionPage() {
     }
   }
 
-  async function handlePauseResume() {
-    try {
-      if (isPaused) {
-        await resumeSession();
-      } else {
-        await pauseSession();
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to pause/resume session:", error);
-      }
-    }
-  }
-
   async function handleSubmitQuiz() {
     setShowConfirmSubmit(false);
     try {
@@ -111,10 +94,35 @@ function QuizSessionPage() {
 
   if (!currentSession || loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
-          <p className="text-gray-600">Loading quiz...</p>
+      <div className="min-h-screen bg-white">
+        <div className="border-b border-gray-200 bg-white px-4 py-3">
+          <div className="mx-auto max-w-7xl">
+            <SkeletonLoader variant="title" className="mb-2" />
+            <div className="flex items-center gap-4">
+              <SkeletonLoader className="w-32" />
+              <SkeletonLoader className="w-32" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="mx-auto max-w-7xl px-4 py-6">
+          <div className="space-y-6">
+            <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <SkeletonLoader variant="title" className="mb-4" />
+              <SkeletonLoader className="mb-2" />
+              <SkeletonLoader className="mb-2 w-3/4" />
+              <SkeletonLoader className="w-1/2" />
+            </div>
+
+            <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <div className="space-y-3">
+                <SkeletonLoader className="h-12" />
+                <SkeletonLoader className="h-12" />
+                <SkeletonLoader className="h-12" />
+                <SkeletonLoader className="h-12" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -166,136 +174,101 @@ function QuizSessionPage() {
         </div>
       </div>
 
-      {isPaused ? (
-        <div className="flex min-h-screen items-center justify-center bg-white">
-          <div className="mx-4 max-w-md rounded-lg border border-gray-200 bg-white p-8 text-center shadow-lg">
-            <Clock className="mx-auto mb-4 h-12 w-12 text-yellow-600" />
-            <h2 className="mb-2 text-xl font-bold text-gray-900">Quiz Paused</h2>
-            <p className="mb-6 text-gray-600">Your quiz has been paused. Click resume to continue.</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="flex-1 rounded-lg border border-gray-200 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Exit Quiz
-              </button>
-              <button
-                onClick={handlePauseResume}
-                disabled={loading}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-black px-4 py-2 font-medium text-white hover:bg-gray-800 disabled:opacity-50"
-              >
-                <Play className="h-4 w-4" />
-                Resume Quiz
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="mx-auto max-w-7xl px-4 py-6">
-          <div className="flex gap-6">
-            <div className="min-w-0 flex-1">
-              <div className="space-y-6">
-                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                  <QuestionDisplay 
-                    question={currentQuestion}
-                    questionNumber={currentQuestionIndex + 1}
-                    isAnswered={!!answers[currentQuestion?._id]}
-                    userAnswer={answers[currentQuestion?._id]?.answer}
-                  />
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                  <AnswerInput
-                    question={currentQuestion}
-                    selectedAnswer={answers[currentQuestion?._id]?.answer}
-                    onAnswerSelect={handleAnswerSelect}
-                    disabled={!sessionActive}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={previousQuestion}
-                    disabled={currentQuestionIndex === 0}
-                    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </button>
-
-                  {currentQuestionIndex === totalQuestions - 1 ? (
-                    <button
-                      onClick={() => setShowConfirmSubmit(true)}
-                      className="flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2 font-medium text-white hover:bg-green-700"
-                    >
-                      <Send className="h-4 w-4" />
-                      Submit Quiz
-                    </button>
-                  ) : (
-                    <button
-                      onClick={nextQuestion}
-                      className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-
-                {showNavigation && (
-                  <div className="block lg:hidden">
-                    <QuestionNavigation
-                      questions={sessionQuestions}
-                      currentIndex={currentQuestionIndex}
-                      answers={answers}
-                      onNavigate={handleQuestionNavigation}
-                    />
-                  </div>
-                )}
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <div className="flex gap-6">
+          <div className="min-w-0 flex-1">
+            <div className="space-y-6">
+              <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                <QuestionDisplay 
+                  question={currentQuestion}
+                  questionNumber={currentQuestionIndex + 1}
+                  isAnswered={!!answers[currentQuestion?._id]}
+                  userAnswer={answers[currentQuestion?._id]?.answer}
+                />
               </div>
-            </div>
 
-            <div className="hidden w-80 space-y-4 lg:block">
-              <QuestionNavigation
-                questions={sessionQuestions}
-                currentIndex={currentQuestionIndex}
-                answers={answers}
-                onNavigate={handleQuestionNavigation}
-              />
-              
-              <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 font-medium text-gray-900">Quiz Controls</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={handlePauseResume}
-                    disabled={loading}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-yellow-600 py-2 text-sm font-medium text-white hover:bg-yellow-700 disabled:opacity-50"
-                  >
-                    {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                    {isPaused ? "Resume" : "Pause"} Quiz
-                  </button>
-                  
+              <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                <AnswerInput
+                  question={currentQuestion}
+                  selectedAnswer={answers[currentQuestion?._id]?.answer}
+                  onAnswerSelect={handleAnswerSelect}
+                  disabled={!sessionActive}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={previousQuestion}
+                  disabled={currentQuestionIndex === 0}
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </button>
+
+                {currentQuestionIndex === totalQuestions - 1 ? (
                   <button
                     onClick={() => setShowConfirmSubmit(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700"
+                    className="flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2 font-medium text-white hover:bg-green-700"
                   >
                     <Send className="h-4 w-4" />
                     Submit Quiz
                   </button>
-                  
+                ) : (
                   <button
-                    onClick={() => setShowConfirmExit(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    onClick={nextQuestion}
+                    className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
                   >
-                    <X className="h-4 w-4" />
-                    Exit Quiz
+                    Next
+                    <ChevronRight className="h-4 w-4" />
                   </button>
+                )}
+              </div>
+
+              {showNavigation && (
+                <div className="block lg:hidden">
+                  <QuestionNavigation
+                    questions={sessionQuestions}
+                    currentIndex={currentQuestionIndex}
+                    answers={answers}
+                    onNavigate={handleQuestionNavigation}
+                  />
                 </div>
+              )}
+            </div>
+          </div>
+
+          <div className="hidden w-80 space-y-4 lg:block">
+            <QuestionNavigation
+              questions={sessionQuestions}
+              currentIndex={currentQuestionIndex}
+              answers={answers}
+              onNavigate={handleQuestionNavigation}
+            />
+            
+            <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+              <h3 className="mb-3 font-medium text-gray-900">Quiz Controls</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowConfirmSubmit(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700"
+                >
+                  <Send className="h-4 w-4" />
+                  Submit Quiz
+                </button>
+                
+                <button
+                  onClick={() => navigate("/dashboard/subjects")}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <X className="h-4 w-4" />
+                  Exit Quiz
+                </button>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {showConfirmSubmit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -335,34 +308,6 @@ function QuizSessionPage() {
                   <Send className="h-4 w-4" />
                 )}
                 {loading ? "Submitting..." : "Submit Quiz"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showConfirmExit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="mx-4 max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center gap-3">
-              <X className="h-6 w-6 text-red-600" />
-              <h3 className="text-lg font-bold text-gray-900">Exit Quiz?</h3>
-            </div>
-            <p className="mb-4 text-gray-600">
-              Are you sure you want to exit? Your progress will be lost and this quiz session will be terminated.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirmExit(false)}
-                className="flex-1 rounded-lg border border-gray-200 py-2 font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Stay in Quiz
-              </button>
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="flex-1 rounded-lg bg-red-600 py-2 font-medium text-white hover:bg-red-700"
-              >
-                Exit Quiz
               </button>
             </div>
           </div>

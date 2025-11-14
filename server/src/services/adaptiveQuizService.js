@@ -1,35 +1,27 @@
 import ManualQuestion from "../models/ManualQuestion.js";
-import UserQuestionHistory from "../models/UserQuestionHistory.js";
 import UserProgress from "../models/UserProgress.js";
 import Topic from "../models/Topic.js";
-import adaptiveDifficultyService from "./adaptiveDifficultyService.js";
 import questionSelectionService from "./questionSelectionService.js";
 
 class AdaptiveQuizService {
   async createSubjectQuiz(userId, subjectId, examLevel, questionCount = 20) {
     const topics = await Topic.find({ subjectId, isActive: true });
+
+    if (topics.length === 0) {
+      throw new Error("No topics found for this subject");
+    }
+
     const topicIds = topics.map((t) => t._id);
-
-    const userPerformance = await this.getSubjectPerformance(
-      userId,
-      subjectId
-    );
-
+    const userPerformance = await this.getSubjectPerformance(userId, subjectId);
     const weakTopics = userPerformance.weakTopics || [];
-    const difficulty = this.calculateAdaptiveDifficulty(
-      userPerformance.averageScore
-    );
+    const difficulty = this.calculateAdaptiveDifficulty(userPerformance.averageScore);
 
-    let questionsPerTopic = Math.floor(questionCount / topics.length);
-    let remainingQuestions = questionCount % topics.length;
-
+    const questionsPerTopic = Math.floor(questionCount / topics.length);
     const selectedQuestions = [];
 
     for (const topic of topics) {
       const isWeakTopic = weakTopics.includes(topic._id.toString());
-      const topicQuestionCount = isWeakTopic
-        ? questionsPerTopic + 1
-        : questionsPerTopic;
+      const topicQuestionCount = isWeakTopic ? questionsPerTopic + 1 : questionsPerTopic;
 
       const topicQuestions = await this.selectTopicQuestions(
         userId,
@@ -40,10 +32,19 @@ class AdaptiveQuizService {
       );
 
       selectedQuestions.push(...topicQuestions);
+    }
 
-      if (isWeakTopic && remainingQuestions > 0) {
-        remainingQuestions--;
+    if (selectedQuestions.length === 0) {
+      const fallbackQuestions = await this.selectFallbackQuestions(subjectId, examLevel, questionCount);
+      if (fallbackQuestions.length === 0) {
+        throw new Error("No questions available for this subject. Please try another subject or contact support.");
       }
+      return {
+        questions: fallbackQuestions,
+        difficulty,
+        targetTopics: topicIds,
+        weakTopics,
+      };
     }
 
     return {
@@ -61,9 +62,7 @@ class AdaptiveQuizService {
     }
 
     const topicPerformance = await this.getTopicPerformance(userId, topicId);
-    const difficulty = this.calculateAdaptiveDifficulty(
-      topicPerformance.accuracy
-    );
+    const difficulty = this.calculateAdaptiveDifficulty(topicPerformance.accuracy);
 
     const questions = await this.selectTopicQuestions(
       userId,
@@ -73,6 +72,18 @@ class AdaptiveQuizService {
       questionCount
     );
 
+    if (questions.length === 0) {
+      const fallbackQuestions = await this.selectFallbackQuestionsForTopic(topicId, examLevel, questionCount);
+      if (fallbackQuestions.length === 0) {
+        throw new Error("No questions available for this topic. Please try another topic or contact support.");
+      }
+      return {
+        questions: fallbackQuestions,
+        difficulty,
+        targetTopic: topicId,
+      };
+    }
+
     return {
       questions,
       difficulty,
@@ -80,62 +91,8 @@ class AdaptiveQuizService {
     };
   }
 
-  async createMockExam(userId, examLevel, questionCount = 50) {
-    const userPerformance = await this.getOverallPerformance(userId);
-    const difficulty = this.calculateAdaptiveDifficulty(
-      userPerformance.overallAccuracy
-    );
-
-    const weakCategories = userPerformance.weakCategories || [];
-
-    const difficultyDistribution =
-      adaptiveDifficultyService.selectQuestionsByAdaptiveDifficulty;
-
-    const query = {
-      status: "published",
-      isActive: true,
-      examLevel: examLevel || { $in: ["Professional", "Sub-Professional"] },
-    };
-
-    let questions = await ManualQuestion.aggregate([
-      { $match: query },
-      { $sample: { size: questionCount * 2 } },
-    ]);
-
-    if (weakCategories.length > 0) {
-      const weakQuestions = questions.filter((q) =>
-        weakCategories.includes(q.category)
-      );
-      const strongQuestions = questions.filter(
-        (q) => !weakCategories.includes(q.category)
-      );
-
-      const weakCount = Math.ceil(questionCount * 0.6);
-      questions = [
-        ...weakQuestions.slice(0, weakCount),
-        ...strongQuestions.slice(0, questionCount - weakCount),
-      ];
-    }
-
-    return {
-      questions: questions.slice(0, questionCount),
-      difficulty,
-      weakCategories,
-      isAdaptive: true,
-    };
-  }
-
-  async selectTopicQuestions(
-    userId,
-    topicId,
-    difficulty,
-    examLevel,
-    questionCount
-  ) {
-    const recentQuestions = await questionSelectionService.getRecentlyAnsweredQuestions(
-      userId,
-      30
-    );
+  async selectTopicQuestions(userId, topicId, difficulty, examLevel, questionCount) {
+    const recentQuestions = await questionSelectionService.getRecentlyAnsweredQuestions(userId, 30);
 
     const query = {
       topicId,
@@ -145,26 +102,51 @@ class AdaptiveQuizService {
     };
 
     if (examLevel) {
-      query.examLevel = examLevel;
+      const normalizedExamLevel = examLevel.replace(/-/g, '').toLowerCase();
+      query.$or = [
+        { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
+        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } }
+      ];
     }
 
     const allQuestions = await ManualQuestion.find(query);
 
+    if (allQuestions.length === 0) {
+      const queryWithoutRecent = {
+        topicId,
+        status: "published",
+        isActive: true,
+      };
+      
+      if (examLevel) {
+        const normalizedExamLevel = examLevel.replace(/-/g, '').toLowerCase();
+        queryWithoutRecent.$or = [
+          { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
+          { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } }
+        ];
+      }
+      
+      const fallbackQuestions = await ManualQuestion.find(queryWithoutRecent);
+      if (fallbackQuestions.length > 0) {
+        return this.shuffleArray(fallbackQuestions).slice(0, questionCount);
+      }
+      return [];
+    }
+
     const difficultyGroups = {
-      beginner: allQuestions.filter((q) => q.difficulty === "beginner"),
-      intermediate: allQuestions.filter(
-        (q) => q.difficulty === "intermediate"
-      ),
-      advanced: allQuestions.filter((q) => q.difficulty === "advanced"),
+      beginner: allQuestions.filter((q) => /^beginner$/i.test(q.difficulty)),
+      intermediate: allQuestions.filter((q) => /^intermediate$/i.test(q.difficulty)),
+      advanced: allQuestions.filter((q) => /^advanced$/i.test(q.difficulty)),
     };
 
     const selected = [];
+    const difficultyLower = difficulty.toLowerCase();
 
-    if (difficulty === "beginner") {
+    if (difficultyLower === "beginner") {
       selected.push(...this.shuffleArray(difficultyGroups.beginner).slice(0, Math.floor(questionCount * 0.6)));
       selected.push(...this.shuffleArray(difficultyGroups.intermediate).slice(0, Math.floor(questionCount * 0.3)));
       selected.push(...this.shuffleArray(difficultyGroups.advanced).slice(0, Math.floor(questionCount * 0.1)));
-    } else if (difficulty === "intermediate") {
+    } else if (difficultyLower === "intermediate") {
       selected.push(...this.shuffleArray(difficultyGroups.beginner).slice(0, Math.floor(questionCount * 0.2)));
       selected.push(...this.shuffleArray(difficultyGroups.intermediate).slice(0, Math.floor(questionCount * 0.6)));
       selected.push(...this.shuffleArray(difficultyGroups.advanced).slice(0, Math.floor(questionCount * 0.2)));
@@ -175,6 +157,47 @@ class AdaptiveQuizService {
     }
 
     return this.shuffleArray(selected).slice(0, questionCount);
+  }
+
+  async selectFallbackQuestions(subjectId, examLevel, questionCount) {
+    const topics = await Topic.find({ subjectId, isActive: true });
+    const topicIds = topics.map((t) => t._id);
+
+    const query = {
+      topicId: { $in: topicIds },
+      status: "published",
+      isActive: true,
+    };
+
+    if (examLevel) {
+      const normalizedExamLevel = examLevel.replace(/-/g, '').toLowerCase();
+      query.$or = [
+        { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
+        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } }
+      ];
+    }
+
+    const questions = await ManualQuestion.find(query).limit(questionCount * 2);
+    return this.shuffleArray(questions).slice(0, questionCount);
+  }
+
+  async selectFallbackQuestionsForTopic(topicId, examLevel, questionCount) {
+    const query = {
+      topicId,
+      status: "published",
+      isActive: true,
+    };
+
+    if (examLevel) {
+      const normalizedExamLevel = examLevel.replace(/-/g, '').toLowerCase();
+      query.$or = [
+        { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
+        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } }
+      ];
+    }
+
+    const questions = await ManualQuestion.find(query).limit(questionCount * 2);
+    return this.shuffleArray(questions).slice(0, questionCount);
   }
 
   async getSubjectPerformance(userId, subjectId) {
@@ -231,37 +254,6 @@ class AdaptiveQuizService {
 
     return {
       accuracy: topicProgress.bestScore / 100,
-    };
-  }
-
-  async getOverallPerformance(userId) {
-    const allProgress = await UserProgress.find({ userId });
-
-    if (!allProgress || allProgress.length === 0) {
-      return {
-        overallAccuracy: 0.5,
-        weakCategories: [],
-      };
-    }
-
-    let totalScore = 0;
-    let totalAttempts = 0;
-
-    allProgress.forEach((progress) => {
-      totalScore += progress.averageScore || 0;
-      totalAttempts += progress.totalAttempts || 0;
-    });
-
-    const overallAccuracy =
-      totalAttempts > 0 ? totalScore / (allProgress.length * 100) : 0.5;
-
-    const weakCategories = await questionSelectionService.identifyWeakAreas(
-      userId
-    );
-
-    return {
-      overallAccuracy,
-      weakCategories,
     };
   }
 

@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSubjectStore } from "@/store/subjectStore";
 import { useTopicStore } from "@/store/topicStore";
 import { useAuthStore } from "@/store/authStore";
-import learningService from "@/services/learningService";
+import useExamStore from "@/store/examStore";
 import { ArrowLeft, BookOpen, Trophy, Play, LogOut } from "lucide-react";
+import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function SubjectDetailPage() {
   const { id } = useParams();
@@ -12,6 +13,8 @@ function SubjectDetailPage() {
   const { currentSubject, loading: subjectLoading, fetchSubjectById } = useSubjectStore();
   const { topics, loading: topicsLoading, fetchTopicsBySubject } = useTopicStore();
   const { user, logout } = useAuthStore();
+  const { startQuizSession, loading: quizLoading } = useExamStore();
+  const [quizError, setQuizError] = useState(null);
 
   useEffect(() => {
     fetchSubjectById(id);
@@ -20,21 +23,22 @@ function SubjectDetailPage() {
 
   async function handleTestAllTopics() {
     try {
-      const response = await learningService.startSubjectQuiz(
-        id,
-        user?.examLevel,
-        20
-      );
+      setQuizError(null);
 
-      if (response.success) {
-        navigate("/dashboard/quiz-session", {
-          state: { session: response.data },
-        });
-      }
+      await startQuizSession({
+        mode: "subject",
+        subjectId: id,
+        examLevel: user?.examLevel,
+        questionCount: 20,
+        timeLimit: 600,
+      });
+
+      navigate("/dashboard/quiz-session");
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error("Start subject quiz error:", error);
       }
+      setQuizError(error.message || "Failed to start quiz. Please try again.");
     }
   }
 
@@ -48,8 +52,58 @@ function SubjectDetailPage() {
 
   if (subjectLoading || topicsLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+      <div className="min-h-screen bg-white">
+        <header className="border-b border-gray-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-4">
+                <SkeletonLoader variant="circle" className="h-5 w-5" />
+                <SkeletonLoader className="h-6 w-48" />
+              </div>
+              <div className="flex items-center gap-4">
+                <SkeletonLoader className="h-4 w-24" />
+                <SkeletonLoader variant="button" className="h-10 w-24" />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
+            <div className="mb-4 flex items-center gap-4">
+              <SkeletonLoader variant="circle" className="h-16 w-16" />
+              <div className="flex-1">
+                <SkeletonLoader variant="title" className="mb-2" />
+                <SkeletonLoader className="w-3/4" />
+              </div>
+            </div>
+            <div className="mb-4 grid grid-cols-3 gap-4">
+              <SkeletonLoader variant="card" className="h-20" />
+              <SkeletonLoader variant="card" className="h-20" />
+              <SkeletonLoader variant="card" className="h-20" />
+            </div>
+            <SkeletonLoader variant="button" />
+          </div>
+
+          <div className="mb-4">
+            <SkeletonLoader variant="title" className="mb-2 h-6 w-32" />
+            <SkeletonLoader className="w-64" />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="rounded-lg border border-gray-200 bg-white p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <SkeletonLoader className="h-6 w-24" />
+                  <SkeletonLoader variant="circle" className="h-6 w-6" />
+                </div>
+                <SkeletonLoader variant="title" className="mb-2 h-6" />
+                <SkeletonLoader className="mb-2" />
+                <SkeletonLoader className="w-2/3" />
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
@@ -130,13 +184,29 @@ function SubjectDetailPage() {
             </div>
           )}
 
+          {quizError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm text-red-800">{quizError}</p>
+            </div>
+          )}
+
           <button
             onClick={handleTestAllTopics}
-            className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-all hover:bg-gray-800"
+            disabled={quizLoading}
+            className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <div className="flex items-center justify-center gap-2">
-              <Trophy className="h-5 w-5" />
-              <span>Test All Topics</span>
+              {quizLoading ? (
+                <>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>Starting Quiz...</span>
+                </>
+              ) : (
+                <>
+                  <Trophy className="h-5 w-5" />
+                  <span>Test All Topics</span>
+                </>
+              )}
             </div>
           </button>
         </div>

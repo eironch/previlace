@@ -2,16 +2,21 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTopicStore } from "@/store/topicStore";
 import { useAuthStore } from "@/store/authStore";
+import useExamStore from "@/store/examStore";
 import learningService from "@/services/learningService";
 import { ArrowLeft, BookOpen, Play, CheckCircle, AlertCircle, LogOut } from "lucide-react";
+import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function TopicDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { currentTopic, loading: topicLoading, fetchTopicById } = useTopicStore();
   const { user, logout } = useAuthStore();
+  const { startQuizSession, loading: quizLoading } = useExamStore();
   const [learningContent, setLearningContent] = useState(null);
   const [contentLoading, setContentLoading] = useState(true);
+  const [contentError, setContentError] = useState(null);
+  const [quizError, setQuizError] = useState(null);
 
   useEffect(() => {
     fetchTopicById(id);
@@ -21,6 +26,7 @@ function TopicDetailPage() {
   async function loadLearningContent() {
     try {
       setContentLoading(true);
+      setContentError(null);
       const response = await learningService.fetchLearningContent(id);
       if (response.success) {
         setLearningContent(response.data);
@@ -29,6 +35,7 @@ function TopicDetailPage() {
       if (import.meta.env.DEV) {
         console.error("Load learning content error:", error);
       }
+      setContentError("Learning content not available for this topic yet");
     } finally {
       setContentLoading(false);
     }
@@ -36,21 +43,22 @@ function TopicDetailPage() {
 
   async function handleQuizMe() {
     try {
-      const response = await learningService.startTopicQuiz(
-        id,
-        user?.examLevel,
-        10
-      );
+      setQuizError(null);
 
-      if (response.success) {
-        navigate("/dashboard/quiz-session", {
-          state: { session: response.data },
-        });
-      }
+      await startQuizSession({
+        mode: "topic",
+        topicId: id,
+        examLevel: user?.examLevel,
+        questionCount: 10,
+        timeLimit: 600,
+      });
+
+      navigate("/dashboard/quiz-session");
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error("Start topic quiz error:", error);
       }
+      setQuizError(error.message || "Failed to start quiz. Please try again.");
     }
   }
 
@@ -60,8 +68,49 @@ function TopicDetailPage() {
 
   if (topicLoading || contentLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+      <div className="min-h-screen bg-white">
+        <header className="border-b border-gray-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-4">
+                <SkeletonLoader variant="circle" className="h-5 w-5" />
+                <SkeletonLoader className="h-6 w-48" />
+              </div>
+              <div className="flex items-center gap-4">
+                <SkeletonLoader className="h-4 w-24" />
+                <SkeletonLoader variant="button" className="h-10 w-24" />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+          <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
+            <div className="mb-4 flex items-center gap-4">
+              <SkeletonLoader variant="circle" className="h-16 w-16" />
+              <div className="flex-1">
+                <SkeletonLoader variant="title" className="mb-2" />
+                <SkeletonLoader className="w-3/4" />
+              </div>
+            </div>
+            <div className="mb-6 flex items-center gap-4">
+              <SkeletonLoader className="h-6 w-24" />
+              <SkeletonLoader className="h-4 w-32" />
+            </div>
+            <SkeletonLoader variant="button" />
+          </div>
+
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-lg border border-gray-200 bg-white p-6">
+                <SkeletonLoader variant="title" className="mb-4 h-6" />
+                <SkeletonLoader className="mb-2" />
+                <SkeletonLoader className="mb-2 w-5/6" />
+                <SkeletonLoader className="w-3/4" />
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
@@ -137,18 +186,39 @@ function TopicDetailPage() {
             )}
           </div>
 
+          {quizError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm text-red-800">{quizError}</p>
+            </div>
+          )}
+
           <button
             onClick={handleQuizMe}
-            className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-all hover:bg-gray-800"
+            disabled={quizLoading}
+            className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <div className="flex items-center justify-center gap-2">
-              <Play className="h-5 w-5" />
-              <span>Quiz Me</span>
+              {quizLoading ? (
+                <>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>Starting Quiz...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-5 w-5" />
+                  <span>Quiz Me</span>
+                </>
+              )}
             </div>
           </button>
         </div>
 
-        {learningContent ? (
+        {contentError ? (
+          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
+            <AlertCircle className="mx-auto mb-2 h-8 w-8 text-gray-400" />
+            <p className="text-gray-600">{contentError}</p>
+          </div>
+        ) : learningContent ? (
           <div className="space-y-8">
             {learningContent.content.introduction && (
               <div className="rounded-lg border border-gray-200 bg-white p-6">
@@ -265,6 +335,7 @@ function TopicDetailPage() {
           </div>
         ) : (
           <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
+            <BookOpen className="mx-auto mb-2 h-8 w-8 text-gray-400" />
             <p className="text-gray-600">
               No learning content available for this topic yet.
             </p>

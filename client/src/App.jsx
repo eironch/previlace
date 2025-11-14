@@ -15,7 +15,7 @@ import QuizSetupPage from "@/pages/quiz/QuizSetupPage";
 import QuizSessionPage from "@/pages/quiz/QuizSessionPage";
 import QuizResultsPage from "@/pages/quiz/QuizResultsPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
-import MockExamPage from "@/pages/MockExamPage";
+import MockExamStartPage from "@/pages/quiz/MockExamStartPage";
 import AchievementsPage from "@/pages/AchievementsPage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import PerformancePage from "@/pages/PerformancePage";
@@ -205,7 +205,7 @@ function App() {
             path="/dashboard/mock-exam"
             element={
               <DashboardRoute>
-                <MockExamPage />
+                <MockExamStartPage />
               </DashboardRoute>
             }
           />
