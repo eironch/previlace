@@ -324,12 +324,31 @@ const getUserStats = catchAsync(async (req, res, next) => {
 const startMockExam = catchAsync(async (req, res, next) => {
   const { examLevel = "professional" } = req.body;
 
+  const normalizedLevel = examLevel.toLowerCase();
+  const targetQuestionCount = normalizedLevel === "professional" ? 170 : 165;
+  const timeLimit = normalizedLevel === "professional" ? 10800 : 9000;
+
+  const availableQuestions = await ManualQuestion.countDocuments({
+    examLevel: examLevel,
+    status: "published",
+    isActive: true,
+  });
+
+  if (availableQuestions < 50) {
+    return next(
+      new AppError(
+        `Insufficient questions available. Found ${availableQuestions} questions, but at least 50 are required for a mock exam. Please contact administrator.`,
+        400
+      )
+    );
+  }
+
   const mockExamConfig = {
     categories: [],
     difficulty: "",
     examLevel,
-    questionCount: examLevel === "professional" ? 170 : 165,
-    timeLimit: examLevel === "professional" ? 10800 : 9000,
+    questionCount: Math.min(availableQuestions, targetQuestionCount),
+    timeLimit,
   };
 
   const questions = await questionSelectionService.selectQuestionsForSession(
@@ -337,19 +356,11 @@ const startMockExam = catchAsync(async (req, res, next) => {
     mockExamConfig
   );
 
-  const availableCount = questions.length;
-  const requiredCount = mockExamConfig.questionCount;
-
-  if (availableCount < 20) {
+  if (questions.length === 0) {
     return next(
-      new AppError(
-        "Not enough questions available to start mock exam. Please contact administrator.",
-        400
-      )
+      new AppError("Unable to generate mock exam questions. Please try again later.", 500)
     );
   }
-
-  const finalQuestionCount = Math.min(availableCount, requiredCount);
 
   const session = await QuizSession.create({
     userId: req.user._id,
@@ -368,6 +379,8 @@ const startMockExam = catchAsync(async (req, res, next) => {
         mode: session.mode,
         timeLimit: session.config.timeLimit,
         questionCount: session.questions.length,
+        isPartialExam: questions.length < targetQuestionCount,
+        targetQuestionCount,
       },
       questions: questions.map((q) => ({
         _id: q._id,

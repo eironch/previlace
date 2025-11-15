@@ -70,6 +70,45 @@ const useExamStore = create((set, get) => ({
     }
   },
 
+  startMockExam: async (examLevel) => {
+    try {
+      set({ loading: true, error: null });
+
+      const response = await apiClient.post("/exam/mock-exam", {
+        examLevel: examLevel || "professional",
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to start mock exam");
+      }
+
+      const sessionData = response.data.data;
+
+      if (!sessionData?.questions || sessionData.questions.length === 0) {
+        throw new Error("No questions available. Please try again later.");
+      }
+
+      set({
+        currentSession: sessionData.session,
+        sessionQuestions: sessionData.questions,
+        questions: sessionData.questions,
+        currentQuestionIndex: 0,
+        answers: {},
+        timeRemaining: sessionData.session.timeLimit || 7200,
+        sessionActive: true,
+        isPaused: false,
+        loading: false,
+        error: null,
+      });
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Start mock exam error:", err);
+      }
+      set({ error: err.message, loading: false });
+      throw err;
+    }
+  },
+
   getCurrentQuestion: () => {
     const { sessionQuestions, currentQuestionIndex } = get();
     return sessionQuestions[currentQuestionIndex] || null;
