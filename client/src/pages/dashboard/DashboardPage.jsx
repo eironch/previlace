@@ -1,84 +1,101 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import Button from "@/components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
+import { 
+  BookOpen, 
+  Target, 
+  TrendingUp, 
+  Briefcase, 
+  FileText, 
+  MessageSquare,
+  Trophy,
+  BarChart3,
+  LogOut
+} from "lucide-react";
 
 function DashboardPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
 
+  const menuItems = [
+    {
+      icon: BookOpen,
+      title: "Subjects",
+      description: "Browse subjects and topics",
+      path: "/dashboard/subjects",
+    },
+    {
+      icon: Target,
+      title: "Practice Quiz",
+      description: "Test your knowledge",
+      path: "/dashboard/quiz",
+    },
+    {
+      icon: Trophy,
+      title: "Mock Exam",
+      description: "Full CSE simulation",
+      path: "/dashboard/mock-exam",
+    },
+    {
+      icon: BarChart3,
+      title: "Analytics",
+      description: "Track your progress",
+      path: "/dashboard/analytics",
+    },
+    {
+      icon: TrendingUp,
+      title: "Study Plan",
+      description: "Personalized schedule",
+      path: "/dashboard/study-plan",
+    },
+    {
+      icon: Briefcase,
+      title: "Jobs",
+      description: "Government openings",
+      path: "/dashboard/jobs",
+    },
+    {
+      icon: FileText,
+      title: "Resume",
+      description: "Build your resume",
+      path: "/dashboard/resume",
+    },
+    {
+      icon: MessageSquare,
+      title: "Interview Prep",
+      description: "Practice interviews",
+      path: "/dashboard/interview-prep",
+    },
+  ];
+
   async function handleLogout() {
     await logout();
   }
 
-  function handleStartPractice() {
-    navigate("/dashboard/quiz");
-  }
-
-  function handleBrowseMaterials() {
-    navigate("/dashboard/study-plan");
-  }
-
-  function handleViewProgress() {
-    navigate("/dashboard/analytics");
-  }
-
-  function handleFindJobs() {
-    navigate("/dashboard/jobs");
-  }
-
-  function handleBuildResume() {
-    navigate("/dashboard/resume");
-  }
-
-  function handleStartPrep() {
-    navigate("/dashboard/interview-prep");
-  }
-
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b">
+      <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
-            <div className="flex items-center">
-            {/* 💡 CHANGE: Converted div to button for clickability, using onClick and Tailwind styling */}
-            <button
-                onClick={() => navigate('/')} // Navigate to the root/landing page
-                className="flex items-center space-x-3 focus:outline-none" // Ensure focus style is handled
-            >
-                {/* Your original logo icon/div, treated as a child of the button */}
-                <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-black">
-                    {/* Assuming the Target icon is here based on your LandingPage.jsx */}
-                    {/* <Target className="h-4 w-4 text-white" /> */} 
-                </div>
-
-                {/* The app name itself */}
-                <h1 className="text-xl font-semibold text-black hover:text-gray-700 transition-colors">
-                    Previlace
-                </h1>
-            </button>
-        </div>
-            <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-semibold text-black">Previlace</h1>
+            <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
                 {user?.firstName} {user?.lastName}
               </span>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                Sign Out
-              </Button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h2 className="mb-2 text-2xl font-semibold">
+          <h2 className="mb-2 text-3xl font-bold text-gray-900">
             Welcome back, {user?.firstName}
           </h2>
           <p className="text-gray-600">
@@ -86,84 +103,22 @@ function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Practice Tests</CardTitle>
-              <CardDescription>
-                Take practice exams to test your knowledge
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" onClick={handleStartPractice}>
-                Start Practice
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Study Materials</CardTitle>
-              <CardDescription>
-                Access comprehensive study resources
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" onClick={handleBrowseMaterials}>
-                Browse Materials
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Progress Tracking</CardTitle>
-              <CardDescription>Monitor your learning progress</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" onClick={handleViewProgress}>
-                View Progress
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Job Opportunities</CardTitle>
-              <CardDescription>Explore government job openings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" onClick={handleFindJobs}>
-                Find Jobs
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Resume Builder</CardTitle>
-              <CardDescription>Create professional resumes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" onClick={handleBuildResume}>
-                Build Resume
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Interview Prep</CardTitle>
-              <CardDescription>
-                Prepare for government interviews
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" onClick={handleStartPrep}>
-                Start Prep
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {menuItems.map((item) => (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className="group rounded-lg border border-gray-200 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 transition-colors group-hover:bg-black">
+                <item.icon className="h-6 w-6 text-gray-900 transition-colors group-hover:text-white" />
+              </div>
+              <h3 className="mb-1 text-lg font-bold text-gray-900">
+                {item.title}
+              </h3>
+              <p className="text-sm text-gray-600">{item.description}</p>
+            </button>
+          ))}
         </div>
       </main>
     </div>

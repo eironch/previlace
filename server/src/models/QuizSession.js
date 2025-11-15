@@ -34,7 +34,7 @@ const quizSessionSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: ["practice", "timed", "mock", "custom"],
+      enum: ["practice", "timed", "mock", "custom", "subject", "topic"],
       default: "practice",
     },
     title: {

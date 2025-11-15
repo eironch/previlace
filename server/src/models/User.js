@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
         return !this.googleId;
       },
       minlength: 6,
+      select: false,
     },
     firstName: {
       type: String,
@@ -279,13 +280,6 @@ const userSchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
     },
-    loginAttempts: {
-      type: Number,
-      default: 0,
-    },
-    lockUntil: {
-      type: Date,
-    },
     isSuspended: {
       type: Boolean,
       default: false,
@@ -399,17 +393,11 @@ const userSchema = new mongoose.Schema(
         delete ret.refreshTokens;
         delete ret.emailVerificationToken;
         delete ret.passwordResetToken;
-        delete ret.loginAttempts;
-        delete ret.lockUntil;
         return ret;
       },
     },
   }
 );
-
-userSchema.virtual("isLocked").get(function () {
-  return !!(this.lockUntil && this.lockUntil > Date.now());
-});
 
 userSchema.virtual("displayName").get(function () {
   if (this.fullName) return this.fullName;
@@ -481,36 +469,6 @@ userSchema.methods.isEligibleForJobMatching = function () {
 
 userSchema.methods.needsCareerServices = function () {
   return this.wantsResumeHelp || this.needsInterviewPrep || this.enableJobMatching;
-};
-
-userSchema.methods.incLoginAttempts = function () {
-  if (this.lockUntil && this.lockUntil < Date.now()) {
-    return this.updateOne({
-      $unset: {
-        loginAttempts: 1,
-        lockUntil: 1,
-      },
-    });
-  }
-
-  const updates = { $inc: { loginAttempts: 1 } };
-
-  if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
-    updates.$set = {
-      lockUntil: Date.now() + 2 * 60 * 60 * 1000,
-    };
-  }
-
-  return this.updateOne(updates);
-};
-
-userSchema.methods.resetLoginAttempts = function () {
-  return this.updateOne({
-    $unset: {
-      loginAttempts: 1,
-      lockUntil: 1,
-    },
-  });
 };
 
 userSchema.methods.addRefreshToken = function (token, userAgent, ipAddress) {

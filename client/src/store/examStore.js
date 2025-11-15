@@ -13,33 +13,60 @@ const useExamStore = create((set, get) => ({
   timeRemaining: 0,
   sessionActive: false,
   isPaused: false,
-  analytics: null,
-  examReadiness: null,
-  studyPlan: null,
-  spacedRepetitionData: null,
-  reviewSchedule: null,
 
   startQuizSession: async (config) => {
     try {
       set({ loading: true, error: null });
-      const response = await apiClient.post("/exam/start", config);
+
+      let endpoint = "/exam/start";
+      let payload = config;
+
+      if (config.mode === "subject" && config.subjectId) {
+        endpoint = "/exam/subject-quiz";
+        payload = {
+          subjectId: config.subjectId,
+          examLevel: config.examLevel,
+          questionCount: config.questionCount,
+        };
+      } else if (config.mode === "topic" && config.topicId) {
+        endpoint = "/exam/topic-quiz";
+        payload = {
+          topicId: config.topicId,
+          examLevel: config.examLevel,
+          questionCount: config.questionCount,
+        };
+      }
+
+      const response = await apiClient.post(endpoint, payload);
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to start quiz");
+      }
+
+      const sessionData = response.data.data;
+
+      if (!sessionData?.questions || sessionData.questions.length === 0) {
+        throw new Error("No questions available. Please try again later.");
+      }
 
       set({
-        currentSession: response.data.data.session,
-        sessionQuestions: response.data.data.questions,
-        questions: response.data.data.questions,
+        currentSession: sessionData.session,
+        sessionQuestions: sessionData.questions,
+        questions: sessionData.questions,
         currentQuestionIndex: 0,
         answers: {},
-        timeRemaining: config.timeLimit || 600,
+        timeRemaining: sessionData.session.timeLimit || config.timeLimit || 600,
         sessionActive: true,
         isPaused: false,
         loading: false,
+        error: null,
       });
     } catch (err) {
       if (import.meta.env.DEV) {
         console.error("Start quiz session error:", err);
       }
       set({ error: err.message, loading: false });
+      throw err;
     }
   },
 
@@ -118,10 +145,7 @@ const useExamStore = create((set, get) => ({
           });
         } catch (error) {
           if (import.meta.env.DEV) {
-            console.error(
-              `Failed to submit answer for question ${questionId}:`,
-              error
-            );
+            console.error(`Failed to submit answer for question ${questionId}:`, error);
           }
         }
       }
@@ -139,17 +163,12 @@ const useExamStore = create((set, get) => ({
           });
         } catch (error) {
           if (import.meta.env.DEV) {
-            console.error(
-              `Failed to submit unanswered question ${questionId}:`,
-              error
-            );
+            console.error(`Failed to submit unanswered question ${questionId}:`, error);
           }
         }
       }
 
-      const response = await apiClient.post(
-        `/exam/${currentSession._id}/complete`
-      );
+      const response = await apiClient.post(`/exam/${currentSession._id}/complete`);
 
       set({
         currentResult: response.data.data.result,
@@ -161,124 +180,6 @@ const useExamStore = create((set, get) => ({
         console.error("Session completion error:", error);
       }
       set({ loading: false, sessionActive: false, error: error.message });
-    }
-  },
-
-  startMockExam: async (examLevel) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await apiClient.post("/exam/mock-exam", { examLevel });
-
-      set({
-        currentSession: response.data.data.session,
-        sessionQuestions: response.data.data.questions,
-        questions: response.data.data.questions,
-        currentQuestionIndex: 0,
-        answers: {},
-        timeRemaining: response.data.data.session.timeLimit,
-        sessionActive: true,
-        isPaused: false,
-        loading: false,
-      });
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Start mock exam error:", err);
-      }
-      set({ error: err.message, loading: false });
-    }
-  },
-
-  fetchAnalytics: async () => {
-    try {
-      set({ loading: true });
-      const response = await apiClient.get("/exam/analytics");
-      set({ analytics: response.data.data.analytics, loading: false });
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Fetch analytics error:", err);
-      }
-      set({ error: err.message, loading: false });
-    }
-  },
-
-  fetchExamReadiness: async (examLevel) => {
-    try {
-      set({ loading: true });
-      const response = await apiClient.get("/exam/readiness", {
-        params: { examLevel },
-      });
-      set({ examReadiness: response.data.data.readiness, loading: false });
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Fetch exam readiness error:", err);
-      }
-      set({ error: err.message, loading: false });
-    }
-  },
-
-  generateStudyPlan: async (targetDate) => {
-    try {
-      set({ loading: true });
-      const response = await apiClient.post("/exam/study-plan/generate", {
-        targetDate,
-      });
-      set({ studyPlan: response.data.data.studyPlan, loading: false });
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Generate study plan error:", err);
-      }
-      set({ error: err.message, loading: false });
-    }
-  },
-
-  trackStudySession: async (sessionData) => {
-    try {
-      const response = await apiClient.post(
-        "/exam/study-plan/track",
-        sessionData
-      );
-      return response.data;
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Track study session error:", err);
-      }
-      throw err;
-    }
-  },
-
-  fetchSpacedRepetitionQuestions: async (limit = 20) => {
-    try {
-      set({ loading: true });
-      const response = await apiClient.get("/exam/spaced-repetition/due", {
-        params: { limit },
-      });
-      set({
-        spacedRepetitionData: response.data.data,
-        sessionQuestions: response.data.data.questions,
-        questions: response.data.data.questions,
-        currentQuestionIndex: 0,
-        answers: {},
-        loading: false,
-      });
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Fetch spaced repetition questions error:", err);
-      }
-      set({ error: err.message, loading: false });
-    }
-  },
-
-  fetchReviewSchedule: async (days = 7) => {
-    try {
-      const response = await apiClient.get("/exam/spaced-repetition/schedule", {
-        params: { days },
-      });
-      set({ reviewSchedule: response.data.data.schedule });
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Fetch review schedule error:", err);
-      }
-      set({ error: err.message });
     }
   },
 
@@ -294,9 +195,6 @@ const useExamStore = create((set, get) => ({
       timeRemaining: 0,
       sessionActive: false,
       isPaused: false,
-      analytics: null,
-      examReadiness: null,
-      spacedRepetitionData: null,
     }),
 }));
 

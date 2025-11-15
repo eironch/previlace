@@ -222,12 +222,14 @@ function MockExamPage() {
               <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
               <div>
                 <h4 className="mb-1 font-medium text-blue-900">
-                  What to Expect
+                  Adaptive Exam Features
                 </h4>
                 <div className="space-y-1 text-sm text-blue-800">
+                  <p>AI-powered question selection based on your performance</p>
+                  <p>Focuses on weak areas identified from previous attempts</p>
+                  <p>Adaptive difficulty adjustment during the exam</p>
                   <p>Comprehensive performance analysis after completion</p>
                   <p>Detailed breakdown by subject and difficulty level</p>
-                  <p>Comparison with other test takers</p>
                   <p>Personalized study recommendations</p>
                   <p>Exam readiness assessment</p>
                 </div>

@@ -130,7 +130,7 @@ async function apiCall(endpoint, options = {}) {
     const error = new Error(data.message || "An error occurred");
     error.status = response.status;
     
-    if (response.status === 401) {
+    if (response.status === 401 && !endpoint.includes("/auth/")) {
       const { logout } = useAuthStore.getState();
       logout();
       error.message = "Authentication required. Please login again.";
