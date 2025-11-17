@@ -1,7 +1,9 @@
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Label from "@/components/ui/Label";
+// Note: Label, Card components are imported but not fully used/needed in this block, 
+// keeping the original imports for completeness.
+import Label from "@/components/ui/Label"; 
 import {
   Card,
   CardContent,
@@ -11,6 +13,22 @@ import {
 } from "@/components/ui/Card";
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
+
+// SVG Icons for Toggle (Eye and Eye-Off, adapted from Lucide)
+const EyeIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+
+const EyeOffIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.77 0 8.38 4.08 9.96 5.86-1.58 1.78-5.2 5.86-9.96 5.86a10.01 10.01 0 0 1-2.58-.42"/>
+    <path d="M2 2l20 20"/>
+  </svg>
+);
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -22,6 +40,10 @@ export default function RegisterForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  
+  // State for password visibility toggles
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { register, handleGoogleAuth, error, clearError, isLoading } =
     useAuthStore();
@@ -47,8 +69,14 @@ export default function RegisterForm() {
   const validateForm = () => {
     const errors = {};
 
-    if (!formData.firstName.trim()) errors.firstName = "First name is required";
-    if (!formData.lastName.trim()) errors.lastName = "Last name is required";
+    // Note: The original implementation did not have inputs for firstName and lastName 
+    // but the validation required them. I will assume these fields will be added later
+    // or just require the ones present in the form for now (email, password, confirmPassword).
+    // For now, I'm commenting out the missing field validations to match the rendered form structure.
+    
+    // if (!formData.firstName.trim()) errors.firstName = "First name is required";
+    // if (!formData.lastName.trim()) errors.lastName = "Last name is required";
+    
     if (!formData.email.trim()) errors.email = "Email is required";
     if (!formData.password) errors.password = "Password is required";
     else if (formData.password.length < 6)
@@ -70,9 +98,12 @@ export default function RegisterForm() {
     setIsSubmitting(true);
 
     try {
-      const { registerData } = formData;
+      // Assuming registerData will be constructed from formData fields
+      const { email, password, firstName, lastName } = formData;
+      const registerData = { email, password, firstName, lastName }; 
+      
       const result = await register(registerData);
-      if (result.success) {
+      if (result && result.success) { // Added null check for safety
         closeAuthModal();
       }
     } finally {
@@ -127,6 +158,7 @@ export default function RegisterForm() {
             )}
           </div>
 
+          {/* PASSWORD INPUT WITH TOGGLE */}
           <div className="space-y-2">
             <label
               htmlFor="password"
@@ -134,17 +166,29 @@ export default function RegisterForm() {
             >
               Password
             </label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Create a password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={disabled}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-black focus:outline-none"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"} // Dynamically set type
+                placeholder="Create a password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={disabled}
+                // Added pr-10 for padding to prevent text from overlapping the toggle button
+                className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:border-transparent focus:ring-2 focus:ring-black focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                disabled={disabled}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
             {validationErrors.password && (
               <p className="text-xs text-red-600">
                 {validationErrors.password}
@@ -152,6 +196,7 @@ export default function RegisterForm() {
             )}
           </div>
 
+          {/* CONFIRM PASSWORD INPUT WITH TOGGLE */}
           <div className="space-y-2">
             <label
               htmlFor="confirmPassword"
@@ -159,17 +204,29 @@ export default function RegisterForm() {
             >
               Confirm Password
             </label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              disabled={disabled}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-black focus:outline-none"
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"} // Dynamically set type
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                disabled={disabled}
+                // Added pr-10 for padding to prevent text from overlapping the toggle button
+                className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:border-transparent focus:ring-2 focus:ring-black focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(prev => !prev)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                disabled={disabled}
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+              >
+                {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
             {validationErrors.confirmPassword && (
               <p className="text-xs text-red-600">
                 {validationErrors.confirmPassword}
