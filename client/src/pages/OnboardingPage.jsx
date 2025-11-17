@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAppStore } from "@/store/appStore";
 import { useAuthStore } from "@/store/authStore";
-import { User, GraduationCap, Clock, Calendar } from "lucide-react";
+import { User, GraduationCap, Calendar } from "lucide-react";
 
 // Helper function to generate an array of future years (e.g., 2025, 2026, 2027)
 const getCurrentYear = () => new Date().getFullYear();
@@ -18,6 +18,18 @@ const calculateTargetDate = (month, year) => {
     return `${year}-${datePart}`;
 };
 
+// CORE SUBJECTS
+const CORE_SUBJECTS = [
+    "Numerical Ability",
+    "Verbal Ability",
+    "General Information",
+    "Clerical Ability",
+    "Logic & Reasoning",
+    "Reading Comprehension",
+    "Grammar & Language",
+    "Philippine Constitution",
+];
+
 
 export default function OnboardingPage() {
     const [step, setStep] = useState(0);
@@ -33,8 +45,7 @@ export default function OnboardingPage() {
         targetExamMonth: "", 
         targetExamYear: "", 
         targetExamDate: "", 
-        studyModes: [],
-        preferredStudyTime: "",
+        strongSubjects: [], 
         agreeTerms: false,
     });
 
@@ -52,7 +63,7 @@ export default function OnboardingPage() {
         
         setForm(newForm);
         // Clear error when changing relevant fields
-        if (["firstName", "lastName", "agreeTerms", "examType", "targetExamMonth", "targetExamYear", "preferredStudyTime"].includes(key)) {
+        if (["firstName", "lastName", "agreeTerms", "examType", "targetExamMonth", "targetExamYear"].includes(key)) {
              setError(""); 
         }
     }
@@ -63,8 +74,8 @@ export default function OnboardingPage() {
             ? current.filter((v) => v !== value)
             : [...current, value];
         setForm({ ...form, [key]: updated });
-        // Clear error when changing study modes
-        if (key === "studyModes") setError(""); 
+        // Clear error when changing strong subjects
+        if (key === "strongSubjects") setError(""); 
     }
 
     function nextStep() {
@@ -80,25 +91,15 @@ export default function OnboardingPage() {
             setError("");
         }
         
-        if (step === 2) { // Validation for Exam & Planning
-             if (!form.examType || !form.targetExamDate) {
+        // Validation for Step 2 (Study Core: Exam, Planning, & Subjects)
+        if (step === 2) { 
+            if (!form.examType || !form.targetExamDate) {
                 setError("Please select your exam level and target exam month/year.");
                 return;
             }
-            setError("");
-        }
-
-        // 💡 Validation for Step 3 (Preferences/Study Habits)
-        if (step === 3) {
-            if (form.studyModes.length === 0) {
-                setError("Please select at least one preferred study method.");
-                return;
-            }
-            if (!form.preferredStudyTime) {
-                setError("Please select your preferred study time.");
-                return;
-            }
-            // All checks passed, move to final step (Step 4)
+            // Subject selection is optional, no validation here.
+            
+            // All checks passed, move to final step (Step 3)
             setError("");
             setStep(step + 1);
             return;
@@ -114,7 +115,6 @@ export default function OnboardingPage() {
     }
 
     async function handleFinish() {
-        // We rely on validation in nextStep, but keep a final failsafe check here
         if (!form.agreeTerms) {
             setError("You must agree to the terms to continue.");
             return;
@@ -123,14 +123,17 @@ export default function OnboardingPage() {
         setIsSubmitting(true);
         setError("");
 
+        // Calculate weakSubjects from unselected subjects
+        const weakSubjects = CORE_SUBJECTS.filter(subject => !form.strongSubjects.includes(subject));
+
         try {
             await updateProfile({
                 firstName: form.firstName.trim(),
                 lastName: form.lastName.trim(),
                 examType: form.examType,
                 targetExamDate: form.targetExamDate, 
-                studyModes: form.studyModes,
-                preferredStudyTime: form.preferredStudyTime,
+                strongSubjects: form.strongSubjects,
+                weakSubjects: weakSubjects, 
                 agreeTerms: form.agreeTerms,
                 isProfileComplete: true,
             });
@@ -161,17 +164,14 @@ export default function OnboardingPage() {
         </div>
     );
 
-    // 💡 Helper function to determine button disabled status
+    // Helper function to determine button disabled status
     const isStepButtonDisabled = () => {
-        if (step === 1) {
+        if (step === 1) { // Essentials
             return !form.firstName.trim() || !form.lastName.trim() || !form.agreeTerms;
         }
-        if (step === 2) {
+        if (step === 2) { // Study Core
+            // Only check for ExamType and TargetDate.
             return !form.examType || !form.targetExamDate;
-        }
-        if (step === 3) {
-            // Disabled if no study mode or no preferred time is selected
-            return form.studyModes.length === 0 || !form.preferredStudyTime;
         }
         return false;
     };
@@ -192,7 +192,13 @@ export default function OnboardingPage() {
                     </div>
                     <h1 className="mb-4 text-3xl font-bold text-gray-900">Welcome to Previlace</h1>
                     <p className="mb-8 text-lg text-gray-600">Let's personalize your study plan quickly.</p>
-                    <button type="button" onClick={nextStep} className="rounded-lg bg-black px-8 py-3 text-white transition-opacity hover:opacity-90">Get Started</button>
+                    <button 
+                        type="button" 
+                        onClick={nextStep} 
+                        className="rounded-lg bg-black px-8 py-3 text-white transition-opacity hover:opacity-90 cursor-pointer" // Added cursor-pointer
+                    >
+                        Get Started
+                    </button>
                 </div>
             ),
         },
@@ -234,24 +240,25 @@ export default function OnboardingPage() {
                         />
                     </div>
                     
-                    {/* AGREEMENT CHECKBOX WITH POLICY LINK */}
+                    {/* AGREEMENT CHECKBOX WITH POLICY LINK (UPDATED TEXT) */}
                     <div>
-                        <label className="flex items-start gap-3">
+                        <label className="flex items-start gap-3 cursor-pointer"> {/* Added cursor-pointer to entire label for clickability */}
                             <input 
                                 type="checkbox" 
                                 checked={form.agreeTerms} 
                                 onChange={(e) => handleChange("agreeTerms", e.target.checked)} 
-                                className="mt-1 rounded" 
+                                className="mt-1 rounded cursor-pointer" 
                             />
                             <div>
                                 <div className="font-medium text-gray-900">
-                                    I agree to the 
+                                    {/* 💡 Updated text for agreement */}
+                                    I have read and agree to Previlace's 
                                     <button 
                                         type="button" 
                                         onClick={() => setShowPolicy(!showPolicy)} 
-                                        className="text-black underline font-semibold ml-1 hover:text-gray-700"
+                                        className="text-black underline font-semibold ml-1 hover:text-gray-700 cursor-pointer" // Added cursor-pointer
                                     >
-                                        Terms & Privacy Policy
+                                        Terms of Service and Privacy Policy
                                     </button>
                                 </div>
                                 <div className="text-sm text-gray-600">You must agree to continue.</div>
@@ -267,27 +274,34 @@ export default function OnboardingPage() {
         {
             icon: GraduationCap,
             title: "Study Core",
-            subtitle: "Exam & planning", 
+            subtitle: "Exam planning & subject assessment", 
             content: (
                 <div className="space-y-6">
+                    {/* Exam Level Selection */}
                     <div>
                         <label className="mb-3 block text-sm font-medium text-gray-700">Exam Level</label>
                         <div className="grid grid-cols-2 gap-4">
                             {[{ value: "Professional", desc: "Second-level positions" }, { value: "Sub-Professional", desc: "First-level positions" }].map((type) => (
-                                <button type="button" key={type.value} className={`rounded-lg border-2 p-4 text-left transition-all focus:outline-none focus:ring-2 ${form.examType === type.value ? "border-black bg-black text-white" : "border-gray-200 hover:border-gray-300 bg-white text-gray-900"}`} onClick={() => handleChange("examType", type.value)}>
+                                <button 
+                                    type="button" 
+                                    key={type.value} 
+                                    className={`rounded-lg border-2 p-4 text-left transition-all focus:outline-none focus:ring-2 cursor-pointer ${form.examType === type.value ? "border-black bg-black text-white" : "border-gray-200 hover:border-gray-300 bg-white text-gray-900"}`} 
+                                    onClick={() => handleChange("examType", type.value)}
+                                > {/* Added cursor-pointer */}
                                     <div className="font-medium">{type.value}</div>
                                     <div className={`text-sm ${form.examType === type.value ? "text-gray-300" : "text-gray-500"}`}>{type.desc}</div>
                                 </button>
                             ))}
                         </div>
                     </div>
+
                     {/* Target Exam Month and Year Selects */}
                     <div>
                         <label className="mb-2 block text-sm font-medium text-gray-700">Target Exam Date</label>
                         <div className="grid grid-cols-2 gap-4">
-                             {/* Month Select */}
+                            {/* Month Select */}
                             <select 
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" 
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer" // Added cursor-pointer
                                 value={form.targetExamMonth} 
                                 onChange={(e) => handleChange("targetExamMonth", e.target.value)}
                             >
@@ -298,7 +312,7 @@ export default function OnboardingPage() {
                             
                             {/* Year Select */}
                             <select 
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" 
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer" // Added cursor-pointer
                                 value={form.targetExamYear} 
                                 onChange={(e) => handleChange("targetExamYear", e.target.value)}
                             >
@@ -309,56 +323,36 @@ export default function OnboardingPage() {
                             </select>
                         </div>
                         
-                         {form.targetExamDate && (
+                        {form.targetExamDate && (
                             <p className="mt-2 text-xs text-gray-500">Target Date calculated: {form.targetExamDate}</p>
                         )}
                     </div>
-                </div>
-            ),
-        },
-        {
-            icon: Clock,
-            title: "Preferences",
-            subtitle: "Study habits",
-            content: (
-                <div className="space-y-6">
+
+                    {/* Strong Subjects Selection (Optional) */}
                     <div>
-                        <label className="mb-3 block text-sm font-medium text-gray-700">Preferred Study Methods</label>
+                        <label className="mb-3 block text-sm font-medium text-gray-700">Strong Subjects (Optional)</label>
+                        
                         <div className="grid grid-cols-2 gap-3">
-                            {["Text-based Modules", "Practice Quizzes", "Interactive Flashcards", "Mock Exams"].map((mode) => (
-                                <label key={mode} className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 p-3 transition-colors hover:bg-gray-50">
-                                    <input type="checkbox" checked={form.studyModes.includes(mode)} onChange={() => toggleArray("studyModes", mode)} className="rounded" />
-                                    <span className="text-sm text-gray-700">{mode}</span>
+                            {CORE_SUBJECTS.map((subject) => (
+                                <label key={subject} className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 p-3 transition-colors hover:bg-gray-50">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={form.strongSubjects.includes(subject)} 
+                                        onChange={() => toggleArray("strongSubjects", subject)} 
+                                        className="rounded cursor-pointer" 
+                                    />
+                                    <span className="text-sm text-gray-700">{subject}</span>
                                 </label>
                             ))}
                         </div>
-                        {/* Show error immediately if none are selected */}
-                        {step === 3 && form.studyModes.length === 0 && (
-                            <p className="text-sm text-red-500 mt-2">Please select at least one study method.</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">Preferred Study Time</label>
-                        <select className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" value={form.preferredStudyTime} onChange={(e) => handleChange("preferredStudyTime", e.target.value)}>
-                            <option value="">Select time</option>
-                            {/* Simplified options */}
-                            <option value="Morning">Morning</option>
-                            <option value="Afternoon">Afternoon</option>
-                            <option value="Evening">Evening</option>
-                            <option value="Flexible">Flexible</option>
-                        </select>
-                        {/* Show error immediately if none is selected */}
-                        {step === 3 && !form.preferredStudyTime && (
-                            <p className="text-sm text-red-500 mt-2">Please select your preferred study time.</p>
-                        )}
                     </div>
                 </div>
             ),
         },
         {
             icon: Calendar,
-            title: "Ready to Go!", // 💡 Updated Title
-            subtitle: "Welcome aboard", // 💡 Updated Subtitle
+            title: "Ready to Go!", 
+            subtitle: "Welcome aboard", 
             content: (
                 <div className="space-y-6 text-center">
                     <div className="text-4xl font-extrabold text-black">🎉</div>
@@ -370,7 +364,7 @@ export default function OnboardingPage() {
                     <button 
                         onClick={handleFinish} 
                         disabled={isSubmitting} 
-                        className="w-full rounded-lg bg-black px-6 py-4 text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                        className="w-full rounded-lg bg-black px-6 py-4 text-white transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer" // Added cursor-pointer
                     >
                         {isSubmitting ? "Setting up your profile..." : "Start Studying"}
                     </button>
@@ -414,13 +408,13 @@ export default function OnboardingPage() {
 
                 {/* Navigation buttons are only shown between the introduction and the final screen */}
                 {step > 0 && step < steps.length - 1 && (
-                    <div className="mt-8 flex justify-between">
-                        {/* Show back button only if we are past the welcome screen */}
+                    <div className={`mt-8 flex ${step > 1 ? 'justify-between' : 'justify-end'}`}>
+                        {/* Show back button only if we are past the welcome screen (step 0) and the essentials step (step 1) */}
                         {step > 1 && (
                             <button
                                 type="button"
                                 onClick={prevStep}
-                                className="rounded-lg border border-gray-300 px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50"
+                                className="rounded-lg border border-gray-300 px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50 cursor-pointer" // Added cursor-pointer
                             >
                                 Back
                             </button>
@@ -429,9 +423,9 @@ export default function OnboardingPage() {
                             type="button"
                             onClick={nextStep}
                             disabled={isStepButtonDisabled()}
-                            className="rounded-lg bg-black px-6 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                            className={`rounded-lg bg-black px-6 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer ${step === 1 ? 'w-full' : ''}`} // Added cursor-pointer
                         >
-                            {/* 💡 Button text now changes based on step */}
+                            {/* Button text now changes based on the new final step */}
                             {step === steps.length - 2 ? "Complete Setup" : "Continue"}
                         </button>
                     </div>

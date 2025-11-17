@@ -5,8 +5,6 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// 🛑 REMOVE: The old, conflicting public /approved route definition from here.
-
 // --- USER/ADMIN AUTHENTICATED ROUTES ---
 // This handles: POST /api/testimonials (Submission) and GET /api/testimonials (Admin View)
 router.post("/", protect, TestimonialController.submitTestimonial);
