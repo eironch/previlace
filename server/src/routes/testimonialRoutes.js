@@ -5,15 +5,17 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// --- USER/ADMIN AUTHENTICATED ROUTES ---
-// This handles: POST /api/testimonials (Submission) and GET /api/testimonials (Admin View)
-router.post("/", protect, TestimonialController.submitTestimonial);
-router.get("/", protect, requireAdmin, TestimonialController.getTestimonials); // Admin View
+// --- PUBLIC ROUTE ---
+// Fetches approved testimonials for public display (assuming you have a dedicated public route for this)
+// This route is missing from your snippet, but is required for the client's fetchApprovedTestimonials:
+// router.get("/public/approved", TestimonialController.getApprovedTestimonials); 
 
-// --- ADMIN ACTIONS ---
-router.post("/:id/approve", protect, requireAdmin, TestimonialController.approveTestimonial);
-router.post("/:id/reject", protect, requireAdmin, TestimonialController.rejectTestimonial);
+// --- /api/testimonials ROUTES ---
+// 1. POST /api/testimonials: User submits a new testimonial
+router.post("/", protect, TestimonialController.submitTestimonial);
+router.get("/", protect, requireAdmin, TestimonialController.getTestimonials);
 router.put("/:id", protect, requireAdmin, TestimonialController.updateTestimonial);
 router.delete("/:id", protect, requireAdmin, TestimonialController.deleteTestimonial);
+
 
 export default router;

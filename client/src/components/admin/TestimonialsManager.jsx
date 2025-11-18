@@ -1,103 +1,217 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTestimonialsStore } from "@/store/testimonialsStore";
-import { Loader2, AlertTriangle, Filter, RefreshCw, Send, CheckCircle, XCircle } from 'lucide-react';
+import { 
+    CheckCircle, Clock, User, Star, AlertTriangle, 
+    Loader2, RefreshCw, Heart // ⭐ Added Heart icon for 'Favorited' visual
+} from 'lucide-react';
+import Button from '@/components/ui/Button';
 
-// Import the row component for rendering individual entries
-import TestimonialRow from './TestimonialRow';
+// ⭐ Define the maximum limit
+const MAX_APPROVED_TESTIMONIALS = 3;
 
-const statusFilters = [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'pending', label: 'Pending Review' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'rejected', label: 'Rejected' },
-    { value: 'changes_requested', label: 'Changes Requested' },
-];
-
-export default function TestimonialsManager() {
-    const { testimonials, isLoading, error, fetchTestimonials } = useTestimonialsStore();
+export default function TestimonialsManager({ landingPage = false }) {
+    const { testimonials, isLoading, error, fetchTestimonials, approveTestimonial, revertToPending } = useTestimonialsStore();
     const [filterStatus, setFilterStatus] = useState('all');
+    const [actionLoading, setActionLoading] = useState(null);
+    const [actionError, setActionError] = useState(null);
 
-    // 1. Fetch data on component mount
+    // ⭐ Calculate the current count of approved testimonials
+    const approvedCount = useMemo(() => {
+        return testimonials.filter(t => t.status === 'approved').length;
+    }, [testimonials]);
+
+    // ⭐ Filtered list remains the same, but the logic now depends on the limit for the landing page
+    const filteredTestimonials = useMemo(() => {
+        if (landingPage) return testimonials.filter(t => t.status === 'approved').slice(0, MAX_APPROVED_TESTIMONIALS);
+        if (filterStatus === 'all') return testimonials;
+        return testimonials.filter(t => t.status === filterStatus);
+    }, [testimonials, filterStatus, landingPage]);
+
     useEffect(() => {
         fetchTestimonials();
     }, [fetchTestimonials]);
 
-    // 2. Filter data based on selected status
-    const filteredTestimonials = useMemo(() => {
-        if (filterStatus === 'all') {
-            return testimonials;
+    const handleAction = async (testimonialId, actionType) => {
+        setActionError(null);
+        
+        // ⭐ NEW LOGIC: Check the limit BEFORE approving
+        if (actionType === 'approve' && approvedCount >= MAX_APPROVED_TESTIMONIALS) {
+            setActionError(`Cannot approve more than ${MAX_APPROVED_TESTIMONIALS} testimonials. Please revert one first.`);
+            return;
         }
-        return testimonials.filter(t => t.status === filterStatus);
-    }, [testimonials, filterStatus]);
 
+        setActionLoading(actionType);
+        try {
+            switch (actionType) {
+                case 'approve':
+                    await approveTestimonial(testimonialId);
+                    // The store update will trigger the useMemo recalculation
+                    break;
+                case 'revert':
+                    await revertToPending(testimonialId);
+                    break;
+            }
+        } catch (err) {
+            // Note: If the backend returns a specific error (e.g., related to the limit, 
+            // although we pre-check here), this will catch it.
+            setActionError(err.message || `Action failed for ${actionType}.`);
+        } finally {
+            setActionLoading(null);
+        }
+    };
 
-    // --- Render Logic ---
+    const formatDate = date => new Date(date).toLocaleDateString();
 
-    if (isLoading) {
+    const TestimonialRow = ({ testimonial }) => {
+        const isPending = testimonial.status === 'pending';
+        const isApproved = testimonial.status === 'approved';
+        const isActionDisabled = actionLoading !== null;
+
+        const StatusBadge = () => {
+            let borderColor = 'border-gray-500';
+            let textColor = 'text-gray-500';
+            let statusText = testimonial.status.toUpperCase();
+
+            if (testimonial.status === 'pending') {
+                borderColor = 'border-gray-700';
+                textColor = 'text-gray-700';
+            } else if (testimonial.status === 'approved') {
+                // ⭐ Change text to 'FAVORITED' or 'APPROVED' based on context/preference
+                borderColor = 'border-black';
+                textColor = 'text-black';
+                statusText = 'FAVORITED'; // ⭐ Visual change for the approved state
+            } 
+
+            return (
+                <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${borderColor} ${textColor}`}>
+                    {statusText}
+                </span>
+            );
+        };
+
         return (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-black" />
-                <p className="ml-3 text-gray-600">Loading testimonials...</p>
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-black transition-shadow duration-200 hover:shadow-md">
+                <div className="flex justify-between items-start mb-4 border-b border-black pb-3">
+                    <div className="flex items-center space-x-3">
+                        <User className="h-6 w-6 text-black" />
+                        <div>
+                            <p className="font-semibold text-lg text-black">{testimonial.userName || 'Anonymous User'}</p>
+                            <p className="text-sm text-gray-700">{testimonial.role || 'No Role Specified'}</p>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <StatusBadge />
+                        <div className="flex items-center justify-end text-xs text-gray-700 mt-1 space-x-2">
+                            <Clock className="h-3 w-3" />
+                            <span>Submitted: {formatDate(testimonial.submittedAt)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-4">
+                    <div className="flex mb-2">
+                        {[...Array(testimonial.rating || 5)].map((_, i) => (
+                            <Star key={i} className="h-4 w-4 text-black" />
+                        ))}
+                    </div>
+                    <p className="text-black italic">"{testimonial.content}"</p>
+                </div>
+
+                {actionError && (
+                    <div className="p-3 border border-red-500 bg-red-50 text-sm text-red-700 rounded-md mb-4 flex items-center">
+                        <AlertTriangle className="h-4 w-4 mr-2" /> {actionError}
+                    </div>
+                )}
+
+                {!landingPage && (
+                    <div className="flex space-x-3 pt-3 border-t border-black">
+                        {isPending && (
+                            <Button 
+                                onClick={() => handleAction(testimonial._id, 'approve')} 
+                                disabled={isActionDisabled || approvedCount >= MAX_APPROVED_TESTIMONIALS} // ⭐ Disable if at limit
+                                className="flex items-center border border-black text-black hover:bg-gray-100"
+                            >
+                                <Heart className="h-4 w-4 mr-2 text-red-500" /> 
+                                {actionLoading === 'approve' ? 'Favoriting...' : 'Favorite for Display'}
+                            </Button>
+                        )}
+
+                        {isApproved && (
+                            <Button 
+                                onClick={() => handleAction(testimonial._id, 'revert')} 
+                                disabled={isActionDisabled} 
+                                className="flex items-center border border-black text-black hover:bg-gray-100"
+                            >
+                                <Clock className="h-4 w-4 mr-2" /> Revert to Pending
+                            </Button>
+                        )}
+                        
+                        {/* ⭐ Display limit info near actions */}
+                        <p className="text-sm text-gray-500 self-center ml-4">
+                            Approved: {approvedCount}/{MAX_APPROVED_TESTIMONIALS}
+                        </p>
+                    </div>
+                )}
             </div>
         );
-    }
+    };
 
-    if (error) {
-        return (
-            <div className="p-6 bg-red-50 border border-red-200 rounded-lg flex items-center">
-                <AlertTriangle className="h-6 w-6 text-red-500 mr-3" />
-                <p className="text-red-700">Error loading data: {error}</p>
-                <button 
-                    onClick={fetchTestimonials} 
-                    className="ml-auto text-sm text-red-500 hover:underline"
-                >
-                    <RefreshCw className="h-4 w-4 inline mr-1" /> Retry
-                </button>
-            </div>
-        );
-    }
+    // ... (isLoading and error rendering remains the same) ...
+
+    if (isLoading) return (
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-black" />
+            <p className="ml-3 text-gray-600">Loading testimonials...</p>
+        </div>
+    );
+
+    if (error) return (
+        <div className="p-6 bg-red-50 border border-red-200 rounded-lg flex items-center">
+            <AlertTriangle className="h-6 w-6 text-red-500 mr-3" />
+            <p className="text-red-700">Error loading data: {error}</p>
+            <button onClick={fetchTestimonials} className="ml-auto text-sm text-red-500 hover:underline">
+                <RefreshCw className="h-4 w-4 inline mr-1" /> Retry
+            </button>
+        </div>
+    );
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Testimonials Management ({filteredTestimonials.length})</h2>
+            {!landingPage && (
+                <>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        Testimonials Management ({filteredTestimonials.length})
+                        <span className="ml-4 text-base font-medium text-gray-600">
+                            (Display Limit: {approvedCount}/{MAX_APPROVED_TESTIMONIALS})
+                        </span>
+                    </h2>
 
-            {/* Filter and Stats Bar */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center space-x-3 mb-4 md:mb-0">
-                    <Filter className="h-5 w-5 text-gray-600" />
-                    <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="p-2 border border-gray-300 rounded-md text-sm bg-white focus:ring-black focus:border-black"
-                    >
-                        {statusFilters.map(filter => (
-                            <option key={filter.value} value={filter.value}>{filter.label} ({testimonials.filter(t => filter.value === 'all' || t.status === filter.value).length})</option>
-                        ))}
-                    </select>
-                </div>
-                
-                <button 
-                    onClick={fetchTestimonials}
-                    className="flex items-center text-sm text-black hover:text-gray-700 transition-colors"
-                    disabled={isLoading}
-                >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                    Refresh Data
-                </button>
-            </div>
+                    {/* Filter dropdown */}
+                    <div className="mb-4">
+                        <label className="mr-2 font-semibold text-black">Filter Status:</label>
+                        <select 
+                            value={filterStatus} 
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="border border-black rounded px-2 py-1 text-black"
+                        >
+                            <option value="all">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Favorited (Approved)</option>
+                        </select>
+                    </div>
+                </>
+            )}
 
-            {/* Testimonial List */}
             <div className="space-y-4">
                 {filteredTestimonials.length > 0 ? (
-                    filteredTestimonials.map((testimonial) => (
-                        <TestimonialRow key={testimonial._id} testimonial={testimonial} />
+                    filteredTestimonials.map(t => (
+                        <TestimonialRow key={t._id} testimonial={t} />
                     ))
                 ) : (
                     <div className="p-8 text-center bg-white rounded-lg border border-dashed border-gray-300">
-                        <p className="text-lg text-gray-500">No {filterStatus} testimonials found.</p>
-                        {filterStatus !== 'pending' && (
-                            <p className="text-sm text-gray-400 mt-2">Try switching the filter to 'Pending Review'.</p>
-                        )}
+                        <p className="text-lg text-gray-500">
+                            {landingPage ? 'No favorite testimonials yet.' : `No ${filterStatus} testimonials found.`}
+                        </p>
                     </div>
                 )}
             </div>

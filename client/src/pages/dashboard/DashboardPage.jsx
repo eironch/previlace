@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { 
@@ -68,6 +69,7 @@ function DashboardPage() {
   ];
 
   async function handleLogout() {
+    // This assumes the logout function handles navigation away from the dashboard
     await logout();
   }
 
@@ -76,7 +78,14 @@ function DashboardPage() {
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
-            <h1 className="text-xl font-semibold text-black">Previlace</h1>
+            {/* START: Logo made clickable */}
+            <h1 
+              onClick={() => navigate("/")}
+              className="text-xl font-semibold text-black cursor-pointer transition-opacity hover:opacity-80"
+            >
+              Previlace
+            </h1>
+            {/* END: Logo made clickable */}
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
                 {user?.firstName} {user?.lastName}

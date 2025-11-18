@@ -1,34 +1,43 @@
 import mongoose from 'mongoose';
 
-// Defines the schema for the static site statistics document.
-const statSchema = new mongoose.Schema({
-    // Using Strings to accommodate numbers with formatting (e.g., "4,100+")
+/**
+ * Defines the Mongoose Schema for the application's global statistics.
+ * We assume only one document of this type will ever exist in the collection,
+ * serving as a single source of truth for the public key metrics.
+ */
+const StatisticsSchema = new mongoose.Schema({
+    // Store as strings to support non-numeric values like "12,000+" or "95%"
+    
     averagePassRate: {
         type: String,
-        required: true,
-        default: "17.22%", 
+        required: [true, 'Please provide the average CSE pass rate.'],
+        default: '85%'
     },
     previlaceUserPassRate: {
         type: String,
-        required: true,
-        default: "85%",
+        required: [true, 'Please provide the privileged user pass rate.'],
+        default: '92%'
     },
     successfulStudents: {
         type: String,
-        required: true,
-        default: "3,000+",
+        required: [true, 'Please provide the successful students count.'],
+        default: '12,000+'
     },
     governmentJobsMatched: {
         type: String,
-        required: true,
-        default: "500+",
+        required: [true, 'Please provide the government jobs matched count.'],
+        default: '3,500+'
     },
-    // Timestamp for tracking when the document was last updated
     lastUpdated: {
         type: Date,
-        default: Date.now,
+        default: Date.now
     }
+}, { 
+    // Mongoose option to disable the automatic 'id' field for simpler single-document use
+    _id: false 
 });
 
-const Stat = mongoose.model('Stat', statSchema);
+// Export the Mongoose model
+const Stat = mongoose.model('Statistic', StatisticsSchema);
+
 export default Stat;

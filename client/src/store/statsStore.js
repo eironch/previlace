@@ -1,73 +1,87 @@
 import { create } from 'zustand';
-// Assuming statService is located in a sibling 'services' folder or configured alias
-import statService from '../services/statsService'; 
+import statService from '../services/statsService'; // Updated to use the default export
 
-/**
- * Zustand store for managing site statistics (CSE Pass Rate, Students, etc.).
- * Data is fetched via the statService which communicates with the REST API.
- */
-export const useStatsStore = create((set, get) => ({
+// Map labels to the simple form keys used in the AdminStatsEditor
+const STAT_KEYS = {
+    "Average CSE Pass Rate": "averagePassRate",
+    "Previlace User Pass Rate": "previlaceUserPassRate",
+    "Successful Students": "successfulStudents",
+    "Government Jobs Matched": "governmentJobsMatched",
+};
+
+const initialState = {
     stats: [],
     isLoading: false,
     error: null,
+};
+
+export const useStatsStore = create((set, get) => ({
+    ...initialState,
 
     /**
-     * Fetches the latest statistics from the backend service via statService.
+     * @desc Fetches public stats via the service layer (used by Admin/Public display).
      */
     fetchStats: async () => {
         set({ isLoading: true, error: null });
 
         try {
-            // Use the statService to fetch data
-            const result = await statService.fetchStats();
-            const fetchedStats = result.data; // Assuming result.data holds the stats object
+            // Use the new service object method
+            const fetchedStats = await statService.fetchStats(); 
 
-            // Transform the fetched object into the array structure the components expect
-            const transformedStats = [
-                { number: fetchedStats.averagePassRate, label: "Average CSE Pass Rate" },
-                { number: fetchedStats.previlaceUserPassRate, label: "Previlace User Pass Rate" },
-                { number: fetchedStats.successfulStudents, label: "Successful Students" },
-                { number: fetchedStats.governmentJobsMatched, label: "Government Jobs Matched" },
-            ];
-            
-            set({ stats: transformedStats, isLoading: false });
-
-        } catch (error) {
-            console.error("Failed to fetch dynamic stats from API:", error);
-            
-            // Fallback: If the API call fails, load the original hardcoded defaults
-            const defaultStats = [
-                { number: "17.22%", label: "Average CSE Pass Rate" },
-                { number: "85%", label: "Previlace User Pass Rate" },
-                { number: "3,000+", label: "Successful Students" },
-                { number: "500+", label: "Government Jobs Matched" },
-            ];
-            
-            set({ 
-                stats: defaultStats, 
-                isLoading: false, 
-                error: "Failed to load dynamic data. Displaying defaults." 
+            set({
+                stats: fetchedStats,
+                isLoading: false,
+                error: null
             });
+
+        } catch (err) {
+            console.error("Error fetching statistics from API:", err);
+            set({
+                isLoading: false,
+                error: err.message || 'Failed to fetch public statistics from API',
+            });
+            // Propagate the error to allow components to handle failure (e.g., the infinite loop fix)
+            throw err;
         }
     },
-
+    
     /**
-     * Admin action to update the statistics.
-     * NOTE: This would typically be called from an admin dashboard component.
-     * @param {object} updatedData - Object containing the new stat values.
+     * @desc Saves updated stats to the API, handling the object-to-array transformation.
+     * @param {Object} formData - Flat object from the admin form (e.g., {averagePassRate: "90%"}).
+     * @returns {Object} { success: boolean, error?: string }
      */
-    updateAdminStats: async (updatedData) => {
+    updateAdminStats: async (formData) => {
+        const currentStats = get().stats;
+
+        // 1. Transform the flat formData back into the array structure expected by the API
+        // NOTE: The backend controller is now fixed to handle this array structure.
+        const updatedStatsArray = currentStats.map(stat => {
+            const formKey = STAT_KEYS[stat.label]; 
+            
+            if (formKey && formData[formKey] !== undefined) {
+                // Update the 'number' value with the data from the form
+                return { ...stat, number: formData[formKey] };
+            }
+            return stat;
+        });
+
+        // Robustness check
+        if (updatedStatsArray.length !== 4) {
+            return { success: false, error: "Data structure error: Cannot save non-standard number of stats." };
+        }
+
         try {
-            await statService.updateStats(updatedData);
+            // 2. Call the service layer with the correctly structured array
+            await statService.saveStats(updatedStatsArray); 
             
-            // Refetch the stats to update the UI after a successful admin update
-            get().fetchStats(); 
+            // 3. Update the store's state with the new values upon success
+            set({ stats: updatedStatsArray }); 
             
-            return { success: true, message: "Statistics updated successfully!" };
-        } catch (error) {
-            console.error("Admin stat update failed:", error);
-            // Propagate error details back to the admin UI
-            return { success: false, error: error.response?.data?.error || "Failed to update statistics due to server error." };
+            return { success: true };
+            
+        } catch (err) {
+            console.error("Error saving statistics via API:", err);
+            return { success: false, error: err.message || 'API save operation failed.' };
         }
     }
 }));
