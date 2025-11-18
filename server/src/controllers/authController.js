@@ -82,7 +82,7 @@ const register = catchAsync(async (req, res, next) => {
 				lastName: user.lastName,
 				isEmailVerified: user.isEmailVerified,
 				isProfileComplete: user.isProfileComplete,
-				role: user.role || 'user',
+				role: user.role,
 				avatar: user.avatar
 			},
 			accessToken,
@@ -126,7 +126,7 @@ const login = catchAsync(async (req, res, next) => {
 				lastName: user.lastName,
 				isEmailVerified: user.isEmailVerified,
 				isProfileComplete: user.isProfileComplete,
-				role: user.role || 'user',
+				role: user.role,
 				avatar: user.avatar
 			},
 			accessToken,
@@ -413,7 +413,7 @@ const googleCallbackSuccess = catchAsync(async (req, res, next) => {
 		avatar: req.user.user.avatar,
 		isEmailVerified: req.user.user.isEmailVerified,
 		isProfileComplete: req.user.user.isProfileComplete,
-		role: req.user.user.role || 'user'
+		role: req.user.user.role
 	}));
 	
 	const tokenData = encodeURIComponent(JSON.stringify({

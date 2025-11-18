@@ -1,360 +1,241 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Play, Clock, Target, Settings } from "lucide-react";
-import Label from "@/components/ui/Label";
+import { ChevronLeft, Play, Clock } from "lucide-react";
 import useExamStore from "@/store/examStore";
+import useAuthStore from "@/store/authStore";
+import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function QuizSetupPage() {
   const navigate = useNavigate();
-  const [setupConfig, setSetupConfig] = useState({
-    mode: "practice",
-    categories: [],
-    difficulty: "",
-    examLevel: "Professional",
-    questionCount: 10,
-    timeLimit: 600,
-    title: "",
-  });
+  const { user } = useAuthStore();
+  const { startQuizSession, loading } = useExamStore();
+  
+  const [mode, setMode] = useState("practice");
+  const [questionCount, setQuestionCount] = useState(10);
+  const [difficulty, setDifficulty] = useState("");
+  const [error, setError] = useState("");
 
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const { startQuizSession, startMockExam, loading, error } = useExamStore();
-
-  function handleCategoryToggle(category) {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  }
+  const examLevel = user?.examType || "Professional";
 
   async function handleStartQuiz() {
-    if (setupConfig.mode === "mock") {
-      navigate("/dashboard/mock-exam");
+    if (questionCount < 5 || questionCount > 50) {
+      setError("Question count must be between 5 and 50");
       return;
     }
 
+    setError("");
+
     const config = {
-      ...setupConfig,
-      categories: selectedCategories.length > 0 ? selectedCategories : [],
-      title:
-        setupConfig.title ||
-        `${setupConfig.mode.charAt(0).toUpperCase() + setupConfig.mode.slice(1)} Quiz`,
+      mode,
+      examLevel,
+      questionCount: parseInt(questionCount),
+      difficulty,
+      categories: [],
+      title: `${mode === "practice" ? "Practice" : "Timed Practice"} Quiz`,
     };
 
     try {
-      if (setupConfig.mode === "mock") {
-        await startMockExam(setupConfig.examLevel.toLowerCase());
-      } else {
-        await startQuizSession(config);
-      }
+      await startQuizSession(config);
       navigate("/dashboard/quiz-session");
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to start quiz:", err);
-      }
+      setError(err.message || "Failed to start quiz");
     }
   }
 
-  function getTimeInMinutes(seconds) {
-    return Math.floor(seconds / 60);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="mx-auto max-w-2xl px-4 py-6">
+          <SkeletonLoader variant="title" className="mb-6" />
+          <div className="space-y-4">
+            <SkeletonLoader className="h-32" />
+            <SkeletonLoader className="h-32" />
+            <SkeletonLoader className="h-20" />
+          </div>
+        </div>
+      </div>
+    );
   }
-
-  function formatTimeLimit(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    if (minutes >= 60) {
-      const hours = Math.floor(minutes / 60);
-      const remainingMinutes = minutes % 60;
-      return `${hours}h ${remainingMinutes}m`;
-    }
-    return `${minutes}m`;
-  }
-
-  const categoryOptions = [
-    "Numerical Ability",
-    "Verbal Ability",
-    "General Information",
-    "Clerical Ability",
-    "Logic & Reasoning",
-    "Reading Comprehension",
-    "Grammar & Language",
-    "Philippine Constitution",
-  ];
-
-  const modeDescriptions = {
-    practice: "Unlimited practice with immediate feedback",
-    timed: "Timed quiz with final results",
-    mock: "Full-length practice exam",
-    custom: "Customizable quiz settings",
-  };
-
-  const mockExamDefaults = {
-    Professional: { questions: 170, time: 10800 },
-    "Sub-Professional": { questions: 165, time: 9000 },
-  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="mx-auto max-w-4xl px-4">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Quiz</h1>
-          <p className="mt-2 text-gray-600">
-            Configure your quiz settings and start practicing
-          </p>
+    <div className="min-h-screen bg-white">
+      <div className="border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-2xl px-4 py-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-black"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Start Practice Quiz</h1>
+          <p className="mt-2 text-gray-600">Configure your quiz settings</p>
         </div>
 
-        <div className="rounded-xl bg-white p-8 shadow-lg">
-          <div className="space-y-8">
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <Play className="h-5 w-5 text-blue-600" />
-                <Label className="text-lg font-semibold">Quiz Mode</Label>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {Object.entries(modeDescriptions).map(([mode, description]) => (
-                  <div
-                    key={mode}
-                    className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                      setupConfig.mode === mode
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                    onClick={() => setSetupConfig({ ...setupConfig, mode })}
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        checked={setupConfig.mode === mode}
-                        onChange={() => {}}
-                        className="h-4 w-4 text-blue-600"
-                      />
-                      <span className="font-semibold capitalize">{mode}</span>
-                    </div>
-                    <p className="mt-1 text-sm text-gray-600">{description}</p>
+        <div className="space-y-6">
+          <div>
+            <label className="mb-3 block text-sm font-semibold text-gray-900">
+              Quiz Mode
+            </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                onClick={() => setMode("practice")}
+                className={`rounded-lg border-2 p-4 text-left transition-all ${
+                  mode === "practice"
+                    ? "border-black bg-gray-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Play className="h-5 w-5" />
+                    <span className="font-semibold text-gray-900">Practice</span>
                   </div>
-                ))}
-              </div>
+                  {mode === "practice" && (
+                    <div className="h-5 w-5 rounded-full border-2 border-black bg-black" />
+                  )}
+                  {mode !== "practice" && (
+                    <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+                  )}
+                </div>
+                <p className="text-sm text-gray-600">
+                  Learn at your own pace with immediate feedback
+                </p>
+                <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                  <span>No time limit</span>
+                  <span>Instant feedback</span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setMode("timed")}
+                className={`rounded-lg border-2 p-4 text-left transition-all ${
+                  mode === "timed"
+                    ? "border-black bg-gray-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    <span className="font-semibold text-gray-900">Timed Practice</span>
+                  </div>
+                  {mode === "timed" && (
+                    <div className="h-5 w-5 rounded-full border-2 border-black bg-black" />
+                  )}
+                  {mode !== "timed" && (
+                    <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+                  )}
+                </div>
+                <p className="text-sm text-gray-600">
+                  Simulate test conditions with countdown timer
+                </p>
+                <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                  <span>Time limit</span>
+                  <span>Results at end</span>
+                </div>
+              </button>
             </div>
+          </div>
 
-            {setupConfig.mode !== "mock" && (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label htmlFor="title" className="mb-2 flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Quiz Title
-                </Label>
-                <input
-                  id="title"
-                  type="text"
-                  value={setupConfig.title}
-                  onChange={(e) =>
-                    setSetupConfig({ ...setupConfig, title: e.target.value })
-                  }
-                  placeholder="Enter quiz title (optional)"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                />
-              </div>
-            )}
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <Label
-                  htmlFor="examLevel"
-                  className="mb-2 flex items-center gap-2"
-                >
-                  <Target className="h-4 w-4" />
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Exam Level
-                </Label>
-                <select
-                  id="examLevel"
-                  value={setupConfig.examLevel}
-                  onChange={(e) =>
-                    setSetupConfig({
-                      ...setupConfig,
-                      examLevel: e.target.value,
-                      ...(setupConfig.mode === "mock"
-                        ? {
-                            questionCount:
-                              mockExamDefaults[e.target.value].questions,
-                            timeLimit: mockExamDefaults[e.target.value].time,
-                          }
-                        : {}),
-                    })
-                  }
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                >
-                  <option value="Professional">Professional</option>
-                  <option value="Sub-Professional">Sub-Professional</option>
-                </select>
+                </label>
+                <div className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900">
+                  {examLevel}
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Set in your profile settings
+                </p>
               </div>
 
-              {setupConfig.mode !== "mock" && (
-                <div>
-                  <Label htmlFor="difficulty">Difficulty Level</Label>
-                  <select
-                    id="difficulty"
-                    value={setupConfig.difficulty}
-                    onChange={(e) =>
-                      setSetupConfig({
-                        ...setupConfig,
-                        difficulty: e.target.value,
-                      })
-                    }
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                  >
-                    <option value="">Mixed Difficulty</option>
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                </div>
-              )}
-            </div>
-
-            {setupConfig.mode !== "mock" && (
               <div>
-                <Label className="mb-3 block">Subject Categories</Label>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {categoryOptions.map((category) => (
-                    <label
-                      key={category}
-                      className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 transition-all ${
-                        selectedCategories.includes(category)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(category)}
-                        onChange={() => handleCategoryToggle(category)}
-                        className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium">{category}</span>
-                    </label>
-                  ))}
-                </div>
-                {selectedCategories.length === 0 && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    All categories will be included if none selected
-                  </p>
-                )}
-              </div>
-            )}
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <Label
+                <label
                   htmlFor="questionCount"
-                  className="mb-2 flex items-center gap-2"
+                  className="mb-2 block text-sm font-medium text-gray-700"
                 >
-                  <Target className="h-4 w-4" />
                   Number of Questions
-                </Label>
+                </label>
                 <input
                   id="questionCount"
                   type="number"
                   min="5"
-                  max="200"
-                  value={setupConfig.questionCount}
-                  onChange={(e) =>
-                    setSetupConfig({
-                      ...setupConfig,
-                      questionCount: parseInt(e.target.value) || 5,
-                    })
-                  }
-                  disabled={setupConfig.mode === "mock"}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100"
+                  max="50"
+                  value={questionCount}
+                  onChange={(e) => setQuestionCount(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 focus:border-black focus:outline-none focus:ring-2 focus:ring-gray-200"
                 />
-                {setupConfig.mode === "mock" && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    Mock exam uses standard question count (
-                    {mockExamDefaults[setupConfig.examLevel].questions}{" "}
-                    questions)
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="timeLimit"
-                  className="mb-2 flex items-center gap-2"
-                >
-                  <Clock className="h-4 w-4" />
-                  Time Limit
-                </Label>
-                <div className="flex gap-2">
-                  <input
-                    id="timeLimit"
-                    type="number"
-                    min="60"
-                    max="14400"
-                    step="60"
-                    value={getTimeInMinutes(setupConfig.timeLimit)}
-                    onChange={(e) =>
-                      setSetupConfig({
-                        ...setupConfig,
-                        timeLimit: (parseInt(e.target.value) || 10) * 60,
-                      })
-                    }
-                    disabled={setupConfig.mode === "mock"}
-                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100"
-                  />
-                  <div className="flex items-center rounded-lg bg-gray-100 px-3">
-                    <span className="text-sm text-gray-600">min</span>
-                  </div>
-                </div>
-                <p className="mt-1 text-sm text-gray-500">
-                  Duration: {formatTimeLimit(setupConfig.timeLimit)}
-                  {setupConfig.mode === "mock" && " (Standard exam time)"}
-                </p>
+                <p className="mt-1 text-xs text-gray-500">Between 5 and 50</p>
               </div>
             </div>
-
-            {setupConfig.mode === "mock" && (
-              <div className="rounded-lg bg-blue-50 p-4">
-                <h3 className="font-semibold text-blue-900">
-                  Mock Exam Settings
-                </h3>
-                <div className="mt-2 grid gap-2 text-sm text-blue-800">
-                  <div>
-                    Questions:{" "}
-                    {mockExamDefaults[setupConfig.examLevel].questions}
-                  </div>
-                  <div>
-                    Time Limit:{" "}
-                    {formatTimeLimit(
-                      mockExamDefaults[setupConfig.examLevel].time
-                    )}
-                  </div>
-                  <div>
-                    Format: Simulates actual {setupConfig.examLevel} CSE
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="mt-8 space-y-4">
-            {error && (
-              <div className="rounded-lg bg-red-50 p-4">
-                <div className="text-sm text-red-700">{error}</div>
-              </div>
-            )}
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="flex-1 rounded-lg border border-gray-300 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleStartQuiz}
-                disabled={loading}
-                className="flex-1 rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? "Starting..." : "Start Quiz"}
-              </button>
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-900">
+              Difficulty Level
+            </label>
+            <div className="grid gap-2">
+              {[
+                { value: "", label: "Mixed", desc: "All difficulty levels" },
+                { value: "Beginner", label: "Beginner", desc: "Easier questions" },
+                { value: "Intermediate", label: "Intermediate", desc: "Medium difficulty" },
+                { value: "Advanced", label: "Advanced", desc: "Challenging questions" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setDifficulty(option.value)}
+                  className={`flex items-center justify-between rounded-lg border-2 p-3 text-left transition-all ${
+                    difficulty === option.value
+                      ? "border-black bg-gray-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`h-4 w-4 rounded-full border-2 ${
+                        difficulty === option.value
+                          ? "border-black bg-black"
+                          : "border-gray-300"
+                      }`}
+                    />
+                    <div>
+                      <div className="font-medium text-gray-900">{option.label}</div>
+                      <div className="text-xs text-gray-600">{option.desc}</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
+          </div>
+
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex-1 rounded-lg border border-gray-200 py-3 font-semibold text-gray-700 hover:bg-gray-50 sm:flex-initial sm:px-8"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleStartQuiz}
+              disabled={loading}
+              className="flex-1 rounded-lg bg-black py-3 font-semibold text-white hover:bg-gray-800 disabled:opacity-50 sm:px-12"
+            >
+              {loading ? "Starting..." : "Start Quiz"}
+            </button>
           </div>
         </div>
       </div>

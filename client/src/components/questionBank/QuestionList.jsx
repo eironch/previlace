@@ -192,7 +192,7 @@ function QuestionList({
           <Select
             placeholder="Source"
             value={filters.source}
-            onChange={(value) => setFilters({ ...filters, source: value })}
+            onChange={(e) => setFilters({ ...filters, source: e.target.value })}
             options={[
               { value: "", label: "All Sources" },
               { value: "manual", label: "Manual" },
@@ -205,8 +205,8 @@ function QuestionList({
           <Select
             placeholder="Question Type"
             value={filters.questionType}
-            onChange={(value) =>
-              setFilters({ ...filters, questionType: value })
+            onChange={(e) =>
+              setFilters({ ...filters, questionType: e.target.value })
             }
             options={[
               { value: "", label: "All Types" },
@@ -224,7 +224,7 @@ function QuestionList({
           <Select
             placeholder="Category"
             value={filters.category}
-            onChange={(value) => setFilters({ ...filters, category: value })}
+            onChange={(e) => setFilters({ ...filters, category: e.target.value })}
             options={[
               { value: "", label: "All Categories" },
               { value: "Vocabulary", label: "Vocabulary" },
@@ -243,7 +243,7 @@ function QuestionList({
           <Select
             placeholder="Difficulty"
             value={filters.difficulty}
-            onChange={(value) => setFilters({ ...filters, difficulty: value })}
+            onChange={(e) => setFilters({ ...filters, difficulty: e.target.value })}
             options={[
               { value: "", label: "All Difficulties" },
               { value: "Beginner", label: "Beginner" },
@@ -255,7 +255,7 @@ function QuestionList({
           <Select
             placeholder="Exam Level"
             value={filters.examLevel}
-            onChange={(value) => setFilters({ ...filters, examLevel: value })}
+            onChange={(e) => setFilters({ ...filters, examLevel: e.target.value })}
             options={[
               { value: "", label: "All Levels" },
               { value: "Professional", label: "Professional" },

@@ -6,6 +6,11 @@ const sessionAnswerSchema = new mongoose.Schema({
     ref: "ManualQuestion",
     required: true,
   },
+  topicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Topic",
+  },
+  topicName: String,
   userAnswer: {
     type: String,
     default: "",
@@ -22,6 +27,10 @@ const sessionAnswerSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  feedbackShown: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const quizSessionSchema = new mongoose.Schema(
@@ -34,8 +43,16 @@ const quizSessionSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: ["practice", "timed", "mock", "custom", "subject", "topic"],
+      enum: ["practice", "timed", "mock", "subject", "topic"],
       default: "practice",
+    },
+    hasImmediateFeedback: {
+      type: Boolean,
+      default: false,
+    },
+    hasTimer: {
+      type: Boolean,
+      default: true,
     },
     title: {
       type: String,
@@ -52,7 +69,11 @@ const quizSessionSchema = new mongoose.Schema(
       },
       timeLimit: {
         type: Number,
-        default: 600,
+        default: 0,
+      },
+      defaultQuestionTime: {
+        type: Number,
+        default: 60,
       },
     },
     questions: [
@@ -116,11 +137,24 @@ const quizSessionSchema = new mongoose.Schema(
         },
         default: new Map(),
       },
+      topicPerformance: {
+        type: Map,
+        of: {
+          correct: { type: Number, default: 0 },
+          total: { type: Number, default: 0 },
+          percentage: { type: Number, default: 0 },
+        },
+        default: new Map(),
+      },
       strongAreas: {
         type: [String],
         default: [],
       },
       weakAreas: {
+        type: [String],
+        default: [],
+      },
+      weakTopics: {
         type: [String],
         default: [],
       },
@@ -163,24 +197,62 @@ quizSessionSchema.virtual("isExpired").get(function () {
   return elapsed > this.config.timeLimit * 1000;
 });
 
-quizSessionSchema.methods.submitAnswer = function (questionId, userAnswer) {
+quizSessionSchema.methods.submitAnswer = async function (questionId, userAnswer, topicInfo = {}) {
   const existingAnswerIndex = this.answers.findIndex(
     (answer) => answer.questionId.toString() === questionId.toString()
   );
 
+  const answerData = {
+    questionId,
+    userAnswer: userAnswer || "",
+    isCorrect: false,
+    answeredAt: new Date(),
+    topicId: topicInfo.topicId,
+    topicName: topicInfo.topicName,
+  };
+
   if (existingAnswerIndex !== -1) {
-    this.answers[existingAnswerIndex].userAnswer = userAnswer;
-    this.answers[existingAnswerIndex].answeredAt = new Date();
+    Object.assign(this.answers[existingAnswerIndex], answerData);
   } else {
-    this.answers.push({
-      questionId,
-      userAnswer: userAnswer || "",
-      isCorrect: false,
-      answeredAt: new Date(),
-    });
+    this.answers.push(answerData);
   }
 
   return this.save();
+};
+
+quizSessionSchema.methods.verifyAnswer = async function (questionId) {
+  const question = this.questions.find(
+    (q) => q._id.toString() === questionId.toString()
+  );
+
+  if (!question) return null;
+
+  const answer = this.answers.find(
+    (a) => a.questionId.toString() === questionId.toString()
+  );
+
+  if (!answer) return null;
+
+  const correctOption = question.options?.find((opt) => opt.isCorrect);
+  const userAnswerNormalized = (answer.userAnswer || "").toString().trim();
+  const correctAnswerNormalized = correctOption
+    ? correctOption.text.toString().trim()
+    : "";
+
+  const isCorrect =
+    correctAnswerNormalized && correctAnswerNormalized === userAnswerNormalized;
+
+  answer.isCorrect = isCorrect;
+  answer.feedbackShown = true;
+
+  await this.save();
+
+  return {
+    isCorrect,
+    correctAnswer: correctAnswerNormalized,
+    explanation: question.explanation,
+    explanationMath: question.explanationMath,
+  };
 };
 
 quizSessionSchema.methods.calculateScore = async function () {
@@ -254,6 +326,7 @@ quizSessionSchema.methods.generateAnalytics = function () {
     this.answers.length > 0 ? totalTime / this.answers.length : 0;
 
   const categoryStats = {};
+  const topicStats = {};
   const difficultyStats = {
     beginnerCorrect: 0,
     beginnerTotal: 0,
@@ -278,6 +351,13 @@ quizSessionSchema.methods.generateAnalytics = function () {
 
     categoryStats[category].total++;
 
+    if (answer?.topicName) {
+      if (!topicStats[answer.topicName]) {
+        topicStats[answer.topicName] = { correct: 0, total: 0, percentage: 0 };
+      }
+      topicStats[answer.topicName].total++;
+    }
+
     if (difficultyNormalized === "beginner") {
       difficultyStats.beginnerTotal++;
     } else if (difficultyNormalized === "intermediate") {
@@ -288,6 +368,10 @@ quizSessionSchema.methods.generateAnalytics = function () {
 
     if (answer && answer.isCorrect) {
       categoryStats[category].correct++;
+
+      if (answer.topicName && topicStats[answer.topicName]) {
+        topicStats[answer.topicName].correct++;
+      }
 
       if (difficultyNormalized === "beginner") {
         difficultyStats.beginnerCorrect++;
@@ -310,7 +394,19 @@ quizSessionSchema.methods.generateAnalytics = function () {
     });
   });
 
+  const topicPerformanceMap = new Map();
+  Object.entries(topicStats).forEach(([topic, stats]) => {
+    const percentage =
+      stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+    topicPerformanceMap.set(topic, {
+      correct: stats.correct,
+      total: stats.total,
+      percentage,
+    });
+  });
+
   this.analytics.categoryPerformance = categoryPerformanceMap;
+  this.analytics.topicPerformance = topicPerformanceMap;
 
   this.analytics.strongAreas = Object.entries(categoryStats)
     .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total >= 0.7)
@@ -320,7 +416,11 @@ quizSessionSchema.methods.generateAnalytics = function () {
     .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total < 0.5)
     .map(([category]) => category);
 
-  this.analytics.recommendedTopics = this.analytics.weakAreas;
+  this.analytics.weakTopics = Object.entries(topicStats)
+    .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total < 0.5)
+    .map(([topic]) => topic);
+
+  this.analytics.recommendedTopics = this.analytics.weakTopics;
   this.analytics.difficultyAnalysis = difficultyStats;
 }
 

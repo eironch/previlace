@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import { catchAsync } from "../utils/AppError.js";
 
 const getAdminStats = catchAsync(async (req, res) => {
-  const baseQuery = { role: "user" };
+  const baseQuery = { role: "student" };
 
   const [
     totalUsers,
@@ -103,7 +103,7 @@ const getAdminStats = catchAsync(async (req, res) => {
 });
 
 const getRecentUsers = catchAsync(async (req, res) => {
-  const recentUsers = await User.find({ role: "user" })
+  const recentUsers = await User.find({ role: "student" })
     .select(
       "firstName lastName email createdAt isProfileComplete examType lastLogin",
     )

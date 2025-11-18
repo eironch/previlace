@@ -12,14 +12,18 @@ import {
   Home,
   BarChart3,
   BookOpen,
+  AlertCircle,
+  Download,
 } from "lucide-react";
 import useExamStore from "@/store/examStore";
 import StandardHeader from "@/components/ui/StandardHeader";
+import apiClient from "@/services/apiClient";
 
 function QuizResultsPage() {
   const navigate = useNavigate();
   const [showAnswerReview, setShowAnswerReview] = useState(false);
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const { currentResult, resetSession } = useExamStore();
 
@@ -41,6 +45,35 @@ function QuizResultsPage() {
 
   function handleViewAnalytics() {
     navigate("/dashboard/analytics");
+  }
+
+  async function handleExportPdf() {
+    if (!currentResult?.sessionId) return;
+
+    setExportingPdf(true);
+    try {
+      const response = await apiClient.post(
+        `/exam/${currentResult.sessionId}/export-pdf`,
+        {},
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `quiz-results-${currentResult.sessionId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to export PDF:", error);
+      }
+    } finally {
+      setExportingPdf(false);
+    }
   }
 
   function formatTime(milliseconds) {
@@ -79,16 +112,34 @@ function QuizResultsPage() {
         <StandardHeader title="Quiz Results" showBack={true} />
         <div className="flex h-[calc(100vh-73px)] items-center justify-center">
           <div>
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 mx-auto mb-3"></div>
-            <p className="text-center text-gray-600 text-sm">Loading results...</p>
+            <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+            <p className="text-center text-sm text-gray-600">
+              Loading results...
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
-  const { score = {}, timing = {}, analytics = {}, answers = [], title = "", mode = "practice" } = currentResult || {};
-  const averageTimePerQuestion = score.total > 0 ? timing.totalTimeSpent / score.total : 0;
+  const {
+    score = {},
+    timing = {},
+    analytics = {},
+    answers = [],
+    title = "",
+    mode = "practice",
+  } = currentResult || {};
+  const averageTimePerQuestion =
+    score.total > 0 ? timing.totalTimeSpent / score.total : 0;
+
+  const topicPerformance = analytics.topicPerformance
+    ? Array.from(analytics.topicPerformance.entries())
+    : [];
+  const weakTopics = topicPerformance
+    .filter(([, perf]) => perf.percentage < 70)
+    .map(([topic]) => topic);
+  const hasWeakAreas = weakTopics.length > 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -189,13 +240,95 @@ function QuizResultsPage() {
           </div>
         </div>
 
-        {analytics && (
+        {hasWeakAreas && (
+          <div className="mb-6 rounded-lg border-2 border-yellow-200 bg-yellow-50 p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <AlertCircle className="h-6 w-6 text-yellow-600" />
+              <h3 className="text-lg font-bold text-yellow-900">
+                Areas for Review
+              </h3>
+            </div>
+            <p className="mb-4 text-sm text-yellow-800">
+              Based on your performance, we recommend reviewing these topics:
+            </p>
+            <div className="space-y-2">
+              {weakTopics.map((topic) => {
+                const performance = analytics.topicPerformance.get(topic);
+                return (
+                  <div
+                    key={topic}
+                    className="flex items-center justify-between rounded-lg bg-white p-3"
+                  >
+                    <div>
+                      <span className="font-medium text-gray-900">{topic}</span>
+                      <p className="text-sm text-gray-600">
+                        {performance.correct} of {performance.total} correct (
+                        {performance.percentage}%)
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        resetSession();
+                        navigate("/dashboard/subjects");
+                      }}
+                      className="rounded-lg bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-700"
+                    >
+                      Review
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {topicPerformance.length > 0 && (
+          <div className="mb-6 rounded-lg bg-white p-6 shadow-sm">
+            <h3 className="mb-4 text-lg font-bold text-gray-900">
+              Topic Performance
+            </h3>
+            <div className="space-y-3">
+              {topicPerformance.map(([topic, performance]) => (
+                <div
+                  key={topic}
+                  className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                >
+                  <div>
+                    <span className="font-medium text-gray-900">{topic}</span>
+                    <p className="text-sm text-gray-600">
+                      {performance.correct} of {performance.total} correct
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-20 rounded-full bg-gray-200">
+                      <div
+                        className={`h-2 rounded-full ${
+                          performance.percentage >= 70
+                            ? "bg-green-500"
+                            : performance.percentage >= 50
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                        }`}
+                        style={{ width: `${performance.percentage}%` }}
+                      />
+                    </div>
+                    <span className="w-12 text-right text-sm font-medium text-gray-900">
+                      {performance.percentage}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {analytics && analytics.categoryPerformance && (
           <div className="mb-6 rounded-lg bg-white p-6 shadow-sm">
             <h3 className="mb-4 text-lg font-bold text-gray-900">
               Category Performance
             </h3>
             <div className="space-y-3">
-              {Array.from(analytics.categoryPerformance || new Map()).map(
+              {Array.from(analytics.categoryPerformance.entries()).map(
                 ([category, performance]) => (
                   <div
                     key={category}
@@ -273,7 +406,7 @@ function QuizResultsPage() {
           ) : null}
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <button
             onClick={handleReturnHome}
             className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 hover:bg-gray-50"
@@ -288,6 +421,24 @@ function QuizResultsPage() {
           >
             <BarChart3 className="h-4 w-4" />
             View Analytics
+          </button>
+
+          <button
+            onClick={handleExportPdf}
+            disabled={exportingPdf}
+            className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {exportingPdf ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                Export PDF
+              </>
+            )}
           </button>
 
           <button

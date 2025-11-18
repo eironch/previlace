@@ -30,6 +30,7 @@ import SubjectDetailPage from "@/pages/SubjectDetailPage";
 import TopicDetailPage from "@/pages/TopicDetailPage";
 import ResumeBuilderPage from "@/pages/ResumeBuilderPage";
 import InterviewPrepPage from "@/pages/InterviewPrepPage";
+import ProfileSettingsPage from "@/pages/settings/ProfileSettingsPage";
 import AuthModal from "@/components/auth/AuthModal";
 import DevTools from "@/components/ui/DevTools";
 import { mathService } from "@/services/mathService";
@@ -314,6 +315,15 @@ function App() {
             element={
               <DashboardRoute>
                 <TopicDetailPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/settings"
+            element={
+              <DashboardRoute>
+                <ProfileSettingsPage />
               </DashboardRoute>
             }
           />

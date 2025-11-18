@@ -150,15 +150,49 @@ function QuizInterface() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={previousQuestion}
+                disabled={currentQuestionIndex === 0}
+                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed hidden sm:flex items-center gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden md:inline">Previous</span>
+              </button>
+
+              {currentQuestionIndex === totalQuestions - 1 ? (
+                <button
+                  onClick={() => setShowConfirmSubmit(true)}
+                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 hidden sm:flex items-center gap-1"
+                >
+                  <Send className="h-4 w-4" />
+                  <span className="hidden md:inline">Submit</span>
+                </button>
+              ) : (
+                <button
+                  onClick={nextQuestion}
+                  className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 hidden sm:flex items-center gap-1"
+                >
+                  <span className="hidden md:inline">Next</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              )}
+
               <QuizTimer />
+
+              <button
+                onClick={handleExitQuiz}
+                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hidden sm:flex items-center gap-1"
+              >
+                <X className="h-4 w-4" />
+                <span className="hidden md:inline">Exit</span>
+              </button>
               
               <button
                 onClick={() => setShowNavigation(!showNavigation)}
-                className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 lg:hidden"
+                className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 sm:hidden"
               >
                 {showNavigation ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                Questions
               </button>
             </div>
           </div>
@@ -201,6 +235,26 @@ function QuizInterface() {
           <div className="flex gap-6">
             <div className="flex-1 min-w-0">
               <div className="space-y-6">
+                {showNavigation && (
+                  <div className="block sm:hidden">
+                    <QuestionNavigation
+                      questions={sessionQuestions}
+                      currentIndex={currentQuestionIndex}
+                      answers={answers}
+                      onNavigate={handleQuestionNavigation}
+                    />
+                  </div>
+                )}
+
+                <div className="hidden sm:block">
+                  <QuestionNavigation
+                    questions={sessionQuestions}
+                    currentIndex={currentQuestionIndex}
+                    answers={answers}
+                    onNavigate={handleQuestionNavigation}
+                  />
+                </div>
+
                 <div className="rounded-lg bg-white p-6 shadow-sm">
                   <QuestionDisplay 
                     question={currentQuestion}
@@ -219,7 +273,7 @@ function QuizInterface() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between sm:hidden">
                   <button
                     onClick={previousQuestion}
                     disabled={currentQuestionIndex === 0}
@@ -235,40 +289,22 @@ function QuizInterface() {
                       className="flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2 font-medium text-white hover:bg-green-700"
                     >
                       <Send className="h-4 w-4" />
-                      Submit Quiz
+                      Submit
                     </button>
                   ) : (
                     <button
                       onClick={nextQuestion}
-                      className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+                      className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />
                     </button>
                   )}
                 </div>
-
-                {showNavigation && (
-                  <div className="block lg:hidden">
-                    <QuestionNavigation
-                      questions={sessionQuestions}
-                      currentIndex={currentQuestionIndex}
-                      answers={answers}
-                      onNavigate={handleQuestionNavigation}
-                    />
-                  </div>
-                )}
               </div>
             </div>
 
-            <div className="hidden lg:block w-80 space-y-4">
-              <QuestionNavigation
-                questions={sessionQuestions}
-                currentIndex={currentQuestionIndex}
-                answers={answers}
-                onNavigate={handleQuestionNavigation}
-              />
-              
+            <div className="hidden lg:block w-80">
               <div className="rounded-lg bg-white p-4 shadow-sm">
                 <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                   <RotateCcw className="h-4 w-4" />
@@ -282,22 +318,6 @@ function QuizInterface() {
                   >
                     {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                     {isPaused ? "Resume" : "Pause"} Quiz
-                  </button>
-                  
-                  <button
-                    onClick={() => setShowConfirmSubmit(true)}
-                    className="w-full rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700 flex items-center justify-center gap-2"
-                  >
-                    <Send className="h-4 w-4" />
-                    Submit Quiz
-                  </button>
-                  
-                  <button
-                    onClick={handleExitQuiz}
-                    className="w-full rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2"
-                  >
-                    <X className="h-4 w-4" />
-                    Exit Quiz
                   </button>
                 </div>
               </div>

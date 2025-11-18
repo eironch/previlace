@@ -27,6 +27,7 @@ router.post("/:sessionId/resume", examController.resumeQuizSession);
 router.get("/history", examController.getSessionHistory);
 router.get("/stats", examController.getUserStats);
 router.get("/:sessionId/result", examController.getQuizResult);
+router.post("/:sessionId/export-pdf", examController.exportQuizResultPdf);
 router.get("/analytics", examController.getPerformanceAnalytics);
 router.get("/readiness", validateExamReadiness, handleValidationErrors, examController.getExamReadiness);
 router.get("/spaced-repetition/due", validateSpacedRepetition, handleValidationErrors, examController.getSpacedRepetitionQuestions);

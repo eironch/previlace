@@ -284,7 +284,7 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
               {formData.options.map((option, index) => (
                 <div
                   key={index}
-                  className={`cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 hover:shadow-sm ${
+                  className={`cursor-pointer rounded-lg p-4 transition-all duration-200 hover:shadow-sm ${
                     option.isCorrect
                       ? "border-black bg-white ring-2 ring-black"
                       : "border-gray-300 bg-white"

@@ -7,6 +7,7 @@ import spacedRepetitionService from "../services/spacedRepetitionService.js";
 import performanceAnalysisService from "../services/performanceAnalysisService.js";
 import studyPlanService from "../services/studyPlanService.js";
 import adaptiveQuizService from "../services/adaptiveQuizService.js";
+import pdfGenerationService from "../services/pdfGenerationService.js";
 
 const startQuizSession = catchAsync(async (req, res, next) => {
   const {
@@ -16,19 +17,28 @@ const startQuizSession = catchAsync(async (req, res, next) => {
     difficulty,
     examLevel,
     questionCount = 10,
-    timeLimit = 600,
+    timeLimit,
   } = req.body;
 
-  if (!["practice", "timed", "mock", "custom"].includes(mode)) {
+  if (!["practice", "timed"].includes(mode)) {
     return next(new AppError("Invalid quiz mode", 400));
   }
+
+  const userExamLevel = examLevel || req.user.examType || "Professional";
+
+  const hasImmediateFeedback = ["practice"].includes(mode);
+  const hasTimer = ["timed", "mock"].includes(mode);
+  const calculatedTimeLimit = hasTimer
+    ? timeLimit || (mode === "mock" ? 10800 : questionCount * 90)
+    : 0;
 
   const config = {
     categories: categories || [],
     difficulty: difficulty || "",
-    examLevel: examLevel || "",
+    examLevel: userExamLevel,
     questionCount,
-    timeLimit,
+    timeLimit: calculatedTimeLimit,
+    defaultQuestionTime: 90,
   };
 
   const questions = await questionSelectionService.selectQuestionsForSession(req.user._id, config);
@@ -37,28 +47,36 @@ const startQuizSession = catchAsync(async (req, res, next) => {
     return next(new AppError("No questions found matching criteria", 404));
   }
 
+  const populatedQuestions = await ManualQuestion.find({
+    _id: { $in: questions.map(q => q._id) }
+  }).populate("topicId", "name");
+
   const session = await QuizSession.create({
     userId: req.user._id,
     mode,
     title: title || `${mode.charAt(0).toUpperCase() + mode.slice(1)} Quiz`,
+    hasImmediateFeedback,
+    hasTimer,
     config: {
       ...config,
       questionCount: questions.length,
     },
     questions: questions.map((q) => q._id),
-  });
+    });
 
-  res.status(201).json({
+    res.status(201).json({
     success: true,
     data: {
-      session: {
-        _id: session._id,
-        title: session.title,
-        mode: session.mode,
-        timeLimit: session.config.timeLimit,
-        questionCount: session.questions.length,
-      },
-      questions: questions.map((q) => ({
+    session: {
+    _id: session._id,
+    title: session.title,
+    mode: session.mode,
+    timeLimit: session.config.timeLimit,
+    questionCount: session.questions.length,
+    hasImmediateFeedback,
+    hasTimer,
+    },
+    questions: populatedQuestions.map((q) => ({
         _id: q._id,
         questionText: q.questionText,
         questionMath: q.questionMath,
@@ -66,6 +84,8 @@ const startQuizSession = catchAsync(async (req, res, next) => {
         difficulty: q.difficulty,
         category: q.category,
         subjectArea: q.subjectArea,
+        topicId: q.topicId?._id,
+        topicName: q.topicId?.name,
       })),
     },
   });
@@ -73,9 +93,9 @@ const startQuizSession = catchAsync(async (req, res, next) => {
 
 const submitAnswer = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
-  const { questionId, answer, timeSpent } = req.body;
+  const { questionId, answer, timeSpent, topicId, topicName } = req.body;
 
-  const session = await QuizSession.findById(sessionId);
+  const session = await QuizSession.findById(sessionId).populate("questions");
 
   if (!session) {
     return next(new AppError("Quiz session not found", 404));
@@ -89,7 +109,7 @@ const submitAnswer = catchAsync(async (req, res, next) => {
     return next(new AppError("Quiz session is not active", 400));
   }
 
-  await session.submitAnswer(questionId, answer);
+  await session.submitAnswer(questionId, answer, { topicId, topicName });
 
   if (timeSpent && timeSpent > 0) {
     const answerRecord = session.answers.find(
@@ -101,10 +121,16 @@ const submitAnswer = catchAsync(async (req, res, next) => {
     }
   }
 
+  let feedback = null;
+  if (session.hasImmediateFeedback) {
+    feedback = await session.verifyAnswer(questionId);
+  }
+
   res.json({
     success: true,
     data: {
       message: "Answer submitted successfully",
+      feedback,
     },
   });
 });
@@ -322,14 +348,13 @@ const getUserStats = catchAsync(async (req, res, next) => {
 });
 
 const startMockExam = catchAsync(async (req, res, next) => {
-  const { examLevel = "professional" } = req.body;
+  const { examLevel = "Professional" } = req.body;
 
-  const normalizedLevel = examLevel.toLowerCase();
-  const targetQuestionCount = normalizedLevel === "professional" ? 170 : 165;
-  const timeLimit = normalizedLevel === "professional" ? 10800 : 9000;
+  const targetQuestionCount = examLevel === "Professional" ? 170 : 165;
+  const timeLimit = examLevel === "Professional" ? 10800 : 9000;
 
   const availableQuestions = await ManualQuestion.countDocuments({
-    examLevel: examLevel,
+    $or: [{ examLevel: examLevel }, { examLevel: "Both" }],
     status: "published",
     isActive: true,
   });
@@ -337,7 +362,7 @@ const startMockExam = catchAsync(async (req, res, next) => {
   if (availableQuestions < 50) {
     return next(
       new AppError(
-        `Insufficient questions available. Found ${availableQuestions} questions, but at least 50 are required for a mock exam. Please contact administrator.`,
+        "Not enough questions available to start mock exam. Please contact administrator.",
         400
       )
     );
@@ -349,6 +374,7 @@ const startMockExam = catchAsync(async (req, res, next) => {
     examLevel,
     questionCount: Math.min(availableQuestions, targetQuestionCount),
     timeLimit,
+    defaultQuestionTime: 60,
   };
 
   const questions = await questionSelectionService.selectQuestionsForSession(
@@ -362,27 +388,33 @@ const startMockExam = catchAsync(async (req, res, next) => {
     );
   }
 
+  const populatedQuestions = await ManualQuestion.find({
+    _id: { $in: questions.map(q => q._id) }
+  }).populate("topicId", "name");
+
   const session = await QuizSession.create({
     userId: req.user._id,
     mode: "mock",
-    title: `${examLevel.charAt(0).toUpperCase() + examLevel.slice(1)} Mock Exam`,
+    title: `${examLevel} Mock Exam`,
+    hasImmediateFeedback: false,
+    hasTimer: true,
     config: mockExamConfig,
     questions: questions.map((q) => q._id),
-  });
+    });
 
-  res.status(201).json({
+    res.status(201).json({
     success: true,
     data: {
-      session: {
-        _id: session._id,
-        title: session.title,
-        mode: session.mode,
-        timeLimit: session.config.timeLimit,
-        questionCount: session.questions.length,
-        isPartialExam: questions.length < targetQuestionCount,
-        targetQuestionCount,
-      },
-      questions: questions.map((q) => ({
+    session: {
+    _id: session._id,
+    title: session.title,
+    mode: session.mode,
+    timeLimit: session.config.timeLimit,
+    questionCount: session.questions.length,
+    hasImmediateFeedback: false,
+    hasTimer: true,
+    },
+    questions: populatedQuestions.map((q) => ({
         _id: q._id,
         questionText: q.questionText,
         questionMath: q.questionMath,
@@ -390,6 +422,8 @@ const startMockExam = catchAsync(async (req, res, next) => {
         difficulty: q.difficulty,
         category: q.category,
         subjectArea: q.subjectArea,
+        topicId: q.topicId?._id,
+        topicName: q.topicId?.name,
       })),
     },
   });
@@ -496,47 +530,115 @@ const getReviewSchedule = catchAsync(async (req, res, next) => {
   });
 });
 
+const exportQuizResultPdf = catchAsync(async (req, res, next) => {
+  const { sessionId } = req.params;
+
+  const session = await QuizSession.findById(sessionId).populate("questions");
+
+  if (!session) {
+    return next(new AppError("Quiz session not found", 404));
+  }
+
+  if (session.userId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+    return next(new AppError("Not authorized to export this session", 403));
+  }
+
+  const result = {
+    sessionId: session._id,
+    title: session.title,
+    mode: session.mode,
+    score: session.score,
+    timing: session.timing,
+    analytics: session.analytics,
+    answers: session.answers.map((answer) => {
+      const question = session.questions.find((q) => q._id.toString() === answer.questionId.toString());
+
+      return {
+        questionId: answer.questionId,
+        question: question
+          ? {
+              questionText: question.questionText,
+              questionMath: question.questionMath,
+              options: question.options,
+              explanation: question.explanation,
+              explanationMath: question.explanationMath,
+              category: question.category,
+              difficulty: question.difficulty,
+            }
+          : null,
+        userAnswer: answer.userAnswer,
+        correctAnswer: question
+          ? question.options.find((opt) => opt.isCorrect)?.text
+          : null,
+        isCorrect: answer.isCorrect,
+        timeSpent: answer.timeSpent,
+      };
+    }),
+  };
+
+  const pdfBuffer = await pdfGenerationService.generateQuizResultPdf(result);
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=quiz-results-${sessionId}.pdf`
+  );
+  res.send(pdfBuffer);
+});
+
 const startSubjectQuiz = catchAsync(async (req, res, next) => {
-  const { subjectId, examLevel, questionCount = 20 } = req.body;
+  const { subjectId, examLevel, questionCount = 25 } = req.body;
 
   if (!subjectId) {
     return next(new AppError("Subject ID is required", 400));
   }
 
+  const userExamLevel = examLevel || req.user.examType || "Professional";
+
   const quizData = await adaptiveQuizService.createSubjectQuiz(
     req.user._id,
     subjectId,
-    examLevel,
+    userExamLevel,
     questionCount
   );
+
+  const populatedQuestions = await ManualQuestion.find({
+    _id: { $in: quizData.questions.map(q => q._id) }
+  }).populate("topicId", "name");
 
   const session = await QuizSession.create({
     userId: req.user._id,
     mode: "subject",
     title: "Subject Quiz",
+    hasImmediateFeedback: true,
+    hasTimer: false,
     config: {
       subjectId,
-      examLevel,
+      examLevel: userExamLevel,
       questionCount: quizData.questions.length,
       difficulty: quizData.difficulty,
       isAdaptive: true,
+      timeLimit: 0,
+      defaultQuestionTime: 90,
     },
     questions: quizData.questions.map((q) => q._id),
-  });
+    });
 
-  res.status(201).json({
+    res.status(201).json({
     success: true,
     data: {
-      session: {
-        _id: session._id,
-        title: session.title,
-        mode: session.mode,
-        timeLimit: session.config.timeLimit,
-        questionCount: session.questions.length,
-        difficulty: quizData.difficulty,
-        weakTopics: quizData.weakTopics,
-      },
-      questions: quizData.questions.map((q) => ({
+    session: {
+    _id: session._id,
+    title: session.title,
+    mode: session.mode,
+    timeLimit: 0,
+    questionCount: session.questions.length,
+    difficulty: quizData.difficulty,
+    weakTopics: quizData.weakTopics,
+    hasImmediateFeedback: true,
+    hasTimer: false,
+    },
+    questions: populatedQuestions.map((q) => ({
         _id: q._id,
         questionText: q.questionText,
         questionMath: q.questionMath,
@@ -544,51 +646,65 @@ const startSubjectQuiz = catchAsync(async (req, res, next) => {
         difficulty: q.difficulty,
         category: q.category,
         subjectArea: q.subjectArea,
+        topicId: q.topicId?._id,
+        topicName: q.topicId?.name,
       })),
     },
   });
 });
 
 const startTopicQuiz = catchAsync(async (req, res, next) => {
-  const { topicId, examLevel, questionCount = 10 } = req.body;
+  const { topicId, examLevel, questionCount = 15 } = req.body;
 
   if (!topicId) {
     return next(new AppError("Topic ID is required", 400));
   }
 
+  const userExamLevel = examLevel || req.user.examType || "Professional";
+
   const quizData = await adaptiveQuizService.createTopicQuiz(
     req.user._id,
     topicId,
-    examLevel,
+    userExamLevel,
     questionCount
   );
+
+  const populatedQuestions = await ManualQuestion.find({
+    _id: { $in: quizData.questions.map(q => q._id) }
+  }).populate("topicId", "name");
 
   const session = await QuizSession.create({
     userId: req.user._id,
     mode: "topic",
     title: "Topic Quiz",
+    hasImmediateFeedback: true,
+    hasTimer: false,
     config: {
       topicId,
-      examLevel,
+      examLevel: userExamLevel,
       questionCount: quizData.questions.length,
       difficulty: quizData.difficulty,
       isAdaptive: true,
+      timeLimit: 0,
+      defaultQuestionTime: 90,
     },
     questions: quizData.questions.map((q) => q._id),
-  });
+    });
 
-  res.status(201).json({
+    res.status(201).json({
     success: true,
     data: {
-      session: {
-        _id: session._id,
-        title: session.title,
-        mode: session.mode,
-        timeLimit: session.config.timeLimit,
-        questionCount: session.questions.length,
-        difficulty: quizData.difficulty,
-      },
-      questions: quizData.questions.map((q) => ({
+    session: {
+    _id: session._id,
+    title: session.title,
+    mode: session.mode,
+    timeLimit: 0,
+    questionCount: session.questions.length,
+    difficulty: quizData.difficulty,
+    hasImmediateFeedback: true,
+    hasTimer: false,
+    },
+    questions: populatedQuestions.map((q) => ({
         _id: q._id,
         questionText: q.questionText,
         questionMath: q.questionMath,
@@ -596,6 +712,8 @@ const startTopicQuiz = catchAsync(async (req, res, next) => {
         difficulty: q.difficulty,
         category: q.category,
         subjectArea: q.subjectArea,
+        topicId: q.topicId?._id,
+        topicName: q.topicId?.name,
       })),
     },
   });
@@ -619,4 +737,5 @@ export default {
   trackStudySession,
   getSpacedRepetitionQuestions,
   getReviewSchedule,
+  exportQuizResultPdf,
 };

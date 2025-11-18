@@ -87,15 +87,6 @@ function MathInput({
           />
         </div>
       )}
-
-      {latex && (
-        <div className="text-xs text-gray-500">
-          <span className="font-medium">LaTeX:</span>{" "}
-          <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">
-            {latex}
-          </code>
-        </div>
-      )}
     </div>
   );
 }

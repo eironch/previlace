@@ -9,7 +9,8 @@ import {
   MessageSquare,
   Trophy,
   BarChart3,
-  LogOut
+  LogOut,
+  Settings
 } from "lucide-react";
 
 function DashboardPage() {
@@ -46,6 +47,12 @@ function DashboardPage() {
       title: "Study Plan",
       description: "Personalized schedule",
       path: "/dashboard/study-plan",
+    },
+    {
+      icon: Settings,
+      title: "Settings",
+      description: "Exam preferences",
+      path: "/dashboard/settings",
     },
     {
       icon: Briefcase,
