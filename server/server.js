@@ -33,6 +33,9 @@ import seedRoutes from "./src/routes/seedRoutes.js";
 import subjectRoutes from "./src/routes/subjectRoutes.js";
 import topicRoutes from "./src/routes/topicRoutes.js";
 import learningContentRoutes from "./src/routes/learningContentRoutes.js";
+import testimonialRoutes from "./src/routes/testimonialRoutes.js";
+import testimonialPublicRoutes from "./src/routes/testimonialPublicRoutes.js";
+import statRoutes from "./src/routes/statRoutes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
@@ -142,6 +145,9 @@ app.use("/api/seed", seedRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/topics", topicRoutes);
 app.use("/api/learning-content", learningContentRoutes);
+app.use("/api/testimonials", testimonialRoutes);
+app.use("/api/public/testimonials", testimonialPublicRoutes);
+app.use('/api/stats', statRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

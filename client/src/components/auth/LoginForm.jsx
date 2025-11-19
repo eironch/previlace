@@ -2,14 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Label from "@/components/ui/Label";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
+  Eye,
+  EyeOff
+} from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
 
@@ -18,6 +14,7 @@ export default function LoginForm() {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login, handleGoogleAuth, error, clearError, isLoading } =
@@ -42,7 +39,6 @@ export default function LoginForm() {
       const result = await login(formData);
       if (result.success) {
         closeAuthModal();
-        // navigate based on the updated user state stored in localStorage
         try {
           const stored = localStorage.getItem("user_data");
           if (stored) {
@@ -90,11 +86,9 @@ export default function LoginForm() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email */}
           <div className="space-y-2">
-            <label
-              htmlFor="email"
-              className="text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email
             </label>
             <Input
@@ -110,6 +104,7 @@ export default function LoginForm() {
             />
           </div>
 
+          {/* Password with toggle */}
           <div className="space-y-2">
             <label
               htmlFor="password"
@@ -117,19 +112,36 @@ export default function LoginForm() {
             >
               Password
             </label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={disabled}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-black focus:outline-none"
-            />
+
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={disabled}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:border-transparent focus:ring-2 focus:ring-black focus:outline-none"
+              />
+
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowPassword((prev) => !prev)}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
 
+          {/* Sign In Button */}
           <Button
             type="submit"
             className="w-full rounded-md bg-black px-4 py-2 text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
@@ -139,6 +151,7 @@ export default function LoginForm() {
           </Button>
         </form>
 
+        {/* Divider */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-gray-300" />
@@ -150,6 +163,7 @@ export default function LoginForm() {
           </div>
         </div>
 
+        {/* Google */}
         <Button
           type="button"
           variant="outline"
@@ -160,6 +174,7 @@ export default function LoginForm() {
           Continue with Google
         </Button>
 
+        {/* Links */}
         <div className="space-y-2 text-center">
           <button
             type="button"
