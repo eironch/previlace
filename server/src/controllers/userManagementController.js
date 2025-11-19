@@ -98,8 +98,10 @@ const updateUserStatus = catchAsync(async (req, res) => {
     throw new AppError("User not found", 404);
   }
 
-  if (user.role === "admin" && req.user._id !== userId) {
-    throw new AppError("Cannot modify another admin account", 403);
+  if ((user.role === "admin" || user.role === "super_admin") && req.user._id.toString() !== userId) {
+    if (req.user.role !== "super_admin") {
+      throw new AppError("Insufficient permissions to modify admin accounts", 403);
+    }
   }
 
   switch (action) {
@@ -127,17 +129,24 @@ const updateUserStatus = catchAsync(async (req, res) => {
       break;
 
     case "makeAdmin":
-      if (req.user.role !== "admin") {
-        throw new AppError("Only admins can promote users", 403);
+      if (req.user.role !== "super_admin") {
+        throw new AppError("Only super admins can promote users to admin", 403);
       }
       user.role = "admin";
       break;
 
-    case "removeAdmin":
-      if (req.user.role !== "admin") {
-        throw new AppError("Only admins can demote users", 403);
+    case "makeSuperAdmin":
+      if (req.user.role !== "super_admin") {
+        throw new AppError("Only super admins can promote users to super admin", 403);
       }
-      user.role = "user";
+      user.role = "super_admin";
+      break;
+
+    case "removeAdmin":
+      if (req.user.role !== "super_admin") {
+        throw new AppError("Only super admins can demote users", 403);
+      }
+      user.role = "student";
       break;
 
     default:
@@ -199,11 +208,11 @@ const bulkUserAction = catchAsync(async (req, res) => {
     case "delete":
       const adminCheck = await User.find({
         _id: { $in: userIds },
-        role: "admin",
+        role: { $in: ["admin", "super_admin"] },
       });
 
       if (adminCheck.length > 0) {
-        throw new AppError("Cannot delete admin accounts in bulk", 403);
+        throw new AppError("Cannot delete admin or super admin accounts in bulk", 403);
       }
 
       await User.deleteMany({ _id: { $in: userIds } });
@@ -219,7 +228,7 @@ const bulkUserAction = catchAsync(async (req, res) => {
   }
 
   const result = await User.updateMany(
-    { _id: { $in: userIds }, role: { $ne: "admin" } },
+    { _id: { $in: userIds }, role: "student" },
     updateQuery
   );
 

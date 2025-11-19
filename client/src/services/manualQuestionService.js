@@ -82,4 +82,18 @@ export const manualQuestionService = {
     );
     return data.data;
   },
+
+  async unpublishQuestion(id) {
+    const { data } = await apiClient.patch(`/manual-questions/${id}/unpublish`);
+    return data.data;
+  },
+
+  async batchAction(questionIds, action, notes = "") {
+    const { data } = await apiClient.post("/manual-questions/batch", {
+      questionIds,
+      action,
+      notes,
+    });
+    return data.data;
+  },
 };

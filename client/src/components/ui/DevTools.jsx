@@ -8,6 +8,7 @@ export default function DevTools() {
   const { setShowAuthModal } = useAppStore();
   const [isPopulating, setIsPopulating] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isReseeding, setIsReseeding] = useState(false);
 
   async function handlePopulateTestData() {
     if (!confirm("Populate database with test questions and achievements?")) {
@@ -40,6 +41,23 @@ export default function DevTools() {
       alert(`Error: ${error.message}`);
     } finally {
       setIsClearing(false);
+    }
+  }
+
+  async function handleResetAndReseed() {
+    if (!confirm("This will DELETE ALL DATA and reseed with fresh CSE content. This may take 1-2 minutes. Continue?")) {
+      return;
+    }
+
+    setIsReseeding(true);
+    try {
+      const response = await apiClient.post("/seed/reset-and-reseed");
+      alert("Database reset and reseeded successfully! Page will reload.");
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsReseeding(false);
     }
   }
 
@@ -88,6 +106,16 @@ export default function DevTools() {
         <div className="bg-white rounded-lg shadow-lg p-4 w-72 text-sm">
           <div className="mb-2 font-semibold">Dev Tools</div>
           <div className="space-y-2">
+            <button 
+              onClick={handleResetAndReseed} 
+              disabled={isReseeding}
+              className="w-full rounded border px-2 py-1 bg-black text-white hover:bg-gray-800 disabled:opacity-50 font-semibold"
+            >
+              {isReseeding ? "Reseeding..." : "Reset & Reseed Database"}
+            </button>
+
+            <div className="border-t my-2"></div>
+
             <button 
               onClick={handlePopulateTestData} 
               disabled={isPopulating}

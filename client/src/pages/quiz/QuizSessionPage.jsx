@@ -100,7 +100,7 @@ function QuizSessionPage() {
       await completeSession();
       navigate("/dashboard/results");
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.error("Failed to submit quiz:", error);
       }
       setIsSubmitting(false);
@@ -112,7 +112,7 @@ function QuizSessionPage() {
       await completeSession();
       navigate("/dashboard/results");
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.error("Auto-submit failed:", error);
       }
     }

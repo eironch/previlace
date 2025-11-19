@@ -23,7 +23,7 @@ import testRoutes from "./src/routes/testRoutes.js";
 import examRoutes from "./src/routes/examRoutes.js";
 import bookmarkRoutes from "./src/routes/bookmarkRoutes.js";
 import analyticsRoutes from "./src/routes/analyticsRoutes.js";
-import flashcardRoutes from "./src/routes/flashcardRoutes.js";
+
 import mistakeTrackingRoutes from "./src/routes/mistakeTrackingRoutes.js";
 import achievementRoutes from "./src/routes/achievementRoutes.js";
 import leaderboardRoutes from "./src/routes/leaderboardRoutes.js";
@@ -132,7 +132,7 @@ app.use("/api/tests", testRoutes);
 app.use("/api/exam", examRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/analytics", analyticsRoutes);
-app.use("/api/flashcards", flashcardRoutes);
+
 app.use("/api/mistakes", mistakeTrackingRoutes);
 app.use("/api/achievements", achievementRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);

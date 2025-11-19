@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import { getRolePermissions, hasPermission, canManageRole } from "../constants/rolePermissions.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -48,8 +49,16 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: ["student", "admin", "super_admin"],
+      default: "student",
+    },
+    reviewCenterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ReviewCenter",
+    },
+    managedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     isEmailVerified: {
       type: Boolean,
@@ -469,6 +478,32 @@ userSchema.methods.isEligibleForJobMatching = function () {
 
 userSchema.methods.needsCareerServices = function () {
   return this.wantsResumeHelp || this.needsInterviewPrep || this.enableJobMatching;
+};
+
+userSchema.methods.getPermissions = function () {
+  return getRolePermissions(this.role);
+};
+
+userSchema.methods.hasPermission = function (permission) {
+  return hasPermission(this.role, permission);
+};
+
+userSchema.methods.canManageUser = function (targetUser) {
+  if (this.role === "super_admin") return true;
+  if (this.role === "admin") {
+    if (targetUser.role === "student" && targetUser.reviewCenterId?.toString() === this.reviewCenterId?.toString()) {
+      return true;
+    }
+  }
+  return false;
+};
+
+userSchema.methods.canManageRole = function (targetRole) {
+  return canManageRole(this.role, targetRole);
+};
+
+userSchema.methods.isAdminOfCenter = function (centerId) {
+  return this.role === "admin" && this.reviewCenterId?.toString() === centerId.toString();
 };
 
 userSchema.methods.addRefreshToken = function (token, userAgent, ipAddress) {

@@ -193,7 +193,7 @@ function generateComprehensiveQuestions() {
 }
 
 const populateTestData = catchAsync(async (req, res, next) => {
-  const userId = req.user._id;
+  const userId = req.user?._id || null;
 
   const existingQuestions = await ManualQuestion.countDocuments();
   if (existingQuestions > 0) {
@@ -240,7 +240,7 @@ const clearTestData = catchAsync(async (req, res, next) => {
 });
 
 const seedComprehensiveData = catchAsync(async (req, res, next) => {
-  const userId = req.user._id;
+  const userId = req.user?._id || null;
   const existingCount = await ManualQuestion.countDocuments();
 
   if (existingCount > 0) {
@@ -278,7 +278,7 @@ const seedComprehensiveData = catchAsync(async (req, res, next) => {
 });
 
 const seedQuestions = catchAsync(async (req, res, next) => {
-  const userId = req.user._id;
+  const userId = req.user?._id || null;
   const { count = 50 } = req.body;
 
   if (count < 1 || count > 200) {
@@ -339,6 +339,34 @@ const getQuestionCount = catchAsync(async (req, res, next) => {
   });
 });
 
+const resetAndReseed = catchAsync(async (req, res, next) => {
+  if (process.env.NODE_ENV !== 'development') {
+    return next(new AppError('This operation is only allowed in development mode', 403));
+  }
+
+  const { exec } = await import('child_process');
+  const { promisify } = await import('util');
+  const execAsync = promisify(exec);
+
+  try {
+    await execAsync('node src/scripts/seed.js', {
+      cwd: process.cwd(),
+      timeout: 120000,
+    });
+
+    res.json({
+      success: true,
+      message: 'Database reset and reseeded successfully',
+      data: {
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('Reseed error:', error);
+    return next(new AppError('Failed to reset and reseed database', 500));
+  }
+});
+
 export default {
   populateTestData,
   clearTestData,
@@ -346,4 +374,5 @@ export default {
   seedQuestions,
   resetQuestions,
   getQuestionCount,
+  resetAndReseed,
 };

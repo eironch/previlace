@@ -1,3 +1,21 @@
+export function requireSuperAdmin(req, res, next) {
+	if (!req.user) {
+		return res.status(401).json({
+			success: false,
+			message: "Authentication required"
+		});
+	}
+
+	if (req.user.role !== "super_admin") {
+		return res.status(403).json({
+			success: false,
+			message: "Super admin access required"
+		});
+	}
+
+	next();
+}
+
 export function requireAdmin(req, res, next) {
 	if (!req.user) {
 		return res.status(401).json({
@@ -6,7 +24,7 @@ export function requireAdmin(req, res, next) {
 		});
 	}
 
-	if (req.user.role !== "admin") {
+	if (req.user.role !== "admin" && req.user.role !== "super_admin") {
 		return res.status(403).json({
 			success: false,
 			message: "Admin access required"

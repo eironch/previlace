@@ -3,7 +3,6 @@ import UserQuestionHistory from "../models/UserQuestionHistory.js";
 import ManualQuestion from "../models/ManualQuestion.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
 import questionSelectionService from "../services/questionSelectionService.js";
-import spacedRepetitionService from "../services/spacedRepetitionService.js";
 import performanceAnalysisService from "../services/performanceAnalysisService.js";
 import studyPlanService from "../services/studyPlanService.js";
 import adaptiveQuizService from "../services/adaptiveQuizService.js";
@@ -153,20 +152,6 @@ const completeQuizSession = catchAsync(async (req, res, next) => {
   }
 
   await session.complete();
-
-  for (const answer of session.answers) {
-    const question = session.questions.find((q) => q._id.toString() === answer.questionId.toString());
-    
-    await spacedRepetitionService.updateQuestionHistory(req.user._id, answer.questionId, {
-      sessionId: session._id,
-      isCorrect: answer.isCorrect,
-      timeSpent: answer.timeSpent || 0,
-      userAnswer: answer.userAnswer,
-      responseTime: answer.timeSpent || 0,
-      difficulty: question?.difficulty || "intermediate",
-      repetitions: 0
-    });
-  }
 
   const result = {
     sessionId: session._id,
@@ -486,50 +471,6 @@ const trackStudySession = catchAsync(async (req, res, next) => {
   });
 });
 
-const getSpacedRepetitionQuestions = catchAsync(async (req, res, next) => {
-  const { limit = 20 } = req.query;
-  
-  const dueQuestions = await spacedRepetitionService.getDueQuestions(
-    req.user._id,
-    parseInt(limit)
-  );
-
-  const questionIds = dueQuestions.map((q) => q.questionId);
-  const questions = await ManualQuestion.find({
-    _id: { $in: questionIds },
-  });
-
-  res.json({
-    success: true,
-    data: {
-      questions: questions.map((q) => ({
-        _id: q._id,
-        questionText: q.questionText,
-        questionMath: q.questionMath,
-        options: q.options,
-        difficulty: q.difficulty,
-        category: q.category,
-        subjectArea: q.subjectArea,
-      })),
-      dueCount: dueQuestions.length,
-    },
-  });
-});
-
-const getReviewSchedule = catchAsync(async (req, res, next) => {
-  const { days = 7 } = req.query;
-  
-  const schedule = await spacedRepetitionService.getReviewSchedule(
-    req.user._id,
-    parseInt(days)
-  );
-
-  res.json({
-    success: true,
-    data: { schedule },
-  });
-});
-
 const exportQuizResultPdf = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
 
@@ -735,7 +676,5 @@ export default {
   getExamReadiness,
   generateStudyPlan,
   trackStudySession,
-  getSpacedRepetitionQuestions,
-  getReviewSchedule,
   exportQuizResultPdf,
 };

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   BarChart3,
   Users,
@@ -8,24 +8,61 @@ import {
   LogOut,
   TrendingUp,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
-import useAdminSocket from "../hooks/useAdminSocket";
 import UserManagement from "../components/admin/UserManagement";
 import QuestionBankManager from "../components/questionBank/QuestionBankManager";
-import ReviewManager from "../components/admin/ReviewManager";
+import ReviewQueuePage from "./admin/ReviewQueuePage";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function AdminPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { logout, user } = useAuthStore();
-  const {
-    stats,
-    recentUsers,
-    isConnected,
-    isLoading,
-    error,
-    requestStatsUpdate,
-  } = useAdminSocket();
+  const [stats, setStats] = useState(null);
+  const [recentUsers, setRecentUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  async function fetchAdminData() {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const [statsRes, usersRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/admin/stats`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/api/admin/users/recent`, { credentials: "include" }),
+      ]);
+
+      if (!statsRes.ok || !usersRes.ok) {
+        throw new Error("Failed to fetch admin data");
+      }
+
+      const statsData = await statsRes.json();
+      const usersData = await usersRes.json();
+
+      if (statsData.success) {
+        setStats(statsData.data);
+      }
+
+      if (usersData.success) {
+        setRecentUsers(usersData.data.users || []);
+      }
+
+      setIsLoading(false);
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to fetch admin data:", err);
+      }
+      setError("Failed to load admin data");
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
 
   const optimizedStats = useMemo(() => {
     if (!stats?.overview) return null;
@@ -38,10 +75,10 @@ function AdminPage() {
       activeStudents: Math.max(0, Math.floor(current.activeStudents * 0.82)),
     };
 
-    const calculateGrowth = (current, previous) => {
+    function calculateGrowth(current, previous) {
       if (previous === 0) return current > 0 ? 100 : 0;
       return Math.round(((current - previous) / previous) * 100);
-    };
+    }
 
     return {
       ...current,
@@ -73,6 +110,10 @@ function AdminPage() {
     logout();
   }
 
+  function handleRefresh() {
+    fetchAdminData();
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
@@ -91,7 +132,7 @@ function AdminPage() {
           </h1>
           <p className="mb-4 text-gray-600">{error}</p>
           <button
-            onClick={() => requestStatsUpdate()}
+            onClick={handleRefresh}
             className="rounded-lg bg-black px-6 py-2 text-sm font-medium text-white hover:bg-gray-800"
           >
             Retry
@@ -106,22 +147,21 @@ function AdminPage() {
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <div className="flex items-center space-x-3">
-              <h1 className="text-3xl font-bold text-black">
-                Admin Dashboard
-              </h1>
-              <div
-                className={`h-3 w-3 rounded-full ${
-                  isConnected ? "bg-green-500" : "bg-red-500"
-                }`}
-                title={isConnected ? "Connected" : "Disconnected"}
-              />
-            </div>
+            <h1 className="text-3xl font-bold text-black">
+              Admin Dashboard
+            </h1>
             <p className="mt-2 text-gray-600">
               Monitor system performance and user engagement
             </p>
           </div>
           <div className="flex items-center space-x-4">
+            <button
+              onClick={handleRefresh}
+              className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Refresh</span>
+            </button>
             <div className="text-right">
               <p className="text-sm font-medium text-black">
                 {user?.firstName} {user?.lastName}
@@ -234,7 +274,6 @@ function AdminPage() {
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <StrugglesChart data={stats?.struggles || []} />
-              <StudyModesChart data={stats?.studyModes || []} />
             </div>
           </div>
         )}
@@ -266,24 +305,24 @@ function AdminPage() {
 
         {activeTab === "questionbank" && <QuestionBankManager />}
 
-        {activeTab === "review" && <ReviewManager />}
+        {activeTab === "review" && <ReviewQueuePage />}
       </div>
     </div>
   );
 }
 
 function StatsCard({ title, value, icon: Icon, change }) {
-  const formatChange = (changeValue) => {
+  function formatChange(changeValue) {
     if (changeValue === 0) return "0%";
     const sign = changeValue > 0 ? "+" : "";
     return `${sign}${changeValue}%`;
-  };
+  }
 
-  const getChangeColor = (changeValue) => {
+  function getChangeColor(changeValue) {
     if (changeValue > 0) return "text-green-600";
     if (changeValue < 0) return "text-red-600";
     return "text-gray-600";
-  };
+  }
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -420,47 +459,6 @@ function StrugglesChart({ data }) {
         ) : (
           <p className="text-sm text-gray-500">
             No struggles data available
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function StudyModesChart({ data }) {
-  const maxCount = Math.max(...data.map((item) => item.count), 1);
-
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center">
-        <BookOpen className="mr-2 h-5 w-5 text-black" />
-        <h3 className="text-lg font-semibold text-black">
-          Preferred Study Modes
-        </h3>
-      </div>
-      <div className="space-y-4">
-        {data.length > 0 ? (
-          data.map((item) => (
-            <div key={item._id} className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">
-                {item._id}
-              </span>
-              <div className="flex items-center space-x-3">
-                <div className="h-2 w-32 rounded-full bg-gray-200">
-                  <div
-                    className="h-2 rounded-full bg-black"
-                    style={{ width: `${(item.count / maxCount) * 100}%` }}
-                  ></div>
-                </div>
-                <span className="w-8 text-sm font-bold text-black">
-                  {item.count}
-                </span>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-sm text-gray-500">
-            No study mode data available
           </p>
         )}
       </div>
