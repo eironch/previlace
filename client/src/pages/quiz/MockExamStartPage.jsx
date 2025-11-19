@@ -12,7 +12,7 @@ function MockExamStartPage() {
 
   useEffect(() => {
     async function initiateMockExam() {
-      const examLevel = user?.examLevel?.toLowerCase() || "professional";
+      const examLevel = user?.examType || "Professional";
       await startMockExam(examLevel);
     }
 
@@ -62,7 +62,7 @@ function MockExamStartPage() {
             Preparing Mock Exam
           </h1>
           <p className="text-gray-600">
-            Setting up your {user?.examLevel || "Professional"} level exam
+            Setting up your {user?.examType || "Professional"} level exam
           </p>
         </div>
 

@@ -1,140 +1,122 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
-    BarChart3,
-    Users,
-    BookOpen,
-    Activity,
-    Calendar,
-    LogOut,
-    TrendingUp,
-    AlertCircle,
-    Menu, // New icon for the mobile dropdown menu
+  BarChart3,
+  Users,
+  BookOpen,
+  Activity,
+  Calendar,
+  LogOut,
+  TrendingUp,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 
 // FIX: Changing all imports to relative paths to ensure resolution in this environment.
 import { useAuthStore } from "../store/authStore";
-import useAdminSocket from "../hooks/useAdminSocket";
 import UserManagement from "../components/admin/UserManagement";
 import QuestionBankManager from "../components/questionBank/QuestionBankManager";
-import ReviewManager from "../components/admin/ReviewManager";
-import LandingPage from "../components/admin/LandingPageManager";
+import ReviewQueuePage from "./admin/ReviewQueuePage";
 
-// List of all navigation tabs for easier management
-const NAV_TABS = [
-    { title: "Dashboard", name: "dashboard" },
-    { title: "Performance Analytics", name: "analytics" },
-    { title: "User Management", name: "users" },
-    { title: "Question Bank", name: "questionbank" },
-    { title: "Review", name: "review" },
-    { title: "Landing Page", name: "landingpage" },
-];
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function AdminPage() {
-    const [activeTab, setActiveTab] = useState("dashboard");
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // New state for mobile menu
-    const { logout, user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const { logout, user } = useAuthStore();
+  const [stats, setStats] = useState(null);
+  const [recentUsers, setRecentUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    // Assuming useAdminSocket is mocked or available in the environment
-    const {
-        stats,
-        recentUsers,
-        isConnected,
-        isLoading,
-        error,
-        requestStatsUpdate,
-    } = useAdminSocket();
+  async function fetchAdminData() {
+    setIsLoading(true);
+    setError(null);
 
-    const optimizedStats = useMemo(() => {
-        if (!stats?.overview) return null;
+    try {
+      const [statsRes, usersRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/admin/stats`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/api/admin/users/recent`, { credentials: "include" }),
+      ]);
 
-        const current = stats.overview;
-        const previous = stats.previousMonth || {
-            totalUsers: Math.max(0, Math.floor(current.totalUsers * 0.85)),
-            activeLearners: Math.max(0, Math.floor(current.activeLearners * 0.80)),
-            completedProfiles: Math.max(
-                0,
-                Math.floor(current.completedProfiles * 0.75)
-            ),
-            activeStudents: Math.max(0, Math.floor(current.activeStudents * 0.82)),
-        };
+      if (!statsRes.ok || !usersRes.ok) {
+        throw new Error("Failed to fetch admin data");
+      }
 
-        const calculateGrowth = (current, previous) => {
-            if (previous === 0) return current > 0 ? 100 : 0;
-            return Math.round(((current - previous) / previous) * 100);
-        };
+      const statsData = await statsRes.json();
+      const usersData = await usersRes.json();
 
-        return {
-            ...current,
-            learnerRate: Math.round(
-                current.totalUsers > 0
-                    ? (current.activeLearners / current.totalUsers) * 100
-                    : 0
-            ),
-            completionRate: Math.round(
-                current.totalUsers > 0
-                    ? (current.completedProfiles / current.totalUsers) * 100
-                    : 0
-            ),
-            activityRate: Math.round(
-                current.totalUsers > 0
-                    ? (current.activeStudents / current.totalUsers) * 100
-                    : 0
-            ),
-            growth: {
-                totalUsers: calculateGrowth(current.totalUsers, previous.totalUsers),
-                activeLearners: calculateGrowth(
-                    current.activeLearners,
-                    previous.activeLearners
-                ),
-                completedProfiles: calculateGrowth(
-                    current.completedProfiles,
-                    previous.completedProfiles
-                ),
-                activeStudents: calculateGrowth(
-                    current.activeStudents,
-                    previous.activeStudents
-                ),
-            },
-        };
-    }, [stats]);
+      if (statsData.success) {
+        setStats(statsData.data);
+      }
 
-    function handleSignOut() {
-        logout();
+      if (usersData.success) {
+        setRecentUsers(usersData.data.users || []);
+      }
+
+      setIsLoading(false);
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to fetch admin data:", err);
+      }
+      setError("Failed to load admin data");
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
+
+  const optimizedStats = useMemo(() => {
+    if (!stats?.overview) return null;
+    
+    const current = stats.overview;
+    const previous = stats.previousMonth || {
+      totalUsers: Math.max(0, Math.floor(current.totalUsers * 0.85)),
+      activeLearners: Math.max(0, Math.floor(current.activeLearners * 0.80)),
+      completedProfiles: Math.max(0, Math.floor(current.completedProfiles * 0.75)),
+      activeStudents: Math.max(0, Math.floor(current.activeStudents * 0.82)),
+    };
+
+    function calculateGrowth(current, previous) {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100);
     }
 
-    function handleTabClick(tabName) {
-        setActiveTab(tabName);
-        setIsMobileMenuOpen(false); // Close menu on selection
-    }
+    return {
+      ...current,
+      learnerRate: Math.round(
+        current.totalUsers > 0
+          ? (current.activeLearners / current.totalUsers) * 100
+          : 0
+      ),
+      completionRate: Math.round(
+        current.totalUsers > 0
+          ? (current.completedProfiles / current.totalUsers) * 100
+          : 0
+      ),
+      activityRate: Math.round(
+        current.totalUsers > 0
+          ? (current.activeStudents / current.totalUsers) * 100
+          : 0
+      ),
+      growth: {
+        totalUsers: calculateGrowth(current.totalUsers, previous.totalUsers),
+        activeLearners: calculateGrowth(current.activeLearners, previous.activeLearners),
+        completedProfiles: calculateGrowth(current.completedProfiles, previous.completedProfiles),
+        activeStudents: calculateGrowth(current.activeStudents, previous.activeStudents),
+      },
+    };
+  }, [stats]);
 
-    if (isLoading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-white">
-                <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-black"></div>
-            </div>
-        );
-    }
+  function handleSignOut() {
+    logout();
+  }
 
-    if (error) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-white">
-                <div className="text-center">
-                    <AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
-                    <h1 className="mb-2 text-xl font-bold text-black">
-                        Unable to load admin data
-                    </h1>
-                    <p className="mb-4 text-gray-600">{error}</p>
-                    <button
-                        onClick={() => requestStatsUpdate()}
-                        className="cursor-pointer rounded-lg bg-black px-6 py-2 text-sm font-medium text-white hover:bg-gray-800"
-                    >
-                        Retry
-                    </button>
-                </div>
-            </div>
-        );
-    }
+  function handleRefresh() {
+    fetchAdminData();
+  }
 
+  if (isLoading) {
     return (
         <div className="min-h-screen bg-white">
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -175,137 +157,51 @@ function AdminPage() {
                     </div>
                 </div>
 
-                {/* --- NAVIGATION TABS / DROPDOWN --- */}
-                <div className="mb-8 border-b border-gray-200">
-                    {/* Desktop Tabs */}
-                    <nav className="-mb-px hidden space-x-8 sm:flex">
-                        {NAV_TABS.map((tab) => (
-                            <TabButton
-                                key={tab.name}
-                                title={tab.title}
-                                activeTab={activeTab}
-                                tabName={tab.name}
-                                setActiveTab={setActiveTab}
-                            />
-                        ))}
-                    </nav>
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="text-center">
+          <AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
+          <h1 className="mb-2 text-xl font-bold text-black">
+            Unable to load admin data
+          </h1>
+          <p className="mb-4 text-gray-600">{error}</p>
+          <button
+            onClick={handleRefresh}
+            className="rounded-lg bg-black px-6 py-2 text-sm font-medium text-white hover:bg-gray-800"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-                    {/* Mobile Dropdown */}
-                    <div className="relative sm:hidden">
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-black shadow-sm transition-colors hover:bg-gray-50"
-                        >
-                            <span className="truncate">
-                                Current: **{NAV_TABS.find(t => t.name === activeTab)?.title || 'Dashboard'}**
-                            </span>
-                            <Menu className="ml-2 h-5 w-5" />
-                        </button>
-
-                        {isMobileMenuOpen && (
-                            <div className="absolute right-0 z-10 mt-2 w-full origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                <div className="py-1">
-                                    {NAV_TABS.map((tab) => (
-                                        <button
-                                            key={tab.name}
-                                            onClick={() => handleTabClick(tab.name)}
-                                            className={`block w-full px-4 py-2 text-left text-sm font-medium cursor-pointer transition-colors ${
-                                                activeTab === tab.name
-                                                    ? "bg-gray-100 text-black"
-                                                    : "text-gray-700 hover:bg-gray-50"
-                                            }`}
-                                        >
-                                            {tab.title}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-                {/* --- END NAVIGATION TABS / DROPDOWN --- */}
-
-                {/* Content Rendering */}
-                {activeTab === "dashboard" && (
-                    <div className="space-y-8">
-                        {/* Stats Cards: 1 column on small, 2 on medium, 4 on large */}
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                            <StatsCard
-                                title="Total Users"
-                                value={optimizedStats?.totalUsers || 0}
-                                icon={Users}
-                                change={optimizedStats?.growth?.totalUsers || 0}
-                            />
-                            <StatsCard
-                                title="Active Learners"
-                                value={optimizedStats?.activeLearners || 0}
-                                icon={BookOpen}
-                                change={optimizedStats?.growth?.activeLearners || 0}
-                            />
-                            <StatsCard
-                                title="Complete Profiles"
-                                value={optimizedStats?.completedProfiles || 0}
-                                icon={TrendingUp}
-                                change={optimizedStats?.growth?.completedProfiles || 0}
-                            />
-                            <StatsCard
-                                title="Active Students"
-                                value={optimizedStats?.activeStudents || 0}
-                                icon={Activity}
-                                change={optimizedStats?.growth?.activeStudents || 0}
-                            />
-                        </div>
-
-                        {/* Charts: 1 column on small, 2 on large */}
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                            <ExamTypeChart data={stats?.examTypes || []} />
-                            <EducationChart data={stats?.education || []} />
-                        </div>
-
-                        {/* Recent Users & Trend: 1 column on small, 2 on large */}
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                            <RecentUsers users={recentUsers} />
-                            <RegistrationTrend data={stats?.monthlyRegistrations || []} />
-                        </div>
-
-                        {/* Struggles & Study Modes: 1 column on small, 2 on large */}
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                            <StrugglesChart data={stats?.struggles || []} />
-                            <StudyModesChart data={stats?.studyModes || []} />
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === "analytics" && (
-                    <div className="space-y-8">
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                                <h3 className="mb-4 text-lg font-semibold text-black">
-                                    Performance Analytics
-                                </h3>
-                                <p className="text-gray-500">
-                                    Detailed performance metrics and insights coming soon.
-                                </p>
-                            </div>
-                            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                                <h3 className="mb-4 text-lg font-semibold text-black">
-                                    Learning Patterns
-                                </h3>
-                                <p className="text-gray-500">
-                                    User learning behavior analysis coming soon.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === "users" && <UserManagement />}
-
-                {activeTab === "questionbank" && <QuestionBankManager />}
-
-                {activeTab === "review" && <ReviewManager />}
-
-                {activeTab === "landingpage" && <LandingPage />}
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-black">
+              Admin Dashboard
+            </h1>
+            <p className="mt-2 text-gray-600">
+              Monitor system performance and user engagement
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleRefresh}
+              className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Refresh</span>
+            </button>
+            <div className="text-right">
+              <p className="text-sm font-medium text-black">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <p className="text-xs text-gray-500">{user?.email}</p>
             </div>
         </div>
     );
@@ -340,18 +236,8 @@ function StatsCard({ title, value, icon: Icon, change }) {
         return "text-gray-600";
     };
 
-    return (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-gray-600">{title}</p>
-                    <p className="mt-2 text-2xl font-bold text-black">
-                        {value.toLocaleString()}
-                    </p>
-                </div>
-                <div className="rounded-full bg-black p-3">
-                    <Icon className="h-6 w-6 text-white" />
-                </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <StrugglesChart data={stats?.struggles || []} />
             </div>
             <div className="mt-4">
                 <span className={`text-sm font-medium ${getChangeColor(change)}`}>
@@ -359,6 +245,43 @@ function StatsCard({ title, value, icon: Icon, change }) {
                 </span>
                 <span className="ml-2 text-sm text-gray-500">from last month</span>
             </div>
+          </div>
+        )}
+
+        {activeTab === "users" && <UserManagement />}
+
+        {activeTab === "questionbank" && <QuestionBankManager />}
+
+        {activeTab === "review" && <ReviewQueuePage />}
+      </div>
+    </div>
+  );
+}
+
+function StatsCard({ title, value, icon: Icon, change }) {
+  function formatChange(changeValue) {
+    if (changeValue === 0) return "0%";
+    const sign = changeValue > 0 ? "+" : "";
+    return `${sign}${changeValue}%`;
+  }
+
+  function getChangeColor(changeValue) {
+    if (changeValue > 0) return "text-green-600";
+    if (changeValue < 0) return "text-red-600";
+    return "text-gray-600";
+  }
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="mt-2 text-2xl font-bold text-black">
+            {value.toLocaleString()}
+          </p>
+        </div>
+        <div className="rounded-full bg-black p-3">
+          <Icon className="h-6 w-6 text-white" />
         </div>
     );
 }
@@ -482,48 +405,6 @@ function StrugglesChart({ data }) {
                 ) : (
                     <p className="text-sm text-gray-500">
                         No struggles data available
-                    </p>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function StudyModesChart({ data }) {
-    const maxCount = Math.max(...data.map((item) => item.count), 1);
-
-    return (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center">
-                <BookOpen className="mr-2 h-5 w-5 text-black" />
-                <h3 className="text-lg font-semibold text-black">
-                    Preferred Study Modes
-                </h3>
-            </div>
-            <div className="space-y-4">
-                {data.length > 0 ? (
-                    data.map((item) => (
-                        <div key={item._id} className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-700">
-                                {item._id}
-                            </span>
-                            <div className="flex w-full items-center space-x-3 sm:w-auto">
-                                {/* Progress bar width made responsive with w-full on small screens */}
-                                <div className="h-2 w-full rounded-full bg-gray-200 sm:w-32">
-                                    <div
-                                        className="h-2 rounded-full bg-black"
-                                        style={{ width: `${(item.count / maxCount) * 100}%` }}
-                                    ></div>
-                                </div>
-                                <span className="w-8 text-sm font-bold text-black">
-                                    {item.count}
-                                </span>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p className="text-sm text-gray-500">
-                        No study mode data available
                     </p>
                 )}
             </div>

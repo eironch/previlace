@@ -8,6 +8,14 @@ export const useReviewQuestionStore = create((set, get) => ({
   isLoadingCounts: false,
   error: null,
   questionCounts: {},
+  searchQuery: "",
+  activeFilters: {
+    category: "",
+    difficulty: "",
+    examLevel: "",
+    questionType: "",
+    source: "",
+  },
   pagination: {
     currentPage: 1,
     totalPages: 0,
@@ -16,7 +24,7 @@ export const useReviewQuestionStore = create((set, get) => ({
     hasPrevPage: false,
   },
 
-  fetchQuestions: async (page = 1) => {
+  fetchQuestions: async ({ page = 1, search = "", filters = {} } = {}) => {
     set({ isLoading: true, error: null });
 
     try {
@@ -24,6 +32,8 @@ export const useReviewQuestionStore = create((set, get) => ({
         status: ["draft", "review"],
         page,
         limit: 20,
+        search,
+        ...filters,
       });
 
       set({
@@ -197,7 +207,46 @@ export const useReviewQuestionStore = create((set, get) => ({
   },
 
   setPage: (page) => {
-    get().fetchQuestions(page);
+    const { searchQuery, activeFilters } = get();
+    get().fetchQuestions({ page, search: searchQuery, filters: activeFilters });
+  },
+
+  setSearchQuery: (search) => {
+    set({ searchQuery: search });
+    const { activeFilters } = get();
+    get().fetchQuestions({ page: 1, search, filters: activeFilters });
+  },
+
+  setFilters: (filters) => {
+    set({ activeFilters: filters });
+    const { searchQuery } = get();
+    get().fetchQuestions({ page: 1, search: searchQuery, filters });
+  },
+
+  sendBackToReview: async (id) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      await manualQuestionService.sendBackToReview(id);
+
+      set((state) => ({
+        questions: state.questions.filter((question) => question._id !== id),
+        isLoading: false,
+        error: null,
+      }));
+
+      return { success: true };
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Send back to review error:", error);
+      }
+      set({
+        isLoading: false,
+        error: error.message,
+      });
+
+      return { success: false, error: error.message };
+    }
   },
 
   approveQuestion: async (id, notes) => {
@@ -306,6 +355,28 @@ export const useReviewQuestionStore = create((set, get) => ({
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         console.error("Publish question error:", error);
+      }
+      set({
+        isLoading: false,
+        error: error.message,
+      });
+
+      return { success: false, error: error.message };
+    }
+  },
+
+  batchAction: async (questionIds, action, notes = "") => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const data = await manualQuestionService.batchAction(questionIds, action, notes);
+
+      await get().fetchQuestions();
+
+      return { success: true, results: data.results };
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Batch action error:", error);
       }
       set({
         isLoading: false,

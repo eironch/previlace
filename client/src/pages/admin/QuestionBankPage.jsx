@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Database, Plus, RefreshCw, Loader } from "lucide-react";
+import { Database, RefreshCw, Loader } from "lucide-react";
 import { useQuestionBankStore } from "@/store/questionBankStore";
 import QuestionTypeSelection from "@/components/questionBank/QuestionTypeSelection";
 import QuestionCreationForm from "@/components/questionBank/QuestionCreationForm";
@@ -7,8 +7,6 @@ import QuestionList from "@/components/questionBank/QuestionList";
 import Button from "@/components/ui/Button";
 
 function QuestionBankPage() {
-  const [currentView, setCurrentView] = useState("questions");
-  const [selectedQuestionType, setSelectedQuestionType] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { fetchQuestions, fetchQuestionCounts } = useQuestionBankStore();
 
@@ -23,44 +21,6 @@ function QuestionBankPage() {
     } finally {
       setIsRefreshing(false);
     }
-  }
-
-  function handleTypeSelect(questionType) {
-    setSelectedQuestionType(questionType);
-    setCurrentView("create");
-  }
-
-  function handleBackToQuestions() {
-    setSelectedQuestionType(null);
-    setCurrentView("questions");
-  }
-
-  function handleQuestionSuccess() {
-    setCurrentView("questions");
-    refreshData();
-  }
-
-  function handleCreateNew() {
-    setCurrentView("types");
-  }
-
-  if (currentView === "types") {
-    return (
-      <QuestionTypeSelection
-        onSelectType={handleTypeSelect}
-        onBack={handleBackToQuestions}
-      />
-    );
-  }
-
-  if (currentView === "create" && selectedQuestionType) {
-    return (
-      <QuestionCreationForm
-        questionType={selectedQuestionType}
-        onBack={handleBackToQuestions}
-        onSuccess={handleQuestionSuccess}
-      />
-    );
   }
 
   return (
@@ -89,10 +49,6 @@ function QuestionBankPage() {
               <RefreshCw className="h-4 w-4" />
             )}
             Refresh
-          </Button>
-          <Button onClick={handleCreateNew} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Create Question
           </Button>
         </div>
       </div>

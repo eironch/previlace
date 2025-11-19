@@ -20,7 +20,7 @@ import AchievementsPage from "@/pages/AchievementsPage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import PerformancePage from "@/pages/PerformancePage";
 import ExamReadinessPage from "@/pages/ExamReadinessPage";
-import SpacedRepetitionPage from "@/pages/SpacedRepetitionPage";
+
 import StudyPlanPage from "@/pages/StudyPlanPage";
 import StudyStreakPage from "@/pages/StudyStreakPage";
 import ChallengePage from "@/pages/ChallengePage";
@@ -30,8 +30,10 @@ import SubjectDetailPage from "@/pages/SubjectDetailPage";
 import TopicDetailPage from "@/pages/TopicDetailPage";
 import ResumeBuilderPage from "@/pages/ResumeBuilderPage";
 import InterviewPrepPage from "@/pages/InterviewPrepPage";
+import ProfileSettingsPage from "@/pages/settings/ProfileSettingsPage";
 import AuthModal from "@/components/auth/AuthModal";
 import DevTools from "@/components/ui/DevTools";
+import RoleDashboard from "@/components/dashboard/RoleDashboard";
 import { mathService } from "@/services/mathService";
 
 function App() {
@@ -71,7 +73,7 @@ function App() {
       );
     }
 
-    if (!isAuthenticated || user?.role !== "admin") {
+    if (!isAuthenticated || (user?.role !== "admin" && user?.role !== "super_admin")) {
       return <Navigate to="/" replace />;
     }
 
@@ -92,12 +94,8 @@ function App() {
     }
 
     if (user?.isProfileComplete) {
-      return (
-        <Navigate
-          to={user.role === "admin" ? "/admin" : "/dashboard"}
-          replace
-        />
-      );
+      const redirectPath = user.role === "admin" || user.role === "super_admin" ? "/admin" : "/dashboard";
+      return <Navigate to={redirectPath} replace />;
     }
 
     return children;
@@ -142,7 +140,7 @@ function App() {
             path="/dashboard"
             element={
               <DashboardRoute>
-                <StudentPage />
+                {user?.role === "admin" || user?.role === "super_admin" ? <RoleDashboard /> : <StudentPage />}
               </DashboardRoute>
             }
           />
@@ -228,14 +226,7 @@ function App() {
             }
           />
 
-          <Route
-            path="/dashboard/spaced-repetition"
-            element={
-              <DashboardRoute>
-                <SpacedRepetitionPage />
-              </DashboardRoute>
-            }
-          />
+
 
           <Route
             path="/dashboard/study-plan"
@@ -314,6 +305,15 @@ function App() {
             element={
               <DashboardRoute>
                 <TopicDetailPage />
+              </DashboardRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/settings"
+            element={
+              <DashboardRoute>
+                <ProfileSettingsPage />
               </DashboardRoute>
             }
           />

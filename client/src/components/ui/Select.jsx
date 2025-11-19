@@ -23,7 +23,7 @@ const Select = forwardRef(({
 				className={`${baseClasses} ${errorClasses} ${className}`}
 				{...props}
 			>
-				{placeholder && (
+				{placeholder && !props.value && (
 					<option value="" disabled>
 						{placeholder}
 					</option>

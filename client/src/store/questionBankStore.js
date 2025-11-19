@@ -223,4 +223,84 @@ export const useQuestionBankStore = create((set, get) => ({
       return { success: false, error: error.message };
     }
   },
+
+  publishQuestion: async (id) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const data = await manualQuestionService.publishQuestion(id);
+
+      set((state) => ({
+        questions: state.questions.map((question) =>
+          question._id === id ? data.question : question
+        ),
+        selectedQuestion: data.question,
+        isLoading: false,
+        error: null,
+      }));
+
+      return { success: true, question: data.question };
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Publish question error:", error);
+      }
+      set({
+        isLoading: false,
+        error: error.message,
+      });
+
+      return { success: false, error: error.message };
+    }
+  },
+
+  unpublishQuestion: async (id) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const data = await manualQuestionService.unpublishQuestion(id);
+
+      set((state) => ({
+        questions: state.questions.map((question) =>
+          question._id === id ? data.question : question
+        ),
+        selectedQuestion: data.question,
+        isLoading: false,
+        error: null,
+      }));
+
+      return { success: true, question: data.question };
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Unpublish question error:", error);
+      }
+      set({
+        isLoading: false,
+        error: error.message,
+      });
+
+      return { success: false, error: error.message };
+    }
+  },
+
+  batchAction: async (questionIds, action, notes = "") => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const data = await manualQuestionService.batchAction(questionIds, action, notes);
+
+      await get().fetchQuestions();
+
+      return { success: true, results: data.results };
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Batch action error:", error);
+      }
+      set({
+        isLoading: false,
+        error: error.message,
+      });
+
+      return { success: false, error: error.message };
+    }
+  },
 }));

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { questionBankService } from "../services/questionBankService";
+import { manualQuestionService } from "../services/manualQuestionService";
 
 export const useEnhancedQuestionBankStore = create((set, get) => ({
   templates: [],
@@ -24,17 +24,43 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
     search: "",
     dateRange: null,
   },
+  searchQuery: "",
+  activeFilters: {
+    category: "",
+    difficulty: "",
+    examLevel: "",
+    questionType: "",
+    source: "",
+  },
+  pagination: {
+    currentPage: 1,
+    totalPages: 0,
+    totalItems: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+  },
 
   setFilters: (filters) => {
-    set((state) => ({
-      filters: { ...state.filters, ...filters },
-    }));
+    set({ activeFilters: filters });
+    const { searchQuery } = get();
+    get().fetchQuestions({ page: 1, search: searchQuery, filters });
+  },
+
+  setSearchQuery: (search) => {
+    set({ searchQuery: search });
+    const { activeFilters } = get();
+    get().fetchQuestions({ page: 1, search, filters: activeFilters });
+  },
+
+  setPage: (page) => {
+    const { searchQuery, activeFilters } = get();
+    get().fetchQuestions({ page, search: searchQuery, filters: activeFilters });
   },
 
   fetchTemplates: async (filters = {}) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.getTemplates({
+      const response = await manualQuestionService.getTemplates({
         ...get().filters,
         ...filters,
       });
@@ -52,7 +78,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
   selectTemplate: async (templateId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.getTemplateById(templateId);
+      const response = await manualQuestionService.getTemplateById(templateId);
       set({
         currentTemplate: response.template,
         fieldValues: {},
@@ -85,7 +111,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
     if (!field) return;
 
     try {
-      const result = await questionBankService.validateField(
+      const result = await manualQuestionService.validateField(
         field,
         value,
         get().fieldValues
@@ -111,7 +137,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
     const fieldValues = get().fieldValues;
     if (!template) return;
 
-    const previewContent = questionBankService.renderPreview(
+    const previewContent = manualQuestionService.renderPreview(
       template,
       fieldValues
     );
@@ -123,7 +149,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
     const { currentTemplate, fieldValues } = get();
 
     try {
-      const response = await questionBankService.createQuestion({
+      const response = await manualQuestionService.createQuestion({
         template_id: currentTemplate._id,
         template_version: currentTemplate.version,
         field_values: fieldValues,
@@ -151,7 +177,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
   createBulkQuestions: async (questionsData) => {
     set({ isSaving: true, error: null });
     try {
-      const response = await questionBankService.createBulkQuestions({
+      const response = await manualQuestionService.createBulkQuestions({
         template_id: get().currentTemplate._id,
         questions: questionsData,
         batch_options: {
@@ -173,15 +199,25 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
     }
   },
 
-  fetchQuestions: async (filters = {}) => {
+  fetchQuestions: async ({ page = 1, search = "", filters = {} } = {}) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.getQuestions({
+      const response = await manualQuestionService.getQuestions({
         ...get().filters,
         ...filters,
+        page,
+        limit: 20,
+        search,
       });
       set({
         questions: response.questions,
+        pagination: response.pagination || {
+          currentPage: page,
+          totalPages: 1,
+          totalItems: response.questions?.length || 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
         isLoading: false,
       });
       return { success: true, data: response.questions };
@@ -191,10 +227,56 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
     }
   },
 
+  deleteQuestion: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await manualQuestionService.deleteQuestion(id);
+      set((state) => ({
+        questions: state.questions.filter((q) => q._id !== id),
+        reviewQueue: state.reviewQueue.filter((r) => r._id !== id),
+        isLoading: false,
+      }));
+      return { success: true };
+    } catch (error) {
+      set({ isLoading: false, error: error.message });
+      return { success: false, error: error.message };
+    }
+  },
+
+  duplicateQuestion: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await manualQuestionService.duplicateQuestion(id);
+      set((state) => ({
+        questions: [response.question, ...state.questions],
+        isLoading: false,
+      }));
+      return { success: true, question: response.question };
+    } catch (error) {
+      set({ isLoading: false, error: error.message });
+      return { success: false, error: error.message };
+    }
+  },
+
+  sendBackToReview: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await manualQuestionService.sendBackToReview(id);
+      set((state) => ({
+        questions: state.questions.filter((q) => q._id !== id),
+        isLoading: false,
+      }));
+      return { success: true };
+    } catch (error) {
+      set({ isLoading: false, error: error.message });
+      return { success: false, error: error.message };
+    }
+  },
+
   submitForReview: async (questionId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.submitForReview(questionId);
+      const response = await manualQuestionService.submitForReview(questionId);
       set((state) => ({
         questions: state.questions.map((q) =>
           q._id === questionId ? response.question : q
@@ -211,7 +293,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
   approveQuestion: async (questionId, feedback) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.approveQuestion(
+      const response = await manualQuestionService.approveQuestion(
         questionId,
         feedback
       );
@@ -232,7 +314,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
   rejectQuestion: async (questionId, feedback) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.rejectQuestion(
+      const response = await manualQuestionService.rejectQuestion(
         questionId,
         feedback
       );
@@ -253,7 +335,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
   fetchReviewQueue: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.getReviewQueue();
+      const response = await manualQuestionService.getReviewQueue();
       set({
         reviewQueue: response.questions,
         isLoading: false,
@@ -268,7 +350,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
   fetchVersionHistory: async (questionId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.getVersionHistory(questionId);
+      const response = await manualQuestionService.getVersionHistory(questionId);
       set({
         versions: response.versions,
         isLoading: false,
@@ -283,7 +365,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
   restoreVersion: async (questionId, versionId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.restoreVersion(
+      const response = await manualQuestionService.restoreVersion(
         questionId,
         versionId
       );
@@ -304,7 +386,7 @@ export const useEnhancedQuestionBankStore = create((set, get) => ({
   addCollaborator: async (questionId, collaboratorData) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await questionBankService.addCollaborator(
+      const response = await manualQuestionService.addCollaborator(
         questionId,
         collaboratorData
       );

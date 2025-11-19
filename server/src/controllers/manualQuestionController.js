@@ -371,7 +371,7 @@ const sendBackToReview = catchAsync(async (req, res, next) => {
 	question.workflowState = "review";
 	question.reviewHistory.push({
 		reviewerId: req.user._id,
-		action: "sent_back_to_review",
+		action: "requested_changes",
 		notes: "Question sent back from Question Bank for further review",
 		reviewedAt: new Date(),
 	});
@@ -620,6 +620,185 @@ const validateQuestionContent = catchAsync(async (req, res, next) => {
 	});
 });
 
+const unpublishQuestion = catchAsync(async (req, res, next) => {
+	const question = await ManualQuestion.findById(req.params.id);
+
+	if (!question) {
+		return next(new AppError("Question not found", 404));
+	}
+
+	if (req.user.role !== "admin") {
+		return next(new AppError("Not authorized to unpublish questions", 403));
+	}
+
+	if (question.status !== "published") {
+		return next(
+			new AppError("Only published questions can be unpublished", 400)
+		);
+	}
+
+	question.status = "approved";
+	question.workflowState = "approved";
+	question.auditTrail.push({
+		action: "unpublished",
+		userId: req.user._id,
+		timestamp: new Date(),
+	});
+
+	await question.save();
+
+	await question.populate([
+		{ path: "templateId", select: "name category" },
+		{ path: "createdBy", select: "firstName lastName" },
+		{ path: "reviewHistory.reviewerId", select: "firstName lastName" },
+	]);
+
+	res.json({
+		success: true,
+		data: { question },
+	});
+});
+
+const batchAction = catchAsync(async (req, res, next) => {
+	const { questionIds, action, notes } = req.body;
+
+	if (req.user.role !== "admin") {
+		return next(new AppError("Not authorized to perform batch actions", 403));
+	}
+
+	if (!questionIds || !Array.isArray(questionIds) || questionIds.length === 0) {
+		return next(new AppError("Question IDs array is required", 400));
+	}
+
+	if (!action) {
+		return next(new AppError("Action is required", 400));
+	}
+
+	const validActions = ["approved", "rejected", "requested_changes", "publish", "unpublish", "send_back_to_review"];
+	if (!validActions.includes(action)) {
+		return next(new AppError(`Invalid action. Must be one of: ${validActions.join(", ")}`, 400));
+	}
+
+	const results = {
+		success: [],
+		failed: [],
+	};
+
+	for (const questionId of questionIds) {
+		try {
+			const question = await ManualQuestion.findById(questionId);
+
+			if (!question) {
+				results.failed.push({
+					questionId,
+					error: "Question not found",
+				});
+				continue;
+			}
+
+			if (action === "approved") {
+				if (!["draft", "review"].includes(question.status)) {
+					results.failed.push({
+						questionId,
+						error: "Question must be in draft or review status",
+					});
+					continue;
+				}
+				await question.approve(req.user._id, notes);
+			} else if (action === "rejected") {
+				if (!["draft", "review"].includes(question.status)) {
+					results.failed.push({
+						questionId,
+						error: "Question must be in draft or review status",
+					});
+					continue;
+				}
+				await question.reject(req.user._id, notes);
+			} else if (action === "requested_changes") {
+				if (!["draft", "review"].includes(question.status)) {
+					results.failed.push({
+						questionId,
+						error: "Question must be in draft or review status",
+					});
+					continue;
+				}
+				question.reviewHistory.push({
+					reviewerId: req.user._id,
+					action: "requested_changes",
+					notes,
+					reviewedAt: new Date(),
+				});
+				await question.save();
+			} else if (action === "publish") {
+				if (question.status !== "approved") {
+					results.failed.push({
+						questionId,
+						error: "Question must be approved before publishing",
+					});
+					continue;
+				}
+				await question.publish();
+			} else if (action === "unpublish") {
+				if (question.status !== "published") {
+					results.failed.push({
+						questionId,
+						error: "Question must be published to unpublish",
+					});
+					continue;
+				}
+				question.status = "approved";
+				question.workflowState = "approved";
+				question.auditTrail.push({
+					action: "unpublished",
+					userId: req.user._id,
+					timestamp: new Date(),
+				});
+				await question.save();
+			} else if (action === "send_back_to_review") {
+				if (!["approved", "published"].includes(question.status)) {
+					results.failed.push({
+						questionId,
+						error: "Only approved or published questions can be sent back",
+					});
+					continue;
+				}
+				question.status = "review";
+				question.workflowState = "review";
+				question.reviewHistory.push({
+					reviewerId: req.user._id,
+					action: "requested_changes",
+					notes: notes || "Question sent back from Question Bank for further review",
+					reviewedAt: new Date(),
+				});
+				question.auditTrail.push({
+					action: "sent_back_to_review",
+					userId: req.user._id,
+					timestamp: new Date(),
+				});
+				await question.save();
+			}
+
+			results.success.push(questionId);
+		} catch (error) {
+			if (process.env.NODE_ENV === "development") {
+				console.error(`Batch action error for question ${questionId}:`, error);
+			}
+			results.failed.push({
+				questionId,
+				error: error.message,
+			});
+		}
+	}
+
+	res.json({
+		success: true,
+		data: {
+			results,
+			message: `Successfully processed ${results.success.length} questions, ${results.failed.length} failed`,
+		},
+	});
+});
+
 export default {
 	createQuestion,
 	getQuestions,
@@ -629,10 +808,12 @@ export default {
 	submitForReview,
 	reviewQuestion,
 	publishQuestion,
+	unpublishQuestion,
 	sendBackToReview,
 	duplicateQuestion,
 	getQuestionStats,
 	getRandomQuestions,
 	getQuestionCounts,
 	validateQuestionContent,
+	batchAction,
 };

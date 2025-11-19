@@ -38,10 +38,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  border-color: rgb(var(--color-border));
-}
-
 @keyframes fade-in {
   from {
     opacity: 0;

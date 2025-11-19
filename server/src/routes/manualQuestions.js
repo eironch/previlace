@@ -19,6 +19,11 @@ router.post("/:id/duplicate", manualQuestionController.duplicateQuestion);
 router.put("/:id", manualQuestionController.updateQuestion);
 router.patch("/:id/submit", manualQuestionController.submitForReview);
 router.patch("/:id/review", manualQuestionController.reviewQuestion);
+router.patch("/:id/publish", manualQuestionController.publishQuestion);
+router.patch("/:id/unpublish", manualQuestionController.unpublishQuestion);
+router.patch("/:id/send-back-to-review", manualQuestionController.sendBackToReview);
+
+router.post("/batch", manualQuestionController.batchAction);
 
 router.delete("/:id", manualQuestionController.deleteQuestion);
 

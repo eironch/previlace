@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useManualQuestionStore } from "../../store/manualQuestionStore";
+import { useSubjectStore } from "../../store/subjectStore";
+import { useTopicStore } from "../../store/topicStore";
 import {
   ArrowLeft,
   Save,
@@ -8,6 +10,8 @@ import {
   XCircle,
   Plus,
   Trash2,
+  Circle,
+  AlertCircle,
 } from "lucide-react";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
@@ -18,8 +22,12 @@ import MathInput from "../ui/MathInput";
 
 function QuestionCreationForm({ questionType, onBack, onSuccess }) {
   const { createQuestion, isCreating, error } = useManualQuestionStore();
+  const { subjects, fetchSubjects, loading: subjectsLoading } = useSubjectStore();
+  const { topics, fetchTopicsBySubject, loading: topicsLoading } = useTopicStore();
 
   const [formData, setFormData] = useState({
+    subjectId: "",
+    topicId: "",
     questionText: "",
     questionMath: "",
     options: [
@@ -48,6 +56,17 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
   const [showPreview, setShowPreview] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [submitError, setSubmitError] = useState(null);
+
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
+
+  useEffect(() => {
+    if (formData.subjectId) {
+      fetchTopicsBySubject(formData.subjectId);
+      setFormData((prev) => ({ ...prev, topicId: "" }));
+    }
+  }, [formData.subjectId]);
 
   function updateFormData(field, value) {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -100,6 +119,14 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
 
   function validateFormData() {
     const errors = [];
+
+    if (!formData.subjectId) {
+      errors.push("Subject selection is required");
+    }
+
+    if (!formData.topicId) {
+      errors.push("Topic selection is required");
+    }
 
     if (!formData.questionText.trim()) {
       errors.push("Question text is required");
@@ -216,6 +243,64 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
           <QuestionPreview question={formData} questionType={questionType} />
         ) : (
           <div className="space-y-8">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-black">Classification</h3>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    Subject
+                  </label>
+                  {subjectsLoading ? (
+                    <div className="rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-500">
+                      Loading subjects...
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.subjectId}
+                      onChange={(e) => updateFormData("subjectId", e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map((subject) => (
+                        <option key={subject._id} value={subject._id}>
+                          {subject.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    Topic
+                  </label>
+                  {topicsLoading ? (
+                    <div className="rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-500">
+                      Loading topics...
+                    </div>
+                  ) : !formData.subjectId ? (
+                    <div className="rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-500">
+                      Select a subject first
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.topicId}
+                      onChange={(e) => updateFormData("topicId", e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                    >
+                      <option value="">Select Topic</option>
+                      {topics.map((topic) => (
+                        <option key={topic._id} value={topic._id}>
+                          {topic.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {isReadingComprehension && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-black">
@@ -281,34 +366,43 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
                 )}
               </div>
 
-              {formData.options.map((option, index) => (
-                <div
-                  key={index}
-                  className={`cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 hover:shadow-sm ${
-                    option.isCorrect
-                      ? "border-black bg-white ring-2 ring-black"
-                      : "border-gray-300 bg-white"
-                  }`}
-                  onClick={() => updateOption(index, "isCorrect", true)}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="mt-2 flex items-center">
-                      <div
-                        className={`h-4 w-4 rounded-full border-2 ${
-                          option.isCorrect
-                            ? "border-black bg-black"
-                            : "border-gray-300 bg-white"
-                        }`}
-                      >
-                        {option.isCorrect && (
-                          <div className="h-full w-full rounded-full bg-white p-0.5">
-                            <div className="h-full w-full rounded-full bg-black" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
+              {!formData.options.some((opt) => opt.isCorrect) && (
+                <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <span>Please select a correct answer by clicking on an option</span>
+                </div>
+              )}
 
-                    <div className="flex-1 space-y-3">
+              <div className="space-y-2">
+                {formData.options.map((option, index) => (
+                  <div
+                    key={index}
+                    onClick={() => updateOption(index, "isCorrect", true)}
+                    className={`flex w-full items-start gap-3 rounded-lg border-2 p-3 text-left transition-all cursor-pointer sm:p-4 ${
+                      option.isCorrect
+                        ? "border-black bg-white hover:border-black hover:bg-gray-50"
+                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {option.isCorrect ? (
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-black" />
+                    ) : (
+                      <Circle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400" />
+                    )}
+
+                    <div className="min-w-0 flex-1 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+                            option.isCorrect
+                              ? "bg-black text-white"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {String.fromCharCode(65 + index)}
+                        </span>
+                      </div>
+
                       <Input
                         placeholder={`Option ${index + 1}`}
                         value={option.text}
@@ -316,7 +410,7 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
                           updateOption(index, "text", e.target.value)
                         }
                         onClick={(e) => e.stopPropagation()}
-                        className="border-0 bg-transparent focus:border-0 focus:ring-0"
+                        className="border-0 bg-transparent p-0 text-sm leading-relaxed focus:border-0 focus:ring-0 sm:text-base"
                       />
 
                       {isMathematical && (
@@ -327,7 +421,7 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
                           }
                           placeholder="Mathematical expression (optional)"
                           onClick={(e) => e.stopPropagation()}
-                          className="border-0 bg-transparent focus:border-0 focus:ring-0"
+                          className="border-0 bg-transparent p-0 focus:border-0 focus:ring-0"
                         />
                       )}
                     </div>
@@ -345,8 +439,8 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
                       </Button>
                     )}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -392,7 +486,7 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
                 onChange={(value) => updateFormData("examLevel", value)}
                 options={[
                   { value: "Professional", label: "Professional" },
-                  { value: "Subprofessional", label: "Sub-Professional" },
+                  { value: "Sub-Professional", label: "Sub-Professional" },
                   { value: "Both", label: "Both Levels" },
                 ]}
               />

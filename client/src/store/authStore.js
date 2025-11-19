@@ -5,6 +5,7 @@ let initializationInProgress = false;
 
 export const useAuthStore = create((set, get) => ({
   user: null,
+  permissions: [],
   isLoading: true,
   isAuthenticated: false,
   error: null,
@@ -39,6 +40,7 @@ export const useAuthStore = create((set, get) => ({
           
           set({
             user,
+            permissions: user.permissions || [],
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -89,6 +91,7 @@ export const useAuthStore = create((set, get) => ({
         const verifiedUser = await authService.verifyToken();
         set({
           user: verifiedUser,
+          permissions: verifiedUser.permissions || [],
           isAuthenticated: true,
           isLoading: false,
           error: null,
@@ -117,6 +120,7 @@ export const useAuthStore = create((set, get) => ({
       
       set({
         user,
+        permissions: user.permissions || [],
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -254,6 +258,46 @@ export const useAuthStore = create((set, get) => ({
 
   handleGoogleAuth: () => {
     authService.openGoogleAuth();
+  },
+
+  hasPermission: (permission) => {
+    const { permissions } = get();
+    return permissions.includes(permission);
+  },
+
+  hasAnyPermission: (requiredPermissions) => {
+    const { permissions } = get();
+    return requiredPermissions.some(perm => permissions.includes(perm));
+  },
+
+  hasAllPermissions: (requiredPermissions) => {
+    const { permissions } = get();
+    return requiredPermissions.every(perm => permissions.includes(perm));
+  },
+
+  isStudent: () => {
+    const { user } = get();
+    return user?.role === "student";
+  },
+
+  isAdmin: () => {
+    const { user } = get();
+    return user?.role === "admin";
+  },
+
+  isSuperAdmin: () => {
+    const { user } = get();
+    return user?.role === "super_admin";
+  },
+
+  canManageUsers: () => {
+    const { user } = get();
+    return user?.role === "admin" || user?.role === "super_admin";
+  },
+
+  canAccessAdminPanel: () => {
+    const { user } = get();
+    return user?.role === "admin" || user?.role === "super_admin";
   },
 }));
 

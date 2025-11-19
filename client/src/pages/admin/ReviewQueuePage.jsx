@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
-import { ClipboardCheck, RefreshCw, Loader } from "lucide-react";
+import { ClipboardCheck, Plus, RefreshCw, Loader } from "lucide-react";
 import { useReviewQuestionStore } from "@/store/reviewQuestionStore";
 import QuestionList from "@/components/questionBank/QuestionList";
 import ReviewActionModal from "@/components/questionBank/ReviewActionModal";
+import QuestionTypeSelection from "@/components/questionBank/QuestionTypeSelection";
+import QuestionCreationForm from "@/components/questionBank/QuestionCreationForm";
 import Button from "@/components/ui/Button";
 
 function ReviewQueuePage() {
+  const [currentView, setCurrentView] = useState("questions");
+  const [selectedQuestionType, setSelectedQuestionType] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -48,6 +52,44 @@ function ReviewQueuePage() {
     }
   }
 
+  function handleTypeSelect(questionType) {
+    setSelectedQuestionType(questionType);
+    setCurrentView("create");
+  }
+
+  function handleBackToQuestions() {
+    setSelectedQuestionType(null);
+    setCurrentView("questions");
+  }
+
+  function handleQuestionSuccess() {
+    setCurrentView("questions");
+    refreshData();
+  }
+
+  function handleCreateNew() {
+    setCurrentView("types");
+  }
+
+  if (currentView === "types") {
+    return (
+      <QuestionTypeSelection
+        onSelectType={handleTypeSelect}
+        onBack={handleBackToQuestions}
+      />
+    );
+  }
+
+  if (currentView === "create" && selectedQuestionType) {
+    return (
+      <QuestionCreationForm
+        questionType={selectedQuestionType}
+        onBack={handleBackToQuestions}
+        onSuccess={handleQuestionSuccess}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -60,19 +102,25 @@ function ReviewQueuePage() {
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          onClick={refreshData}
-          disabled={isRefreshing}
-          className="flex items-center gap-2"
-        >
-          {isRefreshing ? (
-            <Loader className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            onClick={refreshData}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            {isRefreshing ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            Refresh
+          </Button>
+          <Button onClick={handleCreateNew} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Create Question
+          </Button>
+        </div>
       </div>
 
       <QuestionList

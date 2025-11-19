@@ -1,11 +1,13 @@
-import { BookOpen, Hash, Star, Clock } from "lucide-react";
-import DifficultyIndicator from "./DifficultyIndicator";
+import { useState } from "react";
+import { Hash, Info } from "lucide-react";
+import Modal from "@/components/ui/Modal";
 
-function QuestionDisplay({ question, questionNumber, isAnswered, userAnswer }) {
+function QuestionDisplay({ question, questionNumber, isAnswered }) {
+  const [showInfoModal, setShowInfoModal] = useState(false);
+
   if (!question) {
     return (
       <div className="rounded-lg bg-gray-50 p-8 text-center">
-        <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <p className="text-gray-500 text-lg">No question available</p>
       </div>
     );
@@ -14,39 +16,19 @@ function QuestionDisplay({ question, questionNumber, isAnswered, userAnswer }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Hash className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-gray-600">
-              Question {questionNumber}
-            </span>
-          </div>
-          
-          {question.category && (
-            <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
-              {question.category}
-            </span>
-          )}
-          
-          {question.subjectArea && question.subjectArea !== question.category && (
-            <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-              {question.subjectArea}
-            </span>
-          )}
+        <div className="flex items-center gap-2">
+          <Hash className="h-4 w-4 text-gray-600" />
+          <span className="text-sm font-semibold text-gray-900">
+            Question {questionNumber}
+          </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          {question.difficulty && (
-            <DifficultyIndicator difficulty={question.difficulty} />
-          )}
-          
-          {isAnswered && (
-            <div className="flex items-center gap-1 text-green-600">
-              <Star className="h-4 w-4 fill-current" />
-              <span className="text-xs font-medium">Answered</span>
-            </div>
-          )}
-        </div>
+        <button
+          onClick={() => setShowInfoModal(true)}
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        >
+          <Info className="h-4 w-4" />
+        </button>
       </div>
 
       <div className="prose prose-sm max-w-none">
@@ -77,15 +59,48 @@ function QuestionDisplay({ question, questionNumber, isAnswered, userAnswer }) {
         </div>
       )}
 
-      {userAnswer && (
-        <div className="rounded-lg bg-blue-50 p-3">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700">Your Answer:</span>
-            <span className="text-sm text-blue-900">{userAnswer}</span>
-          </div>
+      <Modal 
+        isOpen={showInfoModal} 
+        onClose={() => setShowInfoModal(false)}
+        title="Question Details"
+      >
+        <div className="space-y-3">
+          {question.topicName && (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <p className="mb-1 text-xs font-semibold text-gray-600">Topic</p>
+              <p className="text-sm font-medium text-gray-900">{question.topicName}</p>
+            </div>
+          )}
+
+          {question.category && (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <p className="mb-1 text-xs font-semibold text-gray-600">Category</p>
+              <p className="text-sm font-medium text-gray-900">{question.category}</p>
+            </div>
+          )}
+
+          {question.subjectArea && question.subjectArea !== question.category && (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <p className="mb-1 text-xs font-semibold text-gray-600">Subject Area</p>
+              <p className="text-sm font-medium text-gray-900">{question.subjectArea}</p>
+            </div>
+          )}
+
+          {question.difficulty && (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <p className="mb-1 text-xs font-semibold text-gray-600">Difficulty</p>
+              <p className="text-sm font-medium text-gray-900 capitalize">{question.difficulty}</p>
+            </div>
+          )}
+
+          {isAnswered && (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+              <p className="mb-1 text-xs font-semibold text-green-600">Status</p>
+              <p className="text-sm font-medium text-green-900">Answered</p>
+            </div>
+          )}
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
