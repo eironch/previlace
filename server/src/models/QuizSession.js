@@ -129,22 +129,12 @@ const quizSessionSchema = new mongoose.Schema(
         default: 0,
       },
       categoryPerformance: {
-        type: Map,
-        of: {
-          correct: { type: Number, default: 0 },
-          total: { type: Number, default: 0 },
-          percentage: { type: Number, default: 0 },
-        },
-        default: new Map(),
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
       },
       topicPerformance: {
-        type: Map,
-        of: {
-          correct: { type: Number, default: 0 },
-          total: { type: Number, default: 0 },
-          percentage: { type: Number, default: 0 },
-        },
-        default: new Map(),
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
       },
       strongAreas: {
         type: [String],
@@ -383,30 +373,33 @@ quizSessionSchema.methods.generateAnalytics = function () {
     }
   });
 
-  const categoryPerformanceMap = new Map();
+  const categoryPerformance = {};
   Object.entries(categoryStats).forEach(([category, stats]) => {
     const percentage =
       stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-    categoryPerformanceMap.set(category, {
+    categoryPerformance[category] = {
       correct: stats.correct,
       total: stats.total,
       percentage,
-    });
+    };
   });
 
-  const topicPerformanceMap = new Map();
+  const topicPerformance = {};
   Object.entries(topicStats).forEach(([topic, stats]) => {
     const percentage =
       stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-    topicPerformanceMap.set(topic, {
+    topicPerformance[topic] = {
       correct: stats.correct,
       total: stats.total,
       percentage,
-    });
+    };
   });
 
-  this.analytics.categoryPerformance = categoryPerformanceMap;
-  this.analytics.topicPerformance = topicPerformanceMap;
+  this.analytics = {
+    ...this.analytics,
+    categoryPerformance: JSON.parse(JSON.stringify(categoryPerformance)),
+    topicPerformance: JSON.parse(JSON.stringify(topicPerformance)),
+  };
 
   this.analytics.strongAreas = Object.entries(categoryStats)
     .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total >= 0.7)

@@ -1,339 +1,345 @@
 import { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { useAuthStore } from "@/store/authStore";
-import { useAppStore } from "@/store/appStore";
-import LandingPage from "@/pages/LandingPage";
-import StudentPage from "@/pages/StudentPage";
-import AdminPage from "@/pages/AdminPage";
-import OnboardingPage from "@/pages/OnboardingPage";
-import QuizSetupPage from "@/pages/quiz/QuizSetupPage";
-import QuizSessionPage from "@/pages/quiz/QuizSessionPage";
-import QuizResultsPage from "@/pages/quiz/QuizResultsPage";
-import AnalyticsPage from "@/pages/AnalyticsPage";
-import MockExamStartPage from "@/pages/quiz/MockExamStartPage";
-import AchievementsPage from "@/pages/AchievementsPage";
-import LeaderboardPage from "@/pages/LeaderboardPage";
-import PerformancePage from "@/pages/PerformancePage";
-import ExamReadinessPage from "@/pages/ExamReadinessPage";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuthStore } from "./store/authStore";
+import LandingPage from "./pages/LandingPage";
+import AdminPage from "./pages/AdminPage";
+import OnboardingPage from "./pages/OnboardingPage";
+import DashboardPage from "./pages/dashboard/DashboardPage";
+import SubjectsPage from "./pages/SubjectsPage";
+import SubjectDetailPage from "./pages/SubjectDetailPage";
+import TopicDetailPage from "./pages/TopicDetailPage";
+import QuizSetupPage from "./pages/quiz/QuizSetupPage";
+import QuizSessionPage from "./pages/quiz/QuizSessionPage";
+import QuizResultsPage from "./pages/quiz/QuizResultsPage";
+import MockExamStartPage from "./pages/quiz/MockExamStartPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import ProfileSettingsPage from "./pages/settings/ProfileSettingsPage";
+import StudyStreakPage from "./pages/StudyStreakPage";
+import AchievementsPage from "./pages/AchievementsPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
+import ChallengePage from "./pages/ChallengePage";
+import JobsPage from "./pages/JobsPage";
+import ResumeBuilderPage from "./pages/ResumeBuilderPage";
+import InterviewPrepPage from "./pages/InterviewPrepPage";
+import ExamReadinessPage from "./pages/ExamReadinessPage";
+import StudyPlanPage from "./pages/StudyPlanPage";
+import PerformancePage from "./pages/PerformancePage";
+import QuestionBankPage from "./pages/admin/QuestionBankPage";
+import ReviewQueuePage from "./pages/admin/ReviewQueuePage";
+import UserManagementPage from "./pages/admin/UserManagementPage";
+import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import AuthModal from "./components/auth/AuthModal";
+import DevTools from "./components/ui/DevTools";
+import { useAppStore } from "./store/appStore";
 
-import StudyPlanPage from "@/pages/StudyPlanPage";
-import StudyStreakPage from "@/pages/StudyStreakPage";
-import ChallengePage from "@/pages/ChallengePage";
-import JobsPage from "@/pages/JobsPage";
-import SubjectsPage from "@/pages/SubjectsPage";
-import SubjectDetailPage from "@/pages/SubjectDetailPage";
-import TopicDetailPage from "@/pages/TopicDetailPage";
-import ResumeBuilderPage from "@/pages/ResumeBuilderPage";
-import InterviewPrepPage from "@/pages/InterviewPrepPage";
-import ProfileSettingsPage from "@/pages/settings/ProfileSettingsPage";
-import AuthModal from "@/components/auth/AuthModal";
-import DevTools from "@/components/ui/DevTools";
-import RoleDashboard from "@/components/dashboard/RoleDashboard";
-import { mathService } from "@/services/mathService";
+function ProtectedRoute({ children, requireAdmin = false, requireProfileComplete = true }) {
+  const { user, isAuthenticated } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (requireProfileComplete && !user?.isProfileComplete) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  if (requireAdmin && user?.role !== "admin" && user?.role !== "super_admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
 
 function App() {
-  const { isAuthenticated, user, isLoading, initializeAuth, isInitialized } =
-    useAuthStore();
+  const { isAuthenticated, user, initializeAuth, isInitialized } = useAuthStore();
   const { showAuthModal } = useAppStore();
 
   useEffect(() => {
-    if (!isInitialized) {
-      initializeAuth();
-      mathService.initialize();
-    }
-  }, [initializeAuth, isInitialized]);
+    initializeAuth();
+  }, [initializeAuth]);
 
-  function ProtectedRoute({ children }) {
-    if (isLoading) {
-      return (
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+  if (!isInitialized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
+          <p className="text-sm text-gray-600">Loading...</p>
         </div>
-      );
-    }
-
-    if (!isAuthenticated) {
-      return <Navigate to="/" replace />;
-    }
-
-    return children;
-  }
-
-  function AdminRoute({ children }) {
-    if (isLoading) {
-      return (
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
-        </div>
-      );
-    }
-
-    if (!isAuthenticated || (user?.role !== "admin" && user?.role !== "super_admin")) {
-      return <Navigate to="/" replace />;
-    }
-
-    return children;
-  }
-
-  function OnboardingRoute({ children }) {
-    if (isLoading) {
-      return (
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
-        </div>
-      );
-    }
-
-    if (!isAuthenticated) {
-      return <Navigate to="/" replace />;
-    }
-
-    if (user?.isProfileComplete) {
-      const redirectPath = user.role === "admin" || user.role === "super_admin" ? "/admin" : "/dashboard";
-      return <Navigate to={redirectPath} replace />;
-    }
-
-    return children;
-  }
-
-  function DashboardRoute({ children }) {
-    if (isLoading) {
-      return (
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
-        </div>
-      );
-    }
-
-    if (!isAuthenticated) {
-      return <Navigate to="/" replace />;
-    }
-
-    if (!user?.isProfileComplete) {
-      return <Navigate to="/onboarding" replace />;
-    }
-
-    return children;
+      </div>
+    );
   }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-white">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? (
+              user?.isProfileComplete ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
+                <Navigate to="/onboarding" replace />
+              )
+            ) : (
+              <LandingPage />
+            )
+          }
+        />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
 
-          <Route
-            path="/onboarding"
-            element={
-              <OnboardingRoute>
+        <Route
+          path="/onboarding"
+          element={
+            isAuthenticated ? (
+              user?.isProfileComplete ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
                 <OnboardingPage />
-              </OnboardingRoute>
-            }
-          />
+              )
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
 
-          <Route
-            path="/dashboard"
-            element={
-              <DashboardRoute>
-                {user?.role === "admin" || user?.role === "super_admin" ? <RoleDashboard /> : <StudentPage />}
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/quiz"
-            element={
-              <DashboardRoute>
-                <QuizSetupPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/subjects"
+          element={
+            <ProtectedRoute>
+              <SubjectsPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/quiz-session"
-            element={
-              <DashboardRoute>
-                <QuizSessionPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/subjects/:id"
+          element={
+            <ProtectedRoute>
+              <SubjectDetailPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/results"
-            element={
-              <DashboardRoute>
-                <QuizResultsPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/topics/:id"
+          element={
+            <ProtectedRoute>
+              <TopicDetailPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/analytics"
-            element={
-              <DashboardRoute>
-                <AnalyticsPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/quiz"
+          element={
+            <ProtectedRoute>
+              <QuizSetupPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/achievements"
-            element={
-              <DashboardRoute>
-                <AchievementsPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/quiz-session"
+          element={
+            <ProtectedRoute>
+              <QuizSessionPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/leaderboard"
-            element={
-              <DashboardRoute>
-                <LeaderboardPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/results"
+          element={
+            <ProtectedRoute>
+              <QuizResultsPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/mock-exam"
-            element={
-              <DashboardRoute>
-                <MockExamStartPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/mock-exam"
+          element={
+            <ProtectedRoute>
+              <MockExamStartPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/performance"
-            element={
-              <DashboardRoute>
-                <PerformancePage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/exam-readiness"
-            element={
-              <DashboardRoute>
-                <ExamReadinessPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/settings"
+          element={
+            <ProtectedRoute>
+              <ProfileSettingsPage />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/dashboard/study-streak"
+          element={
+            <ProtectedRoute>
+              <StudyStreakPage />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/dashboard/achievements"
+          element={
+            <ProtectedRoute>
+              <AchievementsPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/study-plan"
-            element={
-              <DashboardRoute>
-                <StudyPlanPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/leaderboard"
+          element={
+            <ProtectedRoute>
+              <LeaderboardPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/study-streak"
-            element={
-              <DashboardRoute>
-                <StudyStreakPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/challenges"
+          element={
+            <ProtectedRoute>
+              <ChallengePage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/challenges"
-            element={
-              <DashboardRoute>
-                <ChallengePage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/jobs"
+          element={
+            <ProtectedRoute>
+              <JobsPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/jobs"
-            element={
-              <DashboardRoute>
-                <JobsPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/resume"
+          element={
+            <ProtectedRoute>
+              <ResumeBuilderPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/resume"
-            element={
-              <DashboardRoute>
-                <ResumeBuilderPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/interview-prep"
+          element={
+            <ProtectedRoute>
+              <InterviewPrepPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/interview-prep"
-            element={
-              <DashboardRoute>
-                <InterviewPrepPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/exam-readiness"
+          element={
+            <ProtectedRoute>
+              <ExamReadinessPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/subjects"
-            element={
-              <DashboardRoute>
-                <SubjectsPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/study-plan"
+          element={
+            <ProtectedRoute>
+              <StudyPlanPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/subjects/:id"
-            element={
-              <DashboardRoute>
-                <SubjectDetailPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/dashboard/performance"
+          element={
+            <ProtectedRoute>
+              <PerformancePage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/topics/:id"
-            element={
-              <DashboardRoute>
-                <TopicDetailPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/dashboard/settings"
-            element={
-              <DashboardRoute>
-                <ProfileSettingsPage />
-              </DashboardRoute>
-            }
-          />
+        <Route
+          path="/admin/question-bank"
+          element={
+            <ProtectedRoute requireAdmin>
+              <QuestionBankPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminPage />
-              </AdminRoute>
-            }
-          />
+        <Route
+          path="/admin/review-queue"
+          element={
+            <ProtectedRoute requireAdmin>
+              <ReviewQueuePage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute requireAdmin>
+              <UserManagementPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {showAuthModal && <AuthModal />}
-        <DevTools />
-      </div>
-    </Router>
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to={
+                isAuthenticated
+                  ? user?.isProfileComplete
+                    ? "/dashboard"
+                    : "/onboarding"
+                  : "/"
+              }
+              replace
+            />
+          }
+        />
+      </Routes>
+      {showAuthModal && <AuthModal />}
+      <DevTools />
+    </BrowserRouter>
   );
 }
 

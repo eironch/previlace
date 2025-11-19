@@ -16,6 +16,7 @@ import { useTestimonialsStore } from "@/store/testimonialsStore";
 import TestimonialSubmissionModal from "@/components/modals/TestimonialSubmissionModal";
 import ApprovedTestimonials from "@/components/testimonials/ApprovedTestimonials";
 import KeyStatistics from "@/components/stats/KeyStatistics";
+import AuthModal from "@/components/auth/AuthModal";
 
 import {
   BookOpen,
@@ -38,7 +39,7 @@ import {
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { openAuthModal } = useAppStore();
+  const { openAuthModal, showAuthModal } = useAppStore();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { fetchApprovedTestimonials } = useTestimonialsStore();
 
@@ -377,6 +378,8 @@ export default function LandingPage() {
           onSuccessfulSubmit={fetchApprovedTestimonials}
         />
       )}
+
+      {showAuthModal && <AuthModal />}
 
       {/* FOOTER */}
       <footer className="mt-16 border-t">

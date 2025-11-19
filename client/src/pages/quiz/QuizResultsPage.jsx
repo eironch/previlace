@@ -134,7 +134,7 @@ function QuizResultsPage() {
     score.total > 0 ? timing.totalTimeSpent / score.total : 0;
 
   const topicPerformance = analytics.topicPerformance
-    ? Array.from(analytics.topicPerformance.entries())
+    ? Object.entries(analytics.topicPerformance)
     : [];
   const weakTopics = topicPerformance
     .filter(([, perf]) => perf.percentage < 70)
@@ -253,7 +253,7 @@ function QuizResultsPage() {
             </p>
             <div className="space-y-2">
               {weakTopics.map((topic) => {
-                const performance = analytics.topicPerformance.get(topic);
+                const performance = analytics.topicPerformance[topic];
                 return (
                   <div
                     key={topic}
@@ -328,7 +328,7 @@ function QuizResultsPage() {
               Category Performance
             </h3>
             <div className="space-y-3">
-              {Array.from(analytics.categoryPerformance.entries()).map(
+              {Object.entries(analytics.categoryPerformance).map(
                 ([category, performance]) => (
                   <div
                     key={category}

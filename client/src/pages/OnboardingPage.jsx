@@ -355,7 +355,6 @@ export default function OnboardingPage() {
             subtitle: "Welcome aboard", 
             content: (
                 <div className="space-y-6 text-center">
-                    <div className="text-4xl font-extrabold text-black">🎉</div>
                     <h2 className="text-2xl font-bold text-gray-900">Setup Complete!</h2>
                     <p className="text-lg text-gray-600">We are thrilled to be part of your career journey. Your personalized study plan is now active.</p>
                     {error && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}

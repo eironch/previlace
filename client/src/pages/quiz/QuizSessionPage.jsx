@@ -66,7 +66,11 @@ function QuizSessionPage() {
         nextQuestion();
       }
     } else if (pendingAnswer) {
-      await confirmAnswer();
+      if (hasImmediateFeedback) {
+        await confirmAnswer();
+      } else {
+        nextQuestion();
+      }
     }
   }
 
@@ -86,11 +90,19 @@ function QuizSessionPage() {
         ? "Submit Quiz"
         : "Next";
     }
-    return pendingAnswer ? "Confirm" : "Next";
+    if (!hasImmediateFeedback) {
+      return currentQuestionIndex === totalQuestions - 1
+        ? "Submit Quiz"
+        : "Next";
+    }
+    return pendingAnswer ? "Next" : "Next";
   }
 
   function isNextButtonDisabled() {
     if (showingFeedback) return false;
+    if (!hasImmediateFeedback) {
+      return !pendingAnswer || isSubmitting;
+    }
     return !pendingAnswer || isConfirmingAnswer || isSubmitting;
   }
 

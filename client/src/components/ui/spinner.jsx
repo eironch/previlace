@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export function Spinner({ className, ...props }) {
+function Spinner({ className, ...props }) {
 	return (
 		<div
 			className={cn(
@@ -16,3 +16,5 @@ export function Spinner({ className, ...props }) {
 		</div>
 	);
 }
+
+export default Spinner;

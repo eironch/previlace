@@ -31,7 +31,7 @@ export default function LoginForm() {
     if (error) clearError();
   };
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -39,28 +39,19 @@ export default function LoginForm() {
       const result = await login(formData);
       if (result.success) {
         closeAuthModal();
-        try {
-          const stored = localStorage.getItem("user_data");
-          if (stored) {
-            const user = JSON.parse(stored);
-            if (!user.isProfileComplete) {
-              navigate("/onboarding");
-            } else if (user.role === "admin") {
-              navigate("/admin");
-            } else {
-              navigate("/dashboard");
-            }
-          } else {
-            navigate("/");
-          }
-        } catch {
-          navigate("/");
+        
+        if (result.user?.role === "admin" || result.user?.role === "super_admin") {
+          navigate("/admin");
+        } else if (!result.user?.isProfileComplete) {
+          navigate("/onboarding");
+        } else {
+          navigate("/dashboard");
         }
       }
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   const handleGoogleClick = () => {
     closeAuthModal();

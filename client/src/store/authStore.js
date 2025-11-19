@@ -6,7 +6,7 @@ let initializationInProgress = false;
 export const useAuthStore = create((set, get) => ({
   user: null,
   permissions: [],
-  isLoading: true,
+  isLoading: false,
   isAuthenticated: false,
   error: null,
   isInitialized: false,
@@ -127,7 +127,7 @@ export const useAuthStore = create((set, get) => ({
         isInitialized: true,
       });
 
-      return { success: true };
+      return { success: true, user };
     } catch (error) {
       set({
         isLoading: false,
