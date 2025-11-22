@@ -11,5 +11,6 @@ router.get("/weak-areas", analyticsController.getWeakAreas);
 router.get("/readiness", analyticsController.getExamReadiness);
 router.get("/progress", analyticsController.getProgressReport);
 router.get("/percentile", analyticsController.getPercentileRank);
+router.get("/dashboard", analyticsController.getStudentAnalytics);
 
 export default router;

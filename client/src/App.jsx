@@ -18,18 +18,25 @@ import StudyStreakPage from "./pages/StudyStreakPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ChallengePage from "./pages/ChallengePage";
-import JobsPage from "./pages/JobsPage";
-import ResumeBuilderPage from "./pages/ResumeBuilderPage";
-import InterviewPrepPage from "./pages/InterviewPrepPage";
+
 import ExamReadinessPage from "./pages/ExamReadinessPage";
 import StudyPlanPage from "./pages/StudyPlanPage";
 import PerformancePage from "./pages/PerformancePage";
 import QuestionBankPage from "./pages/admin/QuestionBankPage";
 import ReviewQueuePage from "./pages/admin/ReviewQueuePage";
 import UserManagementPage from "./pages/admin/UserManagementPage";
+import FileManagementPage from "./pages/admin/FileManagementPage";
+import InstructorDashboardPage from "./pages/InstructorDashboardPage";
+import MyTicketsPage from "./pages/student/MyTicketsPage";
+import TicketInboxPage from "./pages/instructor/TicketInboxPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import JobBoardPage from "./pages/career/JobBoardPage";
+import ResumeBuilderPage from "./pages/career/ResumeBuilderPage";
+import InterviewPrepPage from "./pages/career/InterviewPrepPage";
 import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import AuthModal from "./components/auth/AuthModal";
+import { ScrollToTop } from "./components/ScrollToTop";
 import DevTools from "./components/ui/DevTools";
 import { useAppStore } from "./store/appStore";
 
@@ -72,6 +79,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route
           path="/"
@@ -231,32 +239,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/dashboard/jobs"
-          element={
-            <ProtectedRoute>
-              <JobsPage />
-            </ProtectedRoute>
-          }
-        />
 
-        <Route
-          path="/dashboard/resume"
-          element={
-            <ProtectedRoute>
-              <ResumeBuilderPage />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/interview-prep"
-          element={
-            <ProtectedRoute>
-              <InterviewPrepPage />
-            </ProtectedRoute>
-          }
-        />
 
         <Route
           path="/dashboard/exam-readiness"
@@ -295,6 +278,69 @@ function App() {
         />
 
         <Route
+          path="/instructor"
+          element={
+            <ProtectedRoute>
+              <InstructorDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/tickets"
+          element={
+            <ProtectedRoute>
+              <MyTicketsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/inbox"
+          element={
+            <ProtectedRoute>
+              <TicketInboxPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/jobs"
+          element={
+            <ProtectedRoute>
+              <JobBoardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/resume"
+          element={
+            <ProtectedRoute>
+              <ResumeBuilderPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/interview"
+          element={
+            <ProtectedRoute>
+              <InterviewPrepPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/admin/question-bank"
           element={
             <ProtectedRoute requireAdmin>
@@ -317,6 +363,15 @@ function App() {
           element={
             <ProtectedRoute requireAdmin>
               <UserManagementPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/files"
+          element={
+            <ProtectedRoute requireAdmin>
+              <FileManagementPage />
             </ProtectedRoute>
           }
         />

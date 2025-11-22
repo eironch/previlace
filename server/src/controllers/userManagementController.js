@@ -356,6 +356,77 @@ const exportUsers = catchAsync(async (req, res) => {
   });
 });
 
+const createInstructor = catchAsync(async (req, res) => {
+  const { email, firstName, lastName, password, subjects } = req.body;
+
+  if (req.user.role !== "super_admin") {
+    throw new AppError("Only super admins can create instructor accounts", 403);
+  }
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new AppError("Email already in use", 400);
+  }
+
+  const instructor = await User.create({
+    email,
+    firstName,
+    lastName,
+    password,
+    role: "instructor",
+    isEmailVerified: true,
+  });
+
+  if (subjects && subjects.length > 0) {
+    const InstructorAvailability = (await import("../models/InstructorAvailability.js")).default;
+    await InstructorAvailability.create({
+      instructorId: instructor._id,
+      subjects,
+    });
+  }
+
+  res.status(201).json({
+    success: true,
+    message: "Instructor account created successfully",
+    data: {
+      instructor: {
+        id: instructor._id,
+        email: instructor.email,
+        firstName: instructor.firstName,
+        lastName: instructor.lastName,
+        role: instructor.role,
+      },
+    },
+  });
+});
+
+const getInstructors = catchAsync(async (req, res) => {
+  const { subjectId } = req.query;
+
+  const query = { role: "instructor" };
+
+  const instructors = await User.find(query)
+    .select("email firstName lastName avatar createdAt")
+    .lean();
+
+  let instructorData = instructors;
+
+  if (subjectId) {
+    const InstructorAvailability = (await import("../models/InstructorAvailability.js")).default;
+    const availabilities = await InstructorAvailability.find({
+      subjects: subjectId,
+    }).select("instructorId subjects");
+
+    const instructorIds = availabilities.map(a => a.instructorId.toString());
+    instructorData = instructors.filter(i => instructorIds.includes(i._id.toString()));
+  }
+
+  res.json({
+    success: true,
+    data: { instructors: instructorData, count: instructorData.length },
+  });
+});
+
 export default {
   getAllUsers,
   updateUserStatus,
@@ -363,4 +434,6 @@ export default {
   getUserActivity,
   searchUsers,
   exportUsers,
+  createInstructor,
+  getInstructors,
 };

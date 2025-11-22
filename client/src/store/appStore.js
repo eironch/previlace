@@ -5,6 +5,11 @@ export const useAppStore = create((set, get) => ({
 	currentAuthForm: 'login',
 	showAuthModal: false,
 	sidebarOpen: false,
+	ticketForm: {
+		show: false,
+		subjectId: null,
+		subjectName: null,
+	},
 	
 	setCurrentPage: (page) => set({ currentPage: page }),
 	setCurrentAuthForm: (form) => set({ currentAuthForm: form }),
@@ -24,6 +29,8 @@ export const useAppStore = create((set, get) => ({
 	toggleSidebar: () => set((state) => ({ 
 		sidebarOpen: !state.sidebarOpen 
 	})),
+	
+	setShowTicketForm: (data) => set({ ticketForm: data }),
 }));
 
 export default useAppStore;

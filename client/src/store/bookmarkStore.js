@@ -9,13 +9,18 @@ export const useBookmarkStore = create((set, get) => ({
   error: null,
 
   fetchBookmarks: async (filters = {}) => {
-    set({ isLoading: true, error: null });
+    const currentBookmarks = get().bookmarks || [];
+    if (currentBookmarks.length === 0) {
+      set({ isLoading: true, error: null });
+    } else {
+      set({ error: null });
+    }
 
     try {
       const response = await bookmarkService.getBookmarks(filters);
 
       if (response.success) {
-        set({ bookmarks: response.data.bookmarks });
+        set({ bookmarks: response.data.bookmarks || [] });
         return { success: true };
       }
     } catch (error) {
@@ -36,7 +41,7 @@ export const useBookmarkStore = create((set, get) => ({
       );
 
       if (response.success) {
-        const bookmarks = get().bookmarks;
+        const bookmarks = get().bookmarks || [];
         set({ bookmarks: [...bookmarks, response.data.bookmark] });
         return { success: true };
       }
@@ -51,7 +56,7 @@ export const useBookmarkStore = create((set, get) => ({
       const response = await bookmarkService.updateBookmark(bookmarkId, updates);
 
       if (response.success) {
-        const bookmarks = get().bookmarks.map((b) =>
+        const bookmarks = (get().bookmarks || []).map((b) =>
           b._id === bookmarkId ? response.data.bookmark : b
         );
         set({ bookmarks });
@@ -68,7 +73,7 @@ export const useBookmarkStore = create((set, get) => ({
       const response = await bookmarkService.deleteBookmark(bookmarkId);
 
       if (response.success) {
-        const bookmarks = get().bookmarks.filter((b) => b._id !== bookmarkId);
+        const bookmarks = (get().bookmarks || []).filter((b) => b._id !== bookmarkId);
         set({ bookmarks });
         return { success: true };
       }
@@ -80,25 +85,33 @@ export const useBookmarkStore = create((set, get) => ({
 
   isQuestionBookmarked: (questionId) => {
     const { bookmarks } = get();
-    return bookmarks.some((b) => b.questionId === questionId);
+    return (bookmarks || []).some((b) => b.questionId === questionId);
   },
 
   getBookmarkForQuestion: (questionId) => {
     const { bookmarks } = get();
-    return bookmarks.find((b) => b.questionId === questionId);
+    return (bookmarks || []).find((b) => b.questionId === questionId);
   },
 
   fetchBookmarkFolders: async () => {
+    const currentFolders = get().bookmarkFolders || [];
+    if (currentFolders.length === 0) {
+      set({ isLoading: true, error: null }); // Assuming isLoading is shared or we should add folderLoading? Store has generic isLoading.
+    } else {
+      set({ error: null });
+    }
     try {
       const response = await bookmarkService.getBookmarkFolders();
 
       if (response.success) {
-        set({ bookmarkFolders: response.data.folders });
+        set({ bookmarkFolders: response.data.folders || [] });
         return { success: true };
       }
     } catch (error) {
       set({ error: error.message });
       return { success: false, error: error.message };
+    } finally {
+        set({ isLoading: false });
     }
   },
 
@@ -137,6 +150,15 @@ export const useBookmarkStore = create((set, get) => ({
   },
 
   fetchBookmarkStats: async () => {
+    if (!get().bookmarkStats) {
+       // No explicit loading state for stats in store, but we can set isLoading if we want, 
+       // or just let it update silently. 
+       // Given the pattern, let's set isLoading if empty.
+       set({ isLoading: true, error: null });
+    } else {
+       set({ error: null });
+    }
+
     try {
       const response = await bookmarkService.getBookmarkStats();
 
@@ -147,6 +169,8 @@ export const useBookmarkStore = create((set, get) => ({
     } catch (error) {
       set({ error: error.message });
       return { success: false, error: error.message };
+    } finally {
+        set({ isLoading: false });
     }
   },
 

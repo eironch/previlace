@@ -18,12 +18,15 @@ import {
 import useExamStore from "@/store/examStore";
 import StandardHeader from "@/components/ui/StandardHeader";
 import apiClient from "@/services/apiClient";
+import CreateTicketModal from "@/components/CreateTicketModal";
 
 function QuizResultsPage() {
   const navigate = useNavigate();
   const [showAnswerReview, setShowAnswerReview] = useState(false);
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [ticketQuestion, setTicketQuestion] = useState(null);
 
   const { currentResult, resetSession } = useExamStore();
 
@@ -268,12 +271,14 @@ function QuizResultsPage() {
                     </div>
                     <button
                       onClick={() => {
-                        resetSession();
-                        navigate("/dashboard/subjects");
+                        // Navigate to learning content for this topic
+                        // Assuming we have a way to map topic name to ID or use name directly
+                        // For MVP, we redirect to Subject Detail or a specific content page
+                        navigate(`/dashboard/subjects?topic=${encodeURIComponent(topic)}`);
                       }}
                       className="rounded-lg bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-700"
                     >
-                      Review
+                      Review Material
                     </button>
                   </div>
                 );
@@ -396,6 +401,10 @@ function QuizResultsPage() {
                 <QuestionReviewCard
                   question={answers[selectedQuestionIndex]}
                   questionNumber={selectedQuestionIndex + 1}
+                  onAskInstructor={(q) => {
+                    setTicketQuestion(q);
+                    setIsTicketModalOpen(true);
+                  }}
                 />
               )}
             </div>
@@ -405,6 +414,9 @@ function QuizResultsPage() {
             </div>
           ) : null}
         </div>
+
+        {/* Ask Instructor Modal or Button Logic would go here */}
+        {/* For now, we can add a button in the review card */}
 
         <div className="flex flex-wrap gap-4">
           <button
@@ -450,11 +462,20 @@ function QuizResultsPage() {
           </button>
         </div>
       </div>
+
+
+      <CreateTicketModal
+        isOpen={isTicketModalOpen}
+        onClose={() => setIsTicketModalOpen(false)}
+        questionId={ticketQuestion?.question?._id}
+        subjectId={ticketQuestion?.question?.topicId} // Assuming topicId maps to subject or we need to fetch subject
+        questionText={ticketQuestion?.question?.questionText}
+      />
     </div>
   );
 }
 
-function QuestionReviewCard({ question, questionNumber }) {
+function QuestionReviewCard({ question, questionNumber, onAskInstructor }) {
   if (!question) {
     return (
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -547,6 +568,15 @@ function QuestionReviewCard({ question, questionNumber }) {
           </div>
         </div>
       )}
+
+      <div className="mt-4 flex justify-end">
+        <button
+            onClick={() => onAskInstructor(question)}
+            className="text-sm text-blue-600 hover:underline"
+        >
+            Ask Instructor about this question
+        </button>
+      </div>
     </div>
   );
 }

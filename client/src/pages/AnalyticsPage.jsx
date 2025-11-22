@@ -1,251 +1,119 @@
-import { useEffect } from "react";
+import React, { useEffect, useState } from 'react';
+import { Layout, TrendingUp, AlertCircle, CheckCircle, Target } from 'lucide-react';
+import analyticsService from '../services/analyticsService';
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { TrendingUp, Target, Clock, Zap } from "lucide-react";
-import StandardHeader from "@/components/ui/StandardHeader";
-import useExamStore from "@/store/examStore";
+  CategoryPerformanceChart,
+  WeakAreasChart,
+  ProgressChart,
+  ReadinessGauge,
+} from '../components/analytics/PerformanceCharts';
 
-function AnalyticsPage() {
-  const { fetchAnalytics, analytics, loading } = useExamStore();
+const AnalyticsPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+    const fetchData = async () => {
+      try {
+        const result = await analyticsService.getStudentAnalytics();
+        setData(result);
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white">
-        <StandardHeader title="Analytics" showBack={true} />
-        <div className="flex h-[calc(100vh-73px)] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-        </div>
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
-  const categoryData = analytics?.categories || [];
-  const overallStats = analytics?.overall || {};
-  const trendsData = analytics?.trends || [];
-
   return (
-    <div className="min-h-screen bg-white">
-      <StandardHeader title="Analytics" showBack={true} />
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Performance Analytics</h1>
+          <p className="text-gray-500">Track your progress and identify areas for improvement</p>
+        </div>
+      </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-          <div className="rounded-lg bg-white p-6 shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-gray-500">
-                  OVERALL ACCURACY
-                </p>
-                <p className="mt-2 text-3xl font-bold text-black">
-                  {Math.round(overallStats?.accuracy || 0)}%
-                </p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 font-medium">Total Questions</h3>
+            <Layout className="text-blue-500" size={20} />
           </div>
-
-          <div className="rounded-lg bg-white p-6 shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-gray-500">
-                  QUESTIONS ANSWERED
-                </p>
-                <p className="mt-2 text-3xl font-bold text-black">
-                  {overallStats?.totalQuestions || 0}
-                </p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                <Target className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-gray-500">AVG TIME</p>
-                <p className="mt-2 text-3xl font-bold text-black">
-                  {Math.round(overallStats?.averageSessionTime / 1000 / 60 || 0)}m
-                </p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
-                <Clock className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-gray-500">SESSIONS</p>
-                <p className="mt-2 text-3xl font-bold text-black">
-                  {overallStats?.totalSessions || 0}
-                </p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
-                <Zap className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
+          <div className="text-3xl font-bold text-gray-900">{data?.totalQuestions?.totalQuestions || 0}</div>
+          <div className="text-sm text-green-600 mt-2 flex items-center">
+            <TrendingUp size={14} className="mr-1" />
+            <span>+12 this week</span>
           </div>
         </div>
 
-        {categoryData.length > 0 && (
-          <>
-            <div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-              <div className="rounded-lg bg-white p-6 shadow">
-                <h2 className="mb-4 text-lg font-bold text-black">
-                  Category Performance
-                </h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={categoryData}>
-                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="category"
-                      tick={{ fill: "#6b7280", fontSize: 12 }}
-                      angle={-45}
-                      height={80}
-                      textAnchor="end"
-                    />
-                    <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: "0.5rem",
-                      }}
-                    />
-                    <Bar dataKey="accuracy" fill="#10b981" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="rounded-lg bg-white p-6 shadow">
-                <h2 className="mb-4 text-lg font-bold text-black">
-                  Progress Over Time
-                </h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={trendsData}>
-                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="_id"
-                      tick={{ fill: "#6b7280", fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: "0.5rem",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="averageScore"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={{ fill: "#3b82f6" }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="mb-8 rounded-lg bg-white p-6 shadow">
-              <h2 className="mb-4 text-lg font-bold text-black">
-                Radar Chart - All Categories
-              </h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={categoryData}>
-                  <PolarGrid stroke="#e5e7eb" />
-                  <PolarAngleAxis
-                    dataKey="category"
-                    tick={{ fill: "#6b7280", fontSize: 12 }}
-                  />
-                  <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 12 }} />
-                  <Radar
-                    name="Accuracy %"
-                    dataKey="accuracy"
-                    stroke="#3b82f6"
-                    fill="#3b82f6"
-                    fillOpacity={0.6}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "0.5rem",
-                    }}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="rounded-lg bg-white p-6 shadow">
-              <h2 className="mb-4 text-lg font-bold text-black">
-                Detailed Performance
-              </h2>
-              <div className="space-y-3">
-                {categoryData.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
-                  >
-                    <div>
-                      <p className="font-semibold text-black">
-                        {item.category}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {item.correctAnswers} correct out of {item.totalQuestions} questions
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-2 w-32 rounded-full bg-gray-200">
-                        <div
-                          className="h-2 rounded-full bg-blue-600"
-                          style={{ width: `${Math.min(100, item.accuracy)}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-medium text-black">
-                        {Math.round(item.accuracy)}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-
-        {(!categoryData || categoryData.length === 0) && (
-          <div className="rounded-lg bg-white p-12 text-center shadow">
-            <p className="text-gray-600">
-              No analytics data available. Complete some quizzes to see your
-              performance.
-            </p>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 font-medium">Overall Accuracy</h3>
+            <Target className="text-purple-500" size={20} />
           </div>
-        )}
+          <div className="text-3xl font-bold text-gray-900">{data?.totalQuestions?.accuracy || 0}%</div>
+          <div className="text-sm text-gray-500 mt-2">Across all subjects</div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 font-medium">Exam Readiness</h3>
+            <CheckCircle className="text-green-500" size={20} />
+          </div>
+          <div className="text-3xl font-bold text-gray-900">{data?.totalQuestions?.readiness || 'Low'}</div>
+          <div className="text-sm text-gray-500 mt-2">Based on recent performance</div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 font-medium">Weak Areas</h3>
+            <AlertCircle className="text-red-500" size={20} />
+          </div>
+          <div className="text-3xl font-bold text-gray-900">{data?.weakAreas?.length || 0}</div>
+          <div className="text-sm text-red-600 mt-2">Topics needing attention</div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Subject Performance */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Performance by Subject</h3>
+          <CategoryPerformanceChart data={data?.categories} />
+        </div>
+
+        {/* Progress Over Time */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Learning Progress</h3>
+          <ProgressChart data={data?.recentProgress} />
+        </div>
+
+        {/* Weak Areas */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Areas for Improvement</h3>
+          <WeakAreasChart data={data?.weakAreas} />
+        </div>
+
+        {/* Readiness Gauge */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Exam Readiness Score</h3>
+          <ReadinessGauge score={data?.totalQuestions?.accuracy || 0} />
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default AnalyticsPage;

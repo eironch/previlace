@@ -36,11 +36,23 @@ import learningContentRoutes from "./src/routes/learningContentRoutes.js";
 import testimonialRoutes from "./src/routes/testimonialRoutes.js";
 import testimonialPublicRoutes from "./src/routes/testimonialPublicRoutes.js";
 import statRoutes from "./src/routes/statRoutes.js";
+import studyPlanRoutes from "./src/routes/studyPlanRoutes.js";
+import userJourneyRoutes from "./src/routes/userJourneyRoutes.js";
+import inquiryTicketRoutes from "./src/routes/inquiryTicketRoutes.js";
+import instructorAvailabilityRoutes from "./src/routes/instructorAvailabilityRoutes.js";
+import activityRoutes from "./src/routes/activityRoutes.js";
+import fileRoutes from "./src/routes/fileRoutes.js";
+import notificationRoutes from "./src/routes/notificationRoutes.js";
+import jobRoutes from "./src/routes/jobRoutes.js";
+import resumeRoutes from "./src/routes/resumeRoutes.js";
+import interviewRoutes from "./src/routes/interviewRoutes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
 import { createServer } from "http";
 import socketService from "./src/services/socketService.js";
+import { startTicketExpirationJob } from "./src/jobs/ticketExpirationJob.js";
+import { startReminderJobs } from "./src/jobs/reminderJob.js";
 
 const app = express();
 
@@ -147,7 +159,19 @@ app.use("/api/topics", topicRoutes);
 app.use("/api/learning-content", learningContentRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/public/testimonials", testimonialPublicRoutes);
+app.use("/api/public/testimonials", testimonialPublicRoutes);
 app.use('/api/stats', statRoutes);
+
+app.use("/api/study-plans", studyPlanRoutes);
+app.use("/api/user-journeys", userJourneyRoutes);
+app.use("/api/inquiry-tickets", inquiryTicketRoutes);
+app.use("/api/instructor-availability", instructorAvailabilityRoutes);
+app.use("/api/activities", activityRoutes);
+app.use("/api/files", fileRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/resumes", resumeRoutes);
+app.use("/api/interviews", interviewRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
@@ -160,6 +184,9 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   try {
     await connectDB();
+
+    startTicketExpirationJob();
+    startReminderJobs();
 
     const httpServer = createServer(app);
     socketService.initialize(httpServer);

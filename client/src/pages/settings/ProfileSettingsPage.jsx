@@ -193,6 +193,21 @@ function ProfileSettingsPage() {
             )}
           </button>
         </div>
+
+        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-red-900">Sign Out</h3>
+              <p className="text-sm text-red-700">Sign out of your account on this device</p>
+            </div>
+            <button
+              onClick={() => useAuthStore.getState().logout()}
+              className="flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

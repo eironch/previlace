@@ -11,10 +11,13 @@ const useChallengeStore = create((set, get) => ({
   error: null,
 
   fetchPendingChallenges: async () => {
-    set({ loading: true });
+    const currentPending = get().pendingChallenges || [];
+    if (currentPending.length === 0) {
+      set({ loading: true });
+    }
     try {
       const challenges = await challengeService.getPendingChallenges();
-      set({ pendingChallenges: challenges, error: null });
+      set({ pendingChallenges: challenges || [], error: null });
       return challenges;
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
@@ -28,10 +31,13 @@ const useChallengeStore = create((set, get) => ({
   },
 
   fetchActiveChallenges: async () => {
-    set({ loading: true });
+    const currentActive = get().activeChallenges || [];
+    if (currentActive.length === 0) {
+      set({ loading: true });
+    }
     try {
       const challenges = await challengeService.getActiveChallenges();
-      set({ activeChallenges: challenges, error: null });
+      set({ activeChallenges: challenges || [], error: null });
       return challenges;
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
@@ -45,10 +51,13 @@ const useChallengeStore = create((set, get) => ({
   },
 
   fetchChallengeHistory: async (page = 1, limit = 20) => {
-    set({ loading: true });
+    const currentHistory = get().challengeHistory || [];
+    if (currentHistory.length === 0) {
+      set({ loading: true });
+    }
     try {
       const data = await challengeService.getChallengeHistory(page, limit);
-      set({ challengeHistory: data.challenges, error: null });
+      set({ challengeHistory: data.challenges || [], error: null });
       return data;
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
@@ -62,6 +71,10 @@ const useChallengeStore = create((set, get) => ({
   },
 
   fetchChallengeStats: async () => {
+    if (!get().challengeStats) {
+      // No explicit loading state for stats in this store, but we can assume it's fine to just fetch
+      // Or we could add one. But for now let's just not block.
+    }
     try {
       const stats = await challengeService.getUserStats();
       set({ challengeStats: stats, error: null });
@@ -76,6 +89,11 @@ const useChallengeStore = create((set, get) => ({
   },
 
   fetchChallengeLeaderboard: async () => {
+    if (get().leaderboardData.length === 0) {
+       // No explicit loading state for leaderboard in this store either?
+       // Wait, the store has `loading: false` at the top.
+       set({ loading: true });
+    }
     try {
       const leaderboard = await challengeService.getLeaderboard();
       set({ leaderboardData: leaderboard, error: null });
@@ -86,6 +104,8 @@ const useChallengeStore = create((set, get) => ({
       }
       set({ error: error.message });
       throw error;
+    } finally {
+      set({ loading: false });
     }
   },
 

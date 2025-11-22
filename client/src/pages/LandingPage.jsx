@@ -16,7 +16,7 @@ import { useTestimonialsStore } from "@/store/testimonialsStore";
 import TestimonialSubmissionModal from "@/components/modals/TestimonialSubmissionModal";
 import ApprovedTestimonials from "@/components/testimonials/ApprovedTestimonials";
 import KeyStatistics from "@/components/stats/KeyStatistics";
-import AuthModal from "@/components/auth/AuthModal";
+
 
 import {
   BookOpen,
@@ -379,7 +379,7 @@ export default function LandingPage() {
         />
       )}
 
-      {showAuthModal && <AuthModal />}
+
 
       {/* FOOTER */}
       <footer className="mt-16 border-t">

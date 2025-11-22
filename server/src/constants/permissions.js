@@ -65,6 +65,13 @@ export const PERMISSIONS = {
   GROUP_MANAGE_OWN: "group:manage:own",
   GROUP_VIEW_CENTER: "group:view:center",
   GROUP_MANAGE_CENTER: "group:manage:center",
+  
+  INSTRUCTOR_AVAILABILITY_MANAGE: "instructor:availability:manage",
+  INSTRUCTOR_STUDENTS_VIEW: "instructor:students:view",
+  INSTRUCTOR_MESSAGES_VIEW: "instructor:messages:view",
+  INSTRUCTOR_MESSAGES_REPLY: "instructor:messages:reply",
+  INSTRUCTOR_ANALYTICS_VIEW: "instructor:analytics:view",
+  INSTRUCTOR_CONTENT_CONTRIBUTE: "instructor:content:contribute",
 };
 
 export const PERMISSION_CATEGORIES = {
@@ -78,4 +85,5 @@ export const PERMISSION_CATEGORIES = {
   CONTENT: "Content Management",
   CAREER: "Career Services",
   STUDY_GROUPS: "Study Groups",
+  INSTRUCTOR: "Instructor Functions",
 };

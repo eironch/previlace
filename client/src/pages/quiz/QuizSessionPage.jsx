@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Flag, CircleCheck } from "lucide-react";
 import useExamStore from "@/store/examStore";
 import QuestionDisplay from "@/components/exam/QuestionDisplay";
@@ -41,11 +41,31 @@ function QuizSessionPage() {
   const answeredCount = Object.keys(answers).length;
   const unansweredCount = totalQuestions - answeredCount;
 
+  const [searchParams] = useSearchParams();
+  const subjectId = searchParams.get("subjectId");
+  const { startQuizSession } = useExamStore();
+
   useEffect(() => {
-    if (!currentSession && !loading) {
-      navigate("/dashboard");
-    }
-  }, [currentSession, loading, navigate]);
+    const initSession = async () => {
+      if (!currentSession && !loading && subjectId) {
+        try {
+          await startQuizSession({
+            mode: "subject",
+            subjectId: subjectId,
+            examLevel: "Professional", // Default or fetch from user pref
+            questionCount: 10 // Default
+          });
+        } catch (error) {
+          console.error("Failed to start session:", error);
+          navigate("/dashboard");
+        }
+      } else if (!currentSession && !loading && !subjectId) {
+        navigate("/dashboard");
+      }
+    };
+
+    initSession();
+  }, [currentSession, loading, navigate, subjectId, startQuizSession]);
 
   useEffect(() => {
     if (hasTimer && timeRemaining <= 0 && sessionActive) {

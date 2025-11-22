@@ -21,4 +21,7 @@ router.get("/users/:userId/activity", adminLimiter, userManagementController.get
 router.get("/users/search", adminLimiter, userManagementController.searchUsers);
 router.get("/users/export", adminLimiter, userManagementController.exportUsers);
 
+router.post("/instructors", adminLimiter, userManagementController.createInstructor);
+router.get("/instructors", adminLimiter, userManagementController.getInstructors);
+
 export default router;

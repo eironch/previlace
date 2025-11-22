@@ -1,140 +1,85 @@
-import React from 'react';
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { 
-  BookOpen, 
-  Target, 
-  TrendingUp, 
-  Briefcase, 
-  FileText, 
-  MessageSquare,
-  Trophy,
-  BarChart3,
-  LogOut,
-  Settings
-} from "lucide-react";
+import useStudyStreakStore from "@/store/studyStreakStore";
+import useAnalyticsStore from "@/store/analyticsStore";
+import useStudyPlanStore from "@/store/studyPlanStore";
+import { Target, TrendingUp, Flame, Award } from "lucide-react";
+
+import Navigation from "@/components/Navigation";
+import JourneyMap from "@/components/dashboard/JourneyMap";
+import DailyChallengeCard from "@/components/dashboard/DailyChallengeCard";
+import WeeklyProgressCard from "@/components/dashboard/WeeklyProgressCard";
+import StatCard from "@/components/dashboard/StatCard";
 
 function DashboardPage() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+  const { currentStreak, longestStreak, fetchStudyStreakData, isLoading: streakLoading } = useStudyStreakStore();
+  const { readiness, weakAreas, fetchAnalytics } = useAnalyticsStore();
+  const { activePlan: studyPlan, fetchActivePlan, loading: planLoading } = useStudyPlanStore();
 
-  const menuItems = [
-    {
-      icon: BookOpen,
-      title: "Subjects",
-      description: "Browse subjects and topics",
-      path: "/dashboard/subjects",
-    },
-    {
-      icon: Target,
-      title: "Practice Quiz",
-      description: "Test your knowledge",
-      path: "/dashboard/quiz",
-    },
-    {
-      icon: Trophy,
-      title: "Mock Exam",
-      description: "Full CSE simulation",
-      path: "/dashboard/mock-exam",
-    },
-    {
-      icon: BarChart3,
-      title: "Analytics",
-      description: "Track your progress",
-      path: "/dashboard/analytics",
-    },
-    {
-      icon: TrendingUp,
-      title: "Study Plan",
-      description: "Personalized schedule",
-      path: "/dashboard/study-plan",
-    },
-    {
-      icon: Settings,
-      title: "Settings",
-      description: "Exam preferences",
-      path: "/dashboard/settings",
-    },
-    {
-      icon: Briefcase,
-      title: "Jobs",
-      description: "Government openings",
-      path: "/dashboard/jobs",
-    },
-    {
-      icon: FileText,
-      title: "Resume",
-      description: "Build your resume",
-      path: "/dashboard/resume",
-    },
-    {
-      icon: MessageSquare,
-      title: "Interview Prep",
-      description: "Practice interviews",
-      path: "/dashboard/interview-prep",
-    },
-  ];
+  useEffect(() => {
+    fetchStudyStreakData();
+    fetchAnalytics();
+    fetchActivePlan();
+  }, [fetchStudyStreakData, fetchAnalytics, fetchActivePlan]);
 
-  async function handleLogout() {
-    // This assumes the logout function handles navigation away from the dashboard
-    await logout();
+  function calculateCompletion() {
+    if (!studyPlan?.weeks) return 0;
+
+    const allSessions = studyPlan.weeks.flatMap((week) => [week.saturdaySession, week.sundaySession]);
+
+    const completedSessions = allSessions.filter((session) => {
+      if (!session?.date) return false;
+      const sessionDate = new Date(session.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      sessionDate.setHours(0, 0, 0, 0);
+      return sessionDate < today;
+    });
+
+    return Math.round((completedSessions.length / allSessions.length) * 100);
   }
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            {/* START: Logo made clickable */}
-            <h1 
-              onClick={() => navigate("/")}
-              className="text-xl font-semibold text-black cursor-pointer transition-opacity hover:opacity-80"
-            >
-              Previlace
-            </h1>
-            {/* END: Logo made clickable */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {user?.firstName} {user?.lastName}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h2 className="mb-2 text-3xl font-bold text-gray-900">
-            Welcome back, {user?.firstName}
-          </h2>
-          <p className="text-gray-600">
-            Ready to continue your Civil Service Exam preparation?
-          </p>
+          <h2 className="mb-2 text-3xl font-bold text-gray-900">Welcome back, {user?.firstName || "Student"}</h2>
+          <p className="text-gray-600">Continue your journey to CSE success</p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {menuItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className="group rounded-lg border border-gray-200 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
-            >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 transition-colors group-hover:bg-black">
-                <item.icon className="h-6 w-6 text-gray-900 transition-colors group-hover:text-white" />
-              </div>
-              <h3 className="mb-1 text-lg font-bold text-gray-900">
-                {item.title}
-              </h3>
-              <p className="text-sm text-gray-600">{item.description}</p>
-            </button>
-          ))}
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {streakLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 animate-pulse rounded-lg bg-gray-200" />)
+          ) : (
+            <>
+              <StatCard title="Current Streak" value={currentStreak} unit="days" icon={Flame} navigateTo="/dashboard/study-streak" />
+              <StatCard title="Longest Streak" value={longestStreak} unit="days" icon={Award} navigateTo="/dashboard/study-streak" />
+              <StatCard title="Exam Readiness" value={`${readiness?.overall || 0}%`} unit="score" icon={Target} />
+              <StatCard title="Weak Areas" value={weakAreas?.length || 0} unit="topics" icon={TrendingUp} />
+            </>
+          )}
+        </div>
+
+        <div className="mb-8 grid gap-4 lg:grid-cols-2">
+          <DailyChallengeCard />
+          <WeeklyProgressCard />
+        </div>
+
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-2xl font-bold text-gray-900">Your Learning Journey</h3>
+            {!planLoading && studyPlan && <span className="text-sm font-semibold text-gray-600">{calculateCompletion()}% Complete</span>}
+          </div>
+          {planLoading ? (
+            <div className="h-96 animate-pulse rounded-lg bg-gray-200"></div>
+          ) : (
+            <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <JourneyMap studyPlan={studyPlan} />
+            </div>
+          )}
         </div>
       </main>
     </div>

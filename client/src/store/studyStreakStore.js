@@ -1,28 +1,46 @@
 import { create } from "zustand";
 import studyStreakService from "../services/studyStreakService";
 
+function isToday(dateString) {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
+}
+
 export const useStudyStreakStore = create((set, get) => ({
   currentStreak: 0,
   longestStreak: 0,
   lastStudyDate: null,
   streakMilestones: [],
   studyDatesThisMonth: [],
+  streakHistory: [],
+  todayCompleted: false,
   isLoading: false,
   error: null,
 
   fetchStudyStreakData: async () => {
-    set({ isLoading: true, error: null });
+    // Check if we have data (lastStudyDate is a good proxy)
+    if (!get().lastStudyDate) {
+      set({ isLoading: true, error: null });
+    } else {
+      set({ error: null });
+    }
 
     try {
       const response = await studyStreakService.getStudyStreakData();
 
-      if (response.success) {
+      if (response.streak) {
         set({
-          currentStreak: response.data.currentStreak || 0,
-          longestStreak: response.data.longestStreak || 0,
-          lastStudyDate: response.data.lastStudyDate,
-          streakMilestones: response.data.streakMilestones || [],
-          studyDatesThisMonth: response.data.studyDatesThisMonth || [],
+          currentStreak: response.streak.currentStreak || 0,
+          longestStreak: response.streak.longestStreak || 0,
+          lastStudyDate: response.streak.lastActivityDate,
+          streakMilestones: response.streak.milestones || [],
+          studyDatesThisMonth: [], // Not returned by API currently
+          streakHistory: [], // Not returned by API currently
+          todayCompleted: isToday(response.streak.lastActivityDate),
         });
         return { success: true };
       }
@@ -38,12 +56,14 @@ export const useStudyStreakStore = create((set, get) => ({
     try {
       const response = await studyStreakService.recordStudySession(sessionId);
 
-      if (response.success) {
+      if (response.streak) {
         set({
-          currentStreak: response.data.currentStreak,
-          longestStreak: response.data.longestStreak,
-          lastStudyDate: response.data.lastStudyDate,
-          streakMilestones: response.data.streakMilestones || [],
+          currentStreak: response.streak.currentStreak,
+          longestStreak: response.streak.longestStreak,
+          lastStudyDate: response.streak.lastActivityDate,
+          streakMilestones: response.streak.milestones || [],
+          streakHistory: [], // Not returned by API currently
+          todayCompleted: isToday(response.streak.lastActivityDate),
         });
         return { success: true };
       }

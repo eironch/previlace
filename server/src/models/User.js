@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["student", "admin", "super_admin"],
+      enum: ["student", "instructor", "admin", "super_admin"],
       default: "student",
     },
     reviewCenterId: {

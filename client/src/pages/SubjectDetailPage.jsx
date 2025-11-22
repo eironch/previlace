@@ -123,7 +123,7 @@ function SubjectDetailPage() {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate("/dashboard/subjects")}
+                onClick={() => navigate(-1)}
                 className="flex items-center gap-2 text-gray-600 transition-colors hover:text-black"
               >
                 <ArrowLeft className="h-5 w-5" />

@@ -16,6 +16,18 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.GROUP_CREATE_OWN,
     PERMISSIONS.GROUP_MANAGE_OWN,
   ],
+  instructor: [
+    PERMISSIONS.USER_READ_OWN,
+    PERMISSIONS.USER_UPDATE_OWN,
+    PERMISSIONS.INSTRUCTOR_AVAILABILITY_MANAGE,
+    PERMISSIONS.INSTRUCTOR_STUDENTS_VIEW,
+    PERMISSIONS.INSTRUCTOR_MESSAGES_VIEW,
+    PERMISSIONS.INSTRUCTOR_MESSAGES_REPLY,
+    PERMISSIONS.INSTRUCTOR_ANALYTICS_VIEW,
+    PERMISSIONS.INSTRUCTOR_CONTENT_CONTRIBUTE,
+    PERMISSIONS.QUESTION_READ_CENTER,
+    PERMISSIONS.ANALYTICS_VIEW_CENTER,
+  ],
   admin: [
     PERMISSIONS.USER_READ_CENTER,
     PERMISSIONS.USER_UPDATE_CENTER,
@@ -58,19 +70,24 @@ export const ROLE_PERMISSIONS = {
 
 export const ROLE_HIERARCHY = {
   student: 1,
-  admin: 2,
-  super_admin: 3,
+  instructor: 2,
+  admin: 3,
+  super_admin: 4,
 };
 
 export function getRolePermissions(role) {
   const directPermissions = ROLE_PERMISSIONS[role] || [];
   
-  if (role === "admin") {
+  if (role === "instructor") {
     return [...ROLE_PERMISSIONS.student, ...directPermissions];
   }
   
+  if (role === "admin") {
+    return [...ROLE_PERMISSIONS.student, ...ROLE_PERMISSIONS.instructor, ...directPermissions];
+  }
+  
   if (role === "super_admin") {
-    return [...ROLE_PERMISSIONS.student, ...ROLE_PERMISSIONS.admin, ...directPermissions];
+    return [...ROLE_PERMISSIONS.student, ...ROLE_PERMISSIONS.instructor, ...ROLE_PERMISSIONS.admin, ...directPermissions];
   }
   
   return directPermissions;
@@ -97,6 +114,6 @@ export function isRoleHigher(role1, role2) {
 
 export function canManageRole(managerRole, targetRole) {
   if (managerRole === "super_admin") return true;
-  if (managerRole === "admin") return targetRole === "student";
+  if (managerRole === "admin") return ["student", "instructor"].includes(targetRole);
   return false;
 }

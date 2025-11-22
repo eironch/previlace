@@ -8,11 +8,20 @@ export const useTopicStore = create((set, get) => ({
   error: null,
 
   fetchTopicsBySubject: async (subjectId) => {
-    set({ loading: true, error: null });
+    // Check if we already have topics for this subject
+    const currentTopics = get().topics || [];
+    const hasTopicsForSubject = currentTopics.length > 0 && currentTopics[0]?.subjectId === subjectId;
+    
+    if (!hasTopicsForSubject) {
+      set({ loading: true, error: null });
+    } else {
+      set({ error: null });
+    }
+
     try {
       const response = await learningService.fetchTopicsBySubject(subjectId);
       set({
-        topics: response.data,
+        topics: response.data || [],
         loading: false,
       });
     } catch (error) {
@@ -24,7 +33,13 @@ export const useTopicStore = create((set, get) => ({
   },
 
   fetchTopicById: async (topicId) => {
-    set({ loading: true, error: null });
+    const current = get().currentTopic;
+    if (!current || current._id !== topicId) {
+      set({ loading: true, error: null });
+    } else {
+      set({ error: null });
+    }
+
     try {
       const response = await learningService.fetchTopicById(topicId);
       set({

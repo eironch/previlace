@@ -88,5 +88,6 @@ export const optionalAuth = async (req, res, next) => {
 };
 
 export const protect = authenticate;
+export const authorize = restrictTo;
 
 export default authenticate;

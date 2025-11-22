@@ -8,11 +8,18 @@ export const useSubjectStore = create((set, get) => ({
   error: null,
 
   fetchSubjects: async (examLevel = null) => {
-    set({ loading: true, error: null });
+    // Only set loading if we don't have data
+    const currentSubjects = get().subjects || [];
+    if (currentSubjects.length === 0) {
+      set({ loading: true, error: null });
+    } else {
+      set({ error: null });
+    }
+    
     try {
       const response = await learningService.fetchSubjects(examLevel);
       set({
-        subjects: response.data,
+        subjects: response.data || [],
         loading: false,
       });
     } catch (error) {
@@ -24,7 +31,14 @@ export const useSubjectStore = create((set, get) => ({
   },
 
   fetchSubjectById: async (subjectId) => {
-    set({ loading: true, error: null });
+    // Only set loading if we don't have this specific subject
+    const current = get().currentSubject;
+    if (!current || current._id !== subjectId) {
+      set({ loading: true, error: null });
+    } else {
+      set({ error: null });
+    }
+
     try {
       const response = await learningService.fetchSubjectById(subjectId);
       set({

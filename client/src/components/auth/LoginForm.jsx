@@ -77,7 +77,6 @@ export default function LoginForm() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email
@@ -95,10 +94,9 @@ export default function LoginForm() {
             />
           </div>
 
-          {/* Password with toggle */}
           <div className="space-y-2">
             <label
-              htmlFor="password"
+              htmlFor="login-password"
               className="text-sm font-medium text-gray-700"
             >
               Password
@@ -106,7 +104,7 @@ export default function LoginForm() {
 
             <div className="relative">
               <Input
-                id="password"
+                id="login-password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
@@ -132,7 +130,6 @@ export default function LoginForm() {
             </div>
           </div>
 
-          {/* Sign In Button */}
           <Button
             type="submit"
             className="w-full rounded-md bg-black px-4 py-2 text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
@@ -142,7 +139,6 @@ export default function LoginForm() {
           </Button>
         </form>
 
-        {/* Divider */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-gray-300" />
@@ -154,7 +150,6 @@ export default function LoginForm() {
           </div>
         </div>
 
-        {/* Google */}
         <Button
           type="button"
           variant="outline"
@@ -165,7 +160,6 @@ export default function LoginForm() {
           Continue with Google
         </Button>
 
-        {/* Links */}
         <div className="space-y-2 text-center">
           <button
             type="button"

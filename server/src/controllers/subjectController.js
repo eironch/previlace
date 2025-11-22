@@ -49,7 +49,14 @@ async function getSubjectById(req, res) {
       success: true,
       data: {
         ...subject.toObject(),
-        progress,
+        progress: progress
+          ? {
+              completedTopics: progress.completedTopics.length,
+              totalAttempts: progress.totalAttempts,
+              averageScore: progress.averageScore,
+              lastAccessedAt: progress.lastAccessedAt,
+            }
+          : null,
       },
     });
   } catch (error) {

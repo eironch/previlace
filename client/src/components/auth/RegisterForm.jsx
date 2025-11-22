@@ -1,20 +1,9 @@
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-// Note: Label, Card components are imported but not fully used/needed in this block, 
-// keeping the original imports for completeness.
-import Label from "@/components/ui/Label"; 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
 import { useAuthStore } from "@/store/authStore";
 import { useAppStore } from "@/store/appStore";
 
-// SVG Icons for Toggle (Eye and Eye-Off, adapted from Lucide)
 const EyeIcon = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
@@ -68,14 +57,6 @@ export default function RegisterForm() {
 
   const validateForm = () => {
     const errors = {};
-
-    // Note: The original implementation did not have inputs for firstName and lastName 
-    // but the validation required them. I will assume these fields will be added later
-    // or just require the ones present in the form for now (email, password, confirmPassword).
-    // For now, I'm commenting out the missing field validations to match the rendered form structure.
-    
-    // if (!formData.firstName.trim()) errors.firstName = "First name is required";
-    // if (!formData.lastName.trim()) errors.lastName = "Last name is required";
     
     if (!formData.email.trim()) errors.email = "Email is required";
     if (!formData.password) errors.password = "Password is required";
@@ -98,12 +79,11 @@ export default function RegisterForm() {
     setIsSubmitting(true);
 
     try {
-      // Assuming registerData will be constructed from formData fields
       const { email, password, firstName, lastName } = formData;
-      const registerData = { email, password, firstName, lastName }; 
+      const registerData = { email, password, firstName, lastName };
       
       const result = await register(registerData);
-      if (result && result.success) { // Added null check for safety
+      if (result && result.success) {
         closeAuthModal();
       }
     } finally {
@@ -161,22 +141,21 @@ export default function RegisterForm() {
           {/* PASSWORD INPUT WITH TOGGLE */}
           <div className="space-y-2">
             <label
-              htmlFor="password"
+            htmlFor="register-password"
               className="text-sm font-medium text-gray-700"
             >
               Password
             </label>
             <div className="relative">
               <Input
-                id="password"
+                id="register-password"
                 name="password"
-                type={showPassword ? "text" : "password"} // Dynamically set type
+                type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
                 value={formData.password}
                 onChange={handleChange}
                 required
                 disabled={disabled}
-                // Added pr-10 for padding to prevent text from overlapping the toggle button
                 className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:border-transparent focus:ring-2 focus:ring-black focus:outline-none"
               />
               <button
@@ -199,22 +178,21 @@ export default function RegisterForm() {
           {/* CONFIRM PASSWORD INPUT WITH TOGGLE */}
           <div className="space-y-2">
             <label
-              htmlFor="confirmPassword"
+            htmlFor="register-confirm-password"
               className="text-sm font-medium text-gray-700"
             >
               Confirm Password
             </label>
             <div className="relative">
               <Input
-                id="confirmPassword"
+                id="register-confirm-password"
                 name="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"} // Dynamically set type
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
                 disabled={disabled}
-                // Added pr-10 for padding to prevent text from overlapping the toggle button
                 className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:border-transparent focus:ring-2 focus:ring-black focus:outline-none"
               />
               <button

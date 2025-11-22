@@ -61,6 +61,14 @@ const userQuestionHistorySchema = new mongoose.Schema(
         enum: ["careless", "knowledge-gap", "time-pressure", "misread"],
       },
     ],
+    weaknessScore: {
+      type: Number,
+      default: 0, // 0-100, higher means weaker
+    },
+    isWeakArea: {
+      type: Boolean,
+      default: false,
+    },
     spacedRepetitionData: {
       easeFactor: {
         type: Number,
@@ -141,6 +149,13 @@ userQuestionHistorySchema.methods.updateMasteryLevel = function () {
     this.masteryLevel = "advanced";
   } else {
     this.masteryLevel = "mastered";
+  }
+
+  // Calculate weakness score (inverse of accuracy, weighted by attempts)
+  // If accuracy is low and attempts are high, weakness is high.
+  if (this.totalAttempts >= 3) {
+      this.weaknessScore = (1 - accuracy) * 100;
+      this.isWeakArea = this.weaknessScore > 50;
   }
 };
 

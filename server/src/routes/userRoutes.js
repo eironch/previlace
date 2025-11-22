@@ -14,6 +14,10 @@ router.delete("/account", userController.deleteAccount);
 router.get("/devices", userController.getActiveDevices);
 router.delete("/devices/:deviceId", userController.revokeDevice);
 
+import * as streakController from "../controllers/streakController.js";
+router.get("/study-streak", streakController.getStreak);
+router.post("/study-streak/session", streakController.updateStreak);
+
 router.use(restrictTo("admin"));
 
 router.get("/", userController.getAllUsers);

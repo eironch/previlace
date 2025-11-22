@@ -6,6 +6,8 @@ import useExamStore from "@/store/examStore";
 import learningService from "@/services/learningService";
 import { ArrowLeft, BookOpen, Play, CheckCircle, AlertCircle, LogOut } from "lucide-react";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
+import FileUploadButton from "@/components/files/FileUploadButton";
+import FileList from "@/components/files/FileList";
 
 function TopicDetailPage() {
   const { id } = useParams();
@@ -341,6 +343,27 @@ function TopicDetailPage() {
             </p>
           </div>
         )}
+        
+        {/* Resources Section */}
+        <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h4 className="text-xl font-bold text-gray-900">Resources</h4>
+            {(user?.role === "admin" || user?.role === "instructor") && (
+              <FileUploadButton 
+                relatedType="topic" 
+                relatedId={id} 
+                onUploadComplete={() => {
+                  // Trigger refresh of file list (using a key or context would be better, 
+                  // but for now we can force a re-render or just rely on the list updating itself if we lift state)
+                  // Since FileList fetches on mount/update, we can pass a trigger.
+                  // For simplicity in this file, we'll just let the user refresh or implement a simple trigger state.
+                  window.location.reload(); 
+                }} 
+              />
+            )}
+          </div>
+          <FileList relatedType="topic" relatedId={id} />
+        </div>
       </main>
     </div>
   );
