@@ -31,7 +31,7 @@ import MyTicketsPage from "./pages/student/MyTicketsPage";
 import TicketInboxPage from "./pages/instructor/TicketInboxPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import JobBoardPage from "./pages/career/JobBoardPage";
-import ResumeBuilderPage from "./pages/career/ResumeBuilderPage";
+import ResumePage from "./pages/career/ResumePage";
 import InterviewPrepPage from "./pages/career/InterviewPrepPage";
 import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -326,7 +326,7 @@ function App() {
           path="/dashboard/resume"
           element={
             <ProtectedRoute>
-              <ResumeBuilderPage />
+              <ResumePage />
             </ProtectedRoute>
           }
         />

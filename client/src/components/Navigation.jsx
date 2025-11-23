@@ -36,7 +36,7 @@ export default function Navigation() {
         <div className="flex h-16 justify-between">
           <div className="flex">
             <div className="flex cursor-pointer items-center" onClick={() => navigate("/dashboard")}>
-              <h1 className="text-xl font-bold text-black">Civilearn</h1>
+              <h1 className="text-xl font-bold text-black">Previlace</h1>
             </div>
 
             <div className="ml-10 hidden md:flex md:space-x-1">
