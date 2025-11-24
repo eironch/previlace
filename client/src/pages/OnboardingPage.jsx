@@ -68,6 +68,10 @@ export default function OnboardingPage() {
         }
     }
 
+    const currentYear = new Date().getFullYear();
+    const endYear = currentYear + 5; 
+    const FUTURE_YEARS = Array.from({ length: endYear - currentYear }, (_, i) => currentYear + 1 + i);
+
     function toggleArray(key, value) {
         const current = form[key];
         const updated = current.includes(value)
@@ -295,32 +299,31 @@ export default function OnboardingPage() {
                         </div>
                     </div>
 
-                    {/* Target Exam Month and Year Selects */}
-                    <div>
+                  <div>
                         <label className="mb-2 block text-sm font-medium text-gray-700">Target Exam Date</label>
                         <div className="grid grid-cols-2 gap-4">
-                            {/* Month Select */}
-                            <select 
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer" // Added cursor-pointer
-                                value={form.targetExamMonth} 
-                                onChange={(e) => handleChange("targetExamMonth", e.target.value)}
-                            >
-                                <option value="" disabled>Select Month</option>
-                                <option value="March">March</option>
-                                <option value="August">August</option>
-                            </select>
-                            
-                            {/* Year Select */}
-                            <select 
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer" // Added cursor-pointer
-                                value={form.targetExamYear} 
-                                onChange={(e) => handleChange("targetExamYear", e.target.value)}
-                            >
-                                <option value="" disabled>Select Year</option>
-                                {FUTURE_YEARS.map(year => (
-                                    <option key={year} value={year}>{year}</option>
-                                ))}
-                            </select>
+                        {/* Month Select (No change needed here) */}
+                        <select 
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                            value={form.targetExamMonth} 
+                            onChange={(e) => handleChange("targetExamMonth", e.target.value)}
+                        >
+                            <option value="" disabled>Select Month</option>
+                            <option value="March">March</option>
+                            <option value="August">August</option>
+                        </select>
+                        
+                        {/* Year Select (Uses the new FUTURE_YEARS array) */}
+                        <select 
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                            value={form.targetExamYear} 
+                            onChange={(e) => handleChange("targetExamYear", e.target.value)}
+                        >
+                            <option value="" disabled>Select Year</option>
+                            {FUTURE_YEARS.map(year => (
+                            <option key={year} value={year}>{year}</option>
+                            ))}
+                        </select>
                         </div>
                         
                         {form.targetExamDate && (

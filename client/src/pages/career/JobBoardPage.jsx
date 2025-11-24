@@ -55,7 +55,7 @@ export default function JobBoardPage() {
     
     {/* Upper Right: Resume Builder Call to Action */}
     <button
-      onClick={() => navigate("/resume")} // Adjust the path as needed
+      onClick={() => navigate("/dashboard/resume")} // Adjust the path as needed
       className="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-grey-700 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
     >
       <Briefcase className="h-4 w-4 mr-2" />

@@ -319,24 +319,26 @@ export default function LandingPage() {
             <h2 className="mb-2 text-2xl font-semibold">
               Trusted by Thousands of Civil Service Passers
             </h2>
-            <p className="mb-12 text-gray-600">
+            <p className="mb-6 text-gray-600">
               Real stories from learners who achieved success with Previlace
             </p>
           </div>
+            <ApprovedTestimonials />
 
           {showSubmitTestimonialButton && (
-            <div className="flex justify-center mb-10">
+            <div className="flex justify-center mt-10">
               <Button
+              size="lg"
                 className="bg-black text-white hover:bg-gray-800 transition shadow-lg hover:shadow-xl cursor-pointer"
                 onClick={() => setIsSubmissionModalOpen(true)}
               >
                 <Send className="mr-2 h-4 w-4" />
-                Submit Your Success Story
+                Submit Your Story
               </Button>
             </div>
           )}
 
-          <ApprovedTestimonials />
+          
         </section>
 
         {/* CTA */}

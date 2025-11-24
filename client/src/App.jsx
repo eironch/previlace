@@ -83,17 +83,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={
-            isAuthenticated ? (
-              user?.isProfileComplete ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Navigate to="/onboarding" replace />
-              )
-            ) : (
-              <LandingPage />
-            )
-          }
+          element={ <LandingPage />}
         />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
