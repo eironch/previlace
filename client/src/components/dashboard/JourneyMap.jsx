@@ -1,4 +1,4 @@
-import { CheckCircle, Circle, Lock, ArrowRight } from "lucide-react";
+import { CheckCircle, Circle, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function JourneyMap({ studyPlan }) {
@@ -6,7 +6,7 @@ function JourneyMap({ studyPlan }) {
 
   if (!studyPlan) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
+      <div className="rounded-lg border border-gray-300 bg-white p-6 text-center">
         <p className="text-sm text-gray-600">No active study plan</p>
         <button
           onClick={() => navigate("/dashboard/study-plan")}
@@ -18,35 +18,9 @@ function JourneyMap({ studyPlan }) {
     );
   }
 
-  const journeySteps = studyPlan.weeks.flatMap((week, weekIndex) => {
-    const satStatus = determineStatus(week.saturdaySession, weekIndex);
-    const sunStatus = determineStatus(week.sundaySession, weekIndex);
-
-    return [
-      {
-        id: `${week.weekNumber}-sat`,
-        title: `Week ${week.weekNumber}: Saturday`,
-        subtitle: week.saturdaySession?.subjectId?.name || "No Subject",
-        subjectId: week.saturdaySession?.subjectId?._id,
-        status: satStatus,
-        date: week.saturdaySession?.date,
-      },
-      {
-        id: `${week.weekNumber}-sun`,
-        title: `Week ${week.weekNumber}: Sunday`,
-        subtitle: week.sundaySession?.subjectId?.name || "No Subject",
-        subjectId: week.sundaySession?.subjectId?._id,
-        status: sunStatus,
-        date: week.sundaySession?.date,
-      },
-    ];
-  });
-
-  function determineStatus(session, weekIndex) {
+  function determineSessionStatus(session, weekIndex) {
     if (!session?.date) {
-      if (weekIndex === 0) return "current";
-      if (weekIndex < 2) return "upcoming";
-      return "locked";
+      return weekIndex === 0 ? "current" : "upcoming";
     }
 
     const sessionDate = new Date(session.date);
@@ -56,73 +30,102 @@ function JourneyMap({ studyPlan }) {
 
     if (sessionDate < today) return "completed";
     if (sessionDate.getTime() === today.getTime()) return "current";
+    return "upcoming";
+  }
 
-    const daysDiff = Math.floor((sessionDate - today) / (1000 * 60 * 60 * 24));
-    if (daysDiff <= 7) return "upcoming";
-    return "locked";
+  const getCurrentWeekNumber = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (const week of studyPlan.weeks) {
+      if (!week.startDate || !week.endDate) continue;
+      const start = new Date(week.startDate);
+      const end = new Date(week.endDate);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      
+      if (today >= start && today <= end) {
+        return week.weekNumber;
+      }
+    }
+    return 0;
+  };
+
+  const currentWeekNumber = getCurrentWeekNumber();
+
+  const allSessions = studyPlan.weeks.flatMap((week, weekIndex) => [
+    {
+      id: `${week.weekNumber}-sat`,
+      weekNumber: week.weekNumber,
+      day: "Sat",
+      subject: week.saturdaySession?.subjectId,
+      status: determineSessionStatus(week.saturdaySession, weekIndex),
+      date: week.saturdaySession?.date,
+    },
+    {
+      id: `${week.weekNumber}-sun`,
+      weekNumber: week.weekNumber,
+      day: "Sun",
+      subject: week.sundaySession?.subjectId,
+      status: determineSessionStatus(week.sundaySession, weekIndex),
+      date: week.sundaySession?.date,
+    },
+  ]);
+
+  function handleSessionClick(session) {
+    if (session.subject?._id) {
+      navigate(`/dashboard/subjects/${session.subject._id}`);
+    }
+  }
+
+  function showLockIcon(session) {
+    return session.status === "upcoming" && session.weekNumber > currentWeekNumber + 1;
   }
 
   return (
-    <div className="relative">
-      <div className="absolute bottom-4 left-6 top-4 w-0.5 bg-gray-200" />
-
-      <div className="relative space-y-8">
-        {journeySteps.map((step) => (
-          <div key={step.id} className="flex items-start">
-            <div
-              className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-4 border-white ${
-                step.status === "completed"
-                  ? "bg-black text-white"
-                  : step.status === "current"
-                    ? "bg-gray-900 text-white ring-2 ring-gray-900"
-                    : step.status === "upcoming"
-                      ? "bg-gray-200 text-gray-600"
-                      : "bg-gray-100 text-gray-400"
-              }`}
-            >
-              {step.status === "completed" ? (
-                <CheckCircle size={20} />
-              ) : step.status === "current" ? (
-                <Circle size={20} fill="currentColor" />
-              ) : (
-                <Lock size={20} />
-              )}
-            </div>
-
-            <div className="ml-4 flex-1">
-              <div
-                onClick={() => {
-                  if (step.status !== "locked" && step.subjectId) {
-                    navigate(`/dashboard/subjects/${step.subjectId}`);
-                  }
-                }}
-                className={`rounded-lg border p-4 transition-all ${
-                  step.status === "current"
-                    ? "border-black bg-gray-50 shadow-sm cursor-pointer"
-                    : step.status === "upcoming"
-                      ? "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
-                      : step.status === "locked"
-                        ? "border-gray-100 bg-gray-50 opacity-75 cursor-not-allowed"
-                        : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
+    <div className="relative -mx-2">
+      <div className="overflow-x-auto pb-2">
+        <div className="relative flex items-start gap-8 px-4 py-4 sm:gap-10 md:gap-12" style={{ minWidth: `${allSessions.length * 120}px` }}>
+          <div className="absolute left-4 right-4 top-[48px] h-0.5 bg-gray-200" />
+          
+          {allSessions.map((session) => (
+            <div key={session.id} className="relative flex flex-col items-center" style={{ minWidth: "100px" }}>
+              <button
+                onClick={() => handleSessionClick(session)}
+                className={`relative z-10 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white transition-all ${
+                  session.status === "completed"
+                    ? "cursor-pointer bg-black text-white hover:bg-gray-800"
+                    : session.status === "current"
+                      ? "cursor-pointer bg-gray-900 text-white ring-2 ring-gray-900"
+                      : "cursor-pointer bg-gray-200 text-gray-600 hover:bg-gray-300"
                 }`}
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className={`font-semibold ${step.status === "locked" ? "text-gray-500" : "text-gray-900"}`}>
-                      {step.title}
-                    </h4>
-                    <p className="mt-1 text-sm text-gray-500">{step.subtitle}</p>
-                  </div>
-                  {step.status !== "locked" && step.subjectId && (
-                    <div className="rounded-full p-2 transition-colors hover:bg-white">
-                      <ArrowRight size={16} className="text-gray-400 hover:text-gray-900" />
-                    </div>
-                  )}
-                </div>
+                {session.status === "completed" ? (
+                  <CheckCircle size={20} />
+                ) : showLockIcon(session) ? (
+                  <Lock size={20} />
+                ) : (
+                  <Circle size={20} fill="currentColor" />
+                )}
+              </button>
+              <div className="mt-2 flex flex-col items-center">
+                <p className={`text-xs font-semibold ${
+                  session.status === "completed" || session.status === "current"
+                    ? "text-gray-900"
+                    : "text-gray-600"
+                }`}>
+                  Week {session.weekNumber}
+                </p>
+                <p className="text-xs text-gray-500">{session.day}</p>
+                {session.subject && (
+                  <p className="mt-1 w-[100px] break-words text-center text-xs font-medium leading-tight text-gray-700">
+                    {session.subject.name}
+                  </p>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

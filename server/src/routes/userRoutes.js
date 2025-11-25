@@ -7,12 +7,16 @@ const router = express.Router();
 
 router.use(authenticate);
 
+router.get("/dashboard", userController.getDashboardData);
 router.get("/profile", userController.getProfile);
 router.patch("/profile", validateUpdateProfile, userController.updateProfile);
+router.get("/level", userController.getLevel);
 router.delete("/account", userController.deleteAccount);
 
 router.get("/devices", userController.getActiveDevices);
 router.delete("/devices/:deviceId", userController.revokeDevice);
+
+router.get("/level", userController.getLevel);
 
 import * as streakController from "../controllers/streakController.js";
 router.get("/study-streak", streakController.getStreak);

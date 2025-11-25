@@ -5,7 +5,9 @@ const useAnalyticsStore = create((set, get) => ({
   categoryStats: [],
   progressData: [],
   weakAreas: [],
-  readiness: {},
+  overallProgress: [],
+  subjectWeeklyProgress: {},
+  analyticsData: null,
   isLoading: false,
   error: null,
 
@@ -23,10 +25,16 @@ const useAnalyticsStore = create((set, get) => ({
         categoryStats: data.categories || [],
         progressData: data.recentProgress || [],
         weakAreas: data.weakAreas || [],
+        analyticsData: data, // Store full data for PerformancePage
         readiness: {
-          overall: data.totalQuestions?.accuracy || 0,
-          details: data.totalQuestions || {}
+          overall: data.accuracy || 0,
+          details: {
+            totalQuestions: data.totalQuestions || 0,
+            readinessLevel: data.readiness || "Low"
+          }
         },
+        overallProgress: data.overallProgress || [],
+        subjectWeeklyProgress: data.subjectWeeklyProgress || {},
         isLoading: false,
       });
     } catch (error) {
@@ -40,6 +48,9 @@ const useAnalyticsStore = create((set, get) => ({
       progressData: [],
       weakAreas: [],
       readiness: {},
+      overallProgress: [],
+      subjectWeeklyProgress: {},
+      analyticsData: null,
       isLoading: false,
       error: null,
     }),

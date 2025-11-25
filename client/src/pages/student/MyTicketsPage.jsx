@@ -23,13 +23,7 @@ export default function MyTicketsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span className="font-medium">Back</span>
-        </button>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Support Tickets</h1>
           <p className="mt-2 text-gray-600">

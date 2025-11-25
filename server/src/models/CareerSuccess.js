@@ -163,7 +163,7 @@ const careerSuccessSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
-      jobApplicationsThrough Platform: {
+      jobApplicationsThroughPlatform: {
         type: Number,
         default: 0,
       },

@@ -1,6 +1,9 @@
 import QuizSession from "../models/QuizSession.js";
 import UserQuestionHistory from "../models/UserQuestionHistory.js";
 import ManualQuestion from "../models/ManualQuestion.js";
+import PostTestTracking from "../models/PostTestTracking.js";
+import StudyPlan from "../models/StudyPlan.js";
+import Subject from "../models/Subject.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
 import questionSelectionService from "../services/questionSelectionService.js";
 import performanceAnalysisService from "../services/performanceAnalysisService.js";
@@ -152,6 +155,15 @@ const completeQuizSession = catchAsync(async (req, res, next) => {
   }
 
   await session.complete();
+
+  if (session.mode === "post-test" && session.weekNumber) {
+    await PostTestTracking.markPostTestCompleted(
+      req.user._id,
+      session.weekNumber,
+      session._id,
+      session.score.percentage
+    );
+  }
 
   const result = {
     sessionId: session._id,
@@ -660,6 +672,281 @@ const startTopicQuiz = catchAsync(async (req, res, next) => {
   });
 });
 
+const startPostTest = catchAsync(async (req, res, next) => {
+  const { weekNumber } = req.body;
+
+  if (!weekNumber) {
+    return next(new AppError("Week number is required", 400));
+  }
+
+  const studyPlan = await StudyPlan.getActiveStudyPlan();
+  if (!studyPlan) {
+    return next(new AppError("No active study plan found", 404));
+  }
+
+  const week = studyPlan.weeks.find((w) => w.weekNumber === weekNumber);
+  if (!week) {
+    return next(new AppError(`Week ${weekNumber} not found in study plan`, 404));
+  }
+
+  const hasCompleted = await PostTestTracking.hasCompletedPostTest(req.user._id, weekNumber);
+  if (hasCompleted) {
+    return next(new AppError("Post-test already completed for this week", 400));
+  }
+
+  const subjects = [];
+  if (week.saturdaySession?.subjectId) {
+    const subject = await Subject.findById(week.saturdaySession.subjectId);
+    if (subject) subjects.push(subject);
+  }
+  if (week.sundaySession?.subjectId) {
+    const subject = await Subject.findById(week.sundaySession.subjectId);
+    if (subject) subjects.push(subject);
+  }
+
+  if (subjects.length === 0) {
+    return next(new AppError("No subjects found for this week", 404));
+  }
+
+  const userExamLevel = req.user.examType || "Professional";
+  const quizData = await adaptiveQuizService.createPostTest(
+    req.user._id,
+    weekNumber,
+    subjects,
+    userExamLevel,
+    30
+  );
+
+  const populatedQuestions = await ManualQuestion.find({
+    _id: { $in: quizData.questions.map((q) => q._id) },
+  }).populate("topicId", "name");
+
+  const session = await QuizSession.create({
+    userId: req.user._id,
+    mode: "post-test",
+    title: `Week ${weekNumber} Post-Test`,
+    weekNumber,
+    hasImmediateFeedback: false,
+    hasTimer: true,
+    config: {
+      weekNumber,
+      examLevel: userExamLevel,
+      questionCount: quizData.questions.length,
+      timeLimit: 2700,
+      defaultQuestionTime: 90,
+    },
+    questions: quizData.questions.map((q) => q._id),
+  });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      session: {
+        _id: session._id,
+        title: session.title,
+        mode: session.mode,
+        weekNumber: session.weekNumber,
+        timeLimit: session.config.timeLimit,
+        questionCount: session.questions.length,
+        hasImmediateFeedback: false,
+        hasTimer: true,
+      },
+      questions: populatedQuestions.map((q) => ({
+        _id: q._id,
+        questionText: q.questionText,
+        questionMath: q.questionMath,
+        options: q.options,
+        difficulty: q.difficulty,
+        category: q.category,
+        subjectArea: q.subjectArea,
+        topicId: q.topicId?._id,
+        topicName: q.topicId?.name,
+      })),
+    },
+  });
+});
+
+const startAssessment = catchAsync(async (req, res, next) => {
+  const { currentWeekNumber } = req.body;
+
+  if (!currentWeekNumber) {
+    return next(new AppError("Current week number is required", 400));
+  }
+
+  const hasCompletedPostTest = await PostTestTracking.hasCompletedPostTest(
+    req.user._id,
+    currentWeekNumber
+  );
+
+  if (!hasCompletedPostTest) {
+    return next(
+      new AppError(
+        `You must complete the post-test for Week ${currentWeekNumber} before taking an assessment`,
+        400
+      )
+    );
+  }
+
+  const userExamLevel = req.user.examType || "Professional";
+  const quizData = await adaptiveQuizService.createAssessment(
+    req.user._id,
+    currentWeekNumber,
+    userExamLevel,
+    20
+  );
+
+  const populatedQuestions = await ManualQuestion.find({
+    _id: { $in: quizData.questions.map((q) => q._id) },
+  }).populate("topicId", "name");
+
+  const session = await QuizSession.create({
+    userId: req.user._id,
+    mode: "assessment",
+    title: `Week ${currentWeekNumber} Assessment`,
+    weekNumber: currentWeekNumber,
+    hasImmediateFeedback: true,
+    hasTimer: false,
+    config: {
+      weekNumber: currentWeekNumber,
+      examLevel: userExamLevel,
+      questionCount: quizData.questions.length,
+      timeLimit: 0,
+      defaultQuestionTime: 90,
+    },
+    questions: quizData.questions.map((q) => q._id),
+  });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      session: {
+        _id: session._id,
+        title: session.title,
+        mode: session.mode,
+        weekNumber: session.weekNumber,
+        timeLimit: 0,
+        questionCount: session.questions.length,
+        hasImmediateFeedback: true,
+        hasTimer: false,
+      },
+      questions: populatedQuestions.map((q) => ({
+        _id: q._id,
+        questionText: q.questionText,
+        questionMath: q.questionMath,
+        options: q.options,
+        difficulty: q.difficulty,
+        category: q.category,
+        subjectArea: q.subjectArea,
+        topicId: q.topicId?._id,
+        topicName: q.topicId?.name,
+      })),
+    },
+  });
+});
+
+const startPretest = catchAsync(async (req, res, next) => {
+  const studyPlan = await StudyPlan.getActiveStudyPlan();
+  if (!studyPlan) {
+    return next(new AppError("No active study plan found", 404));
+  }
+
+  const currentDate = new Date();
+  const week1Start = studyPlan.weeks[0]?.startDate;
+
+  if (week1Start && currentDate >= new Date(week1Start)) {
+    return next(new AppError("Week 0 pretest is no longer available", 400));
+  }
+
+  const userExamLevel = req.user.examType || "Professional";
+  const quizData = await adaptiveQuizService.createPretest(
+    req.user._id,
+    userExamLevel,
+    100
+  );
+
+  const populatedQuestions = await ManualQuestion.find({
+    _id: { $in: quizData.questions.map((q) => q._id) },
+  }).populate("topicId", "name");
+
+  const session = await QuizSession.create({
+    userId: req.user._id,
+    mode: "pretest",
+    title: "Week 0 Comprehensive Pretest",
+    weekNumber: 0,
+    isWeek0Pretest: true,
+    hasImmediateFeedback: false,
+    hasTimer: true,
+    config: {
+      examLevel: userExamLevel,
+      questionCount: quizData.questions.length,
+      timeLimit: 9000,
+      defaultQuestionTime: 90,
+    },
+    questions: quizData.questions.map((q) => q._id),
+  });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      session: {
+        _id: session._id,
+        title: session.title,
+        mode: session.mode,
+        weekNumber: 0,
+        isWeek0Pretest: true,
+        timeLimit: session.config.timeLimit,
+        questionCount: session.questions.length,
+        hasImmediateFeedback: false,
+        hasTimer: true,
+      },
+      questions: populatedQuestions.map((q) => ({
+        _id: q._id,
+        questionText: q.questionText,
+        questionMath: q.questionMath,
+        options: q.options,
+        difficulty: q.difficulty,
+        category: q.category,
+        subjectArea: q.subjectArea,
+        topicId: q.topicId?._id,
+        topicName: q.topicId?.name,
+      })),
+    },
+  });
+});
+
+const getPostTestStatus = catchAsync(async (req, res, next) => {
+  const status = await PostTestTracking.getUserPostTestStatus(req.user._id);
+
+  res.json({
+    success: true,
+    data: { status },
+  });
+});
+
+const checkPretestAvailability = catchAsync(async (req, res, next) => {
+  const studyPlan = await StudyPlan.getActiveStudyPlan();
+  
+  if (!studyPlan) {
+    return res.json({
+      success: true,
+      data: { available: false, reason: "No active study plan" },
+    });
+  }
+
+  const currentDate = new Date();
+  const week1Start = studyPlan.weeks[0]?.startDate;
+  const available = !week1Start || currentDate < new Date(week1Start);
+
+  res.json({
+    success: true,
+    data: {
+      available,
+      reason: available ? null : "Week 1 has already started",
+      week1StartDate: week1Start,
+    },
+  });
+});
+
 export default {
   startQuizSession,
   submitAnswer,
@@ -677,4 +964,9 @@ export default {
   generateStudyPlan,
   trackStudySession,
   exportQuizResultPdf,
+  startPostTest,
+  startAssessment,
+  startPretest,
+  getPostTestStatus,
+  checkPretestAvailability,
 };

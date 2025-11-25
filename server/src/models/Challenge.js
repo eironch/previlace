@@ -16,7 +16,7 @@ const challengeSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["quiz", "category", "speedrun", "accuracy"],
+      enum: ["quiz", "category", "speedrun", "accuracy", "mock_exam"],
       default: "quiz",
     },
     category: String,

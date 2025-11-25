@@ -1,5 +1,11 @@
 import User from "../models/User.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
+import Streak from "../models/Streak.js";
+import UserQuestionHistory from "../models/UserQuestionHistory.js";
+import UserActivity from "../models/UserActivity.js";
+import StudyPlan from "../models/StudyPlan.js";
+import Subject from "../models/Subject.js";
+import mongoose from "mongoose";
 
 const getProfile = catchAsync(async (req, res, next) => {
 	const user = await User.findById(req.user._id);
@@ -102,6 +108,206 @@ const getActiveDevices = catchAsync(async (req, res, next) => {
 		success: true,
 		data: {
 			devices: activeDevices,
+		},
+	});
+});
+
+const getLevel = catchAsync(async (req, res, next) => {
+	const user = await User.findById(req.user._id).select("level exp nextLevelExp");
+
+	if (!user) {
+		return next(new AppError("User not found", 404));
+	}
+
+	res.status(200).json({
+		success: true,
+		data: {
+			level: user.level || 1,
+			exp: user.exp || 0,
+			nextLevelExp: user.nextLevelExp || 1000,
+		},
+	});
+});
+
+const getDashboardData = catchAsync(async (req, res, next) => {
+	const userId = new mongoose.Types.ObjectId(req.user._id);
+
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	const sevenDaysAgo = new Date(today);
+	sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+	const [user, streakDoc, activePlan, activityDates, categories, weakAreas] = await Promise.all([
+		User.findById(userId).select("firstName lastName email role level exp nextLevelExp isEmailVerified isProfileComplete"),
+		Streak.findOne({ userId }).lean(),
+		StudyPlan.findOne({ isActive: true, enrolledStudents: userId })
+			.select("_id batchId name startDate endDate examDate totalWeeks weeks")
+			.populate({
+				path: "weeks.saturdaySession.subjectId",
+				select: "name code icon",
+			})
+			.populate({
+				path: "weeks.sundaySession.subjectId",
+				select: "name code icon",
+			})
+			.lean(),
+		UserQuestionHistory.aggregate([
+			{ $match: { userId } },
+			{ $unwind: "$attempts" },
+			{
+				$group: {
+					_id: { $dateToString: { format: "%Y-%m-%d", date: "$attempts.answeredAt" } },
+					count: { $sum: 1 },
+				},
+			},
+			{ $sort: { _id: -1 } },
+			{ $limit: 30 },
+		]),
+		UserQuestionHistory.aggregate([
+			{ $match: { userId } },
+			{
+				$group: {
+					_id: "$subject",
+					totalAttempts: { $sum: "$totalAttempts" },
+					correctAttempts: { $sum: "$correctAttempts" },
+				},
+			},
+			{ $lookup: { from: "subjects", localField: "_id", foreignField: "_id", as: "subjectInfo" } },
+			{ $unwind: "$subjectInfo" },
+			{
+				$project: {
+					category: "$subjectInfo.name",
+					accuracy: {
+						$cond: [{ $eq: ["$totalAttempts", 0] }, 0, { $multiply: [{ $divide: ["$correctAttempts", "$totalAttempts"] }, 100] }],
+					},
+				},
+			},
+		]),
+		UserQuestionHistory.aggregate([
+			{ $match: { userId } },
+			{
+				$group: {
+					_id: "$topic",
+					totalAttempts: { $sum: "$totalAttempts" },
+					correctAttempts: { $sum: "$correctAttempts" },
+				},
+			},
+			{
+				$project: {
+					accuracy: {
+						$round: [{ $cond: [{ $eq: ["$totalAttempts", 0] }, 0, { $multiply: [{ $divide: ["$correctAttempts", "$totalAttempts"] }, 100] }] }, 2],
+					},
+				},
+			},
+			{ $match: { accuracy: { $lt: 60 }, totalAttempts: { $gte: 5 } } },
+			{ $sort: { accuracy: 1 } },
+			{ $limit: 5 },
+			{ $lookup: { from: "topics", localField: "_id", foreignField: "_id", as: "topicInfo" } },
+			{ $unwind: "$topicInfo" },
+			{ $project: { topicName: "$topicInfo.name", accuracy: 1 } },
+		]),
+	]);
+
+	if (!user) {
+		return next(new AppError("User not found", 404));
+	}
+
+	let streak = streakDoc;
+	if (!streak) {
+		streak = new Streak({ userId });
+		await streak.save();
+	}
+
+	const datesWithActivity = new Set(activityDates.map((d) => d._id));
+	let currentStreak = 0;
+	let longestStreak = 0;
+	let tempStreak = 0;
+
+	if (datesWithActivity.size > 0) {
+		const sortedDates = Array.from(datesWithActivity).sort((a, b) => new Date(b) - new Date(a));
+		const mostRecentDate = new Date(sortedDates[0]);
+		mostRecentDate.setHours(0, 0, 0, 0);
+
+		const yesterday = new Date(today);
+		yesterday.setDate(yesterday.getDate() - 1);
+
+		if (mostRecentDate >= yesterday) {
+			let checkDate = new Date(mostRecentDate);
+			while (true) {
+				const dateStr = checkDate.toISOString().split("T")[0];
+				if (datesWithActivity.has(dateStr)) {
+					currentStreak++;
+					checkDate.setDate(checkDate.getDate() - 1);
+				} else {
+					break;
+				}
+			}
+		}
+
+		const allDates = sortedDates.map((d) => new Date(d)).sort((a, b) => a - b);
+		for (let i = 0; i < allDates.length; i++) {
+			if (i === 0) {
+				tempStreak = 1;
+			} else {
+				const daysDiff = Math.floor((allDates[i] - allDates[i - 1]) / (1000 * 60 * 60 * 24));
+				if (daysDiff === 1) {
+					tempStreak++;
+				} else {
+					if (tempStreak > longestStreak) longestStreak = tempStreak;
+					tempStreak = 1;
+				}
+			}
+		}
+		if (tempStreak > longestStreak) longestStreak = tempStreak;
+	}
+
+	if (currentStreak !== streak.currentStreak || longestStreak !== streak.longestStreak) {
+		streak.currentStreak = currentStreak;
+		streak.longestStreak = longestStreak;
+		streak.lastActivityDate = datesWithActivity.size > 0 ? new Date(Array.from(datesWithActivity).sort().reverse()[0]) : null;
+		await Streak.updateOne({ userId }, { currentStreak, longestStreak, lastActivityDate: streak.lastActivityDate });
+	}
+
+	const questionHistory = await UserQuestionHistory.find({ userId }).lean();
+	let totalAttempts = 0;
+	let correctAttempts = 0;
+	questionHistory.forEach((h) => {
+		totalAttempts += h.totalAttempts;
+		correctAttempts += h.correctAttempts;
+	});
+	const accuracy = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+
+	let readiness = "Low";
+	if (accuracy >= 80 && totalAttempts > 100) readiness = "High";
+	else if (accuracy >= 60 && totalAttempts > 50) readiness = "Medium";
+
+	res.status(200).json({
+		success: true,
+		data: {
+			user: {
+				id: user._id,
+				email: user.email,
+				firstName: user.firstName,
+				lastName: user.lastName,
+				isEmailVerified: user.isEmailVerified,
+				isProfileComplete: user.isProfileComplete,
+				role: user.role,
+				level: user.level || 1,
+				exp: user.exp || 0,
+				nextLevelExp: user.nextLevelExp || 1000,
+			},
+			streak: {
+				currentStreak,
+				longestStreak,
+			},
+			analytics: {
+				categories: categories || [],
+				weakAreas: weakAreas || [],
+				totalQuestions: totalAttempts,
+				accuracy: Math.round(accuracy),
+				readiness,
+			},
+			studyPlan: activePlan || null,
 		},
 	});
 });
@@ -224,4 +430,6 @@ export default {
 	getUserById,
 	updateUserRole,
 	deleteUser,
+	getLevel,
+	getDashboardData,
 };

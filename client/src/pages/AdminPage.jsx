@@ -5,21 +5,22 @@ import {
   BookOpen,
   Activity,
   Calendar,
-  LogOut,
   TrendingUp,
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
-import { useAuthStore } from "../store/authStore";
+import StandardHeader from "@/components/ui/StandardHeader";
+// useAuthStore removed
 import UserManagement from "../components/admin/UserManagement";
 import QuestionBankManager from "../components/questionBank/QuestionBankManager";
 import ReviewQueuePage from "./admin/ReviewQueuePage";
+import WeekendClassManager from "../components/admin/WeekendClassManager";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function AdminPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const { logout, user } = useAuthStore();
+  // user and logout removed as they are unused
   const [stats, setStats] = useState(null);
   const [recentUsers, setRecentUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,9 +107,7 @@ function AdminPage() {
     };
   }, [stats]);
 
-  function handleSignOut() {
-    logout();
-  }
+  // handleSignOut removed
 
   function handleRefresh() {
     fetchAdminData();
@@ -147,35 +146,18 @@ function AdminPage() {
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-black">
-              Admin Dashboard
-            </h1>
+            <h1 className="text-3xl font-bold text-black">Admin Dashboard</h1>
             <p className="mt-2 text-gray-600">
               Monitor system performance and user engagement
             </p>
           </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={handleRefresh}
-              className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <RefreshCw className="h-4 w-4" />
-              <span>Refresh</span>
-            </button>
-            <div className="text-right">
-              <p className="text-sm font-medium text-black">
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p className="text-xs text-gray-500">{user?.email}</p>
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center space-x-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sign Out</span>
-            </button>
-          </div>
+          <button
+            onClick={handleRefresh}
+            className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Refresh</span>
+          </button>
         </div>
 
         <div className="mb-8 border-b border-gray-200">
@@ -229,6 +211,16 @@ function AdminPage() {
               }`}
             >
               Review
+            </button>
+            <button
+              onClick={() => setActiveTab("classes")}
+              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
+                activeTab === "classes"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              }`}
+            >
+              Classes
             </button>
           </nav>
         </div>
@@ -306,6 +298,8 @@ function AdminPage() {
         {activeTab === "questionbank" && <QuestionBankManager />}
 
         {activeTab === "review" && <ReviewQueuePage />}
+
+        {activeTab === "classes" && <WeekendClassManager />}
       </div>
     </div>
   );

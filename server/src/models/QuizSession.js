@@ -43,8 +43,16 @@ const quizSessionSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: ["practice", "timed", "mock", "subject", "topic"],
+      enum: ["practice", "timed", "mock", "subject", "topic", "post-test", "assessment", "pretest"],
       default: "practice",
+    },
+    weekNumber: {
+      type: Number,
+      default: null,
+    },
+    isWeek0Pretest: {
+      type: Boolean,
+      default: false,
     },
     hasImmediateFeedback: {
       type: Boolean,

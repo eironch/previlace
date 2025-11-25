@@ -40,6 +40,8 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import DevTools from "./components/ui/DevTools";
 import { useAppStore } from "./store/appStore";
 
+import DashboardLayout from "./components/layout/DashboardLayout";
+
 function ProtectedRoute({ children, requireAdmin = false, requireProfileComplete = true }) {
   const { user, isAuthenticated } = useAuthStore();
 
@@ -56,6 +58,14 @@ function ProtectedRoute({ children, requireAdmin = false, requireProfileComplete
   }
 
   return children;
+}
+
+function DashboardRoute({ children, requireAdmin = false }) {
+  return (
+    <ProtectedRoute requireAdmin={requireAdmin}>
+      <DashboardLayout>{children}</DashboardLayout>
+    </ProtectedRoute>
+  );
 }
 
 function App() {
@@ -116,263 +126,261 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <DashboardPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/subjects"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <SubjectsPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/subjects/:id"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <SubjectDetailPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/topics/:id"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <TopicDetailPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/quiz"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <QuizSetupPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/quiz-session"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <QuizSessionPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/results"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <QuizResultsPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/mock-exam"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <MockExamStartPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/analytics"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <AnalyticsPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/settings"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <ProfileSettingsPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/study-streak"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <StudyStreakPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/achievements"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <AchievementsPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/leaderboard"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <LeaderboardPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/challenges"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <ChallengePage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
-
-
 
         <Route
           path="/dashboard/exam-readiness"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <ExamReadinessPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/study-plan"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <StudyPlanPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/performance"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <PerformancePage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/admin"
           element={
-            <ProtectedRoute requireAdmin>
+            <DashboardRoute requireAdmin>
               <AdminPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/instructor"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <InstructorDashboardPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/tickets"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <MyTicketsPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/inbox"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <TicketInboxPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/notifications"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <NotificationsPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/jobs"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <JobBoardPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/resume"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <ResumeBuilderPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/dashboard/interview"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <InterviewPrepPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/admin/question-bank"
           element={
-            <ProtectedRoute requireAdmin>
+            <DashboardRoute requireAdmin>
               <QuestionBankPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/admin/review-queue"
           element={
-            <ProtectedRoute requireAdmin>
+            <DashboardRoute requireAdmin>
               <ReviewQueuePage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/admin/users"
           element={
-            <ProtectedRoute requireAdmin>
+            <DashboardRoute requireAdmin>
               <UserManagementPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 
         <Route
           path="/admin/files"
           element={
-            <ProtectedRoute requireAdmin>
+            <DashboardRoute requireAdmin>
               <FileManagementPage />
-            </ProtectedRoute>
+            </DashboardRoute>
           }
         />
 

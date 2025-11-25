@@ -8,10 +8,10 @@ import {
   Award,
 } from "lucide-react";
 import StandardHeader from "@/components/ui/StandardHeader";
-import useExamStore from "@/store/examStore";
+import useAnalyticsStore from "@/store/analyticsStore";
 
 function PerformancePage() {
-  const { analytics, fetchAnalytics, loading } = useExamStore();
+  const { analyticsData: analytics, fetchAnalytics, isLoading: loading } = useAnalyticsStore();
 
   useEffect(() => {
     fetchAnalytics();
@@ -33,10 +33,10 @@ function PerformancePage() {
     );
   }
 
-  if (loading) {
+  if (loading && !analytics) {
     return (
       <div className="min-h-screen bg-white">
-        <StandardHeader title="Performance" showBack={true} />
+        <StandardHeader title="Performance" />
         <div className="flex h-[calc(100vh-73px)] items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
         </div>
@@ -47,7 +47,7 @@ function PerformancePage() {
   if (!analytics) {
     return (
       <div className="min-h-screen bg-white">
-        <StandardHeader title="Performance" showBack={true} />
+        <StandardHeader title="Performance" />
         <div className="flex h-[calc(100vh-73px)] items-center justify-center">
           <p className="text-gray-400">
             No performance data available yet. Take a quiz to see your
@@ -60,9 +60,11 @@ function PerformancePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <StandardHeader title="Performance" showBack={true} />
-
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Performance</h1>
+          <p className="text-gray-600">Analyze your quiz results and improvement</p>
+        </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
           <div className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">

@@ -271,6 +271,124 @@ class AdaptiveQuizService {
     }
     return shuffled;
   }
+
+  async createPostTest(userId, weekNumber, subjects, examLevel, questionCount = 30) {
+    const allTopics = [];
+    for (const subject of subjects) {
+      const topics = await Topic.find({ subjectId: subject._id, isActive: true });
+      allTopics.push(...topics);
+    }
+
+    if (allTopics.length === 0) {
+      throw new Error("No topics found for this week");
+    }
+
+    const selectedQuestions = [];
+    const questionsPerTopic = Math.ceil(questionCount / allTopics.length);
+
+    for (const topic of allTopics) {
+      const topicQuestions = await this.selectTopicQuestions(
+        userId,
+        topic._id,
+        "intermediate",
+        examLevel,
+        questionsPerTopic
+      );
+      selectedQuestions.push(...topicQuestions);
+    }
+
+    return {
+      questions: this.shuffleArray(selectedQuestions).slice(0, questionCount),
+      weekNumber,
+      topicsCovered: allTopics.map(t => t._id),
+    };
+  }
+
+  async createAssessment(userId, currentWeekNumber, examLevel, questionCount = 20) {
+    const previousWeekQuestions = [];
+    const mixedQuestions = [];
+
+    const previousWeekQuestionCount = Math.floor(questionCount * 0.7);
+    const mixedQuestionCount = questionCount - previousWeekQuestionCount;
+
+    if (currentWeekNumber > 1) {
+      const recentHistory = await questionSelectionService.getRecentlyAnsweredQuestions(userId, 7);
+      
+      if (recentHistory.length > 0) {
+        const recentTopics = await Topic.find({
+          _id: { $in: recentHistory.map(h => h.topicId).filter(Boolean) }
+        });
+
+        for (const topic of recentTopics) {
+          const questions = await this.selectTopicQuestions(
+            userId,
+            topic._id,
+            "intermediate",
+            examLevel,
+            3
+          );
+          previousWeekQuestions.push(...questions);
+        }
+      }
+    }
+
+    const allTopics = await Topic.find({ isActive: true });
+    const randomTopics = this.shuffleArray(allTopics).slice(0, 5);
+    
+    for (const topic of randomTopics) {
+      const questions = await this.selectTopicQuestions(
+        userId,
+        topic._id,
+        "intermediate",
+        examLevel,
+        2
+      );
+      mixedQuestions.push(...questions);
+    }
+
+    const allQuestions = [
+      ...this.shuffleArray(previousWeekQuestions).slice(0, previousWeekQuestionCount),
+      ...this.shuffleArray(mixedQuestions).slice(0, mixedQuestionCount),
+    ];
+
+    return {
+      questions: this.shuffleArray(allQuestions),
+      previousWeekQuestions: previousWeekQuestions.length,
+      mixedQuestions: mixedQuestions.length,
+    };
+  }
+
+  async createPretest(userId, examLevel, questionCount = 100) {
+    const allSubjects = await Topic.distinct("subjectId", { isActive: true });
+    
+    if (allSubjects.length === 0) {
+      throw new Error("No subjects available for pretest");
+    }
+
+    const questionsPerSubject = Math.floor(questionCount / allSubjects.length);
+    const selectedQuestions = [];
+
+    for (const subjectId of allSubjects) {
+      const topics = await Topic.find({ subjectId, isActive: true });
+      const questionsPerTopic = Math.ceil(questionsPerSubject / topics.length);
+
+      for (const topic of topics) {
+        const topicQuestions = await this.selectTopicQuestions(
+          userId,
+          topic._id,
+          "intermediate",
+          examLevel,
+          questionsPerTopic
+        );
+        selectedQuestions.push(...topicQuestions);
+      }
+    }
+
+    return {
+      questions: this.shuffleArray(selectedQuestions).slice(0, questionCount),
+      subjectsCovered: allSubjects,
+    };
+  }
 }
 
 export default new AdaptiveQuizService();

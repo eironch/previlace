@@ -2,13 +2,14 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSubjectStore } from "@/store/subjectStore";
 import { useAuthStore } from "@/store/authStore";
-import { BookOpen, Target, TrendingUp, ArrowLeft, LogOut } from "lucide-react";
+import { BookOpen, Target, TrendingUp, ArrowLeft } from "lucide-react";
+import StandardHeader from "@/components/ui/StandardHeader";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function SubjectsPage() {
   const navigate = useNavigate();
   const { subjects, loading, fetchSubjects } = useSubjectStore();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     fetchSubjects(user?.examLevel);
@@ -18,14 +19,10 @@ function SubjectsPage() {
     navigate(`/dashboard/subjects/${subjectId}`);
   }
 
-  async function handleLogout() {
-    await logout();
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
-        <header className="border-b border-gray-200 bg-white">
+        <header className="border-b border-gray-300 bg-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-4">
               <div className="flex items-center gap-4">
@@ -48,7 +45,7 @@ function SubjectsPage() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="rounded-lg border border-gray-200 bg-white p-6">
+              <div key={i} className="rounded-lg border border-gray-300 bg-white p-6">
                 <div className="mb-4 flex items-center justify-between">
                   <SkeletonLoader variant="circle" className="h-12 w-12" />
                   <SkeletonLoader className="h-4 w-16" />
@@ -70,33 +67,7 @@ function SubjectsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="flex items-center gap-2 text-gray-600 transition-colors hover:text-black"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <h1 className="text-xl font-semibold text-black">Subjects</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {user?.firstName} {user?.lastName}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
@@ -111,7 +82,7 @@ function SubjectsPage() {
             <button
               key={subject._id}
               onClick={() => handleSubjectClick(subject._id)}
-              className="group overflow-hidden rounded-lg border border-gray-200 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
+              className="group overflow-hidden rounded-lg border border-gray-300 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
             >
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 transition-colors group-hover:bg-black">

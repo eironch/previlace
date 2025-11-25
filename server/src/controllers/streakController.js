@@ -1,5 +1,6 @@
 import Streak from "../models/Streak.js";
 import UserActivity from "../models/UserActivity.js";
+import UserQuestionHistory from "../models/UserQuestionHistory.js";
 
 function isSameDay(date1, date2) {
   return date1.getFullYear() === date2.getFullYear() &&
@@ -22,7 +23,24 @@ export async function getStreak(req, res) {
       await streak.save();
     }
 
-    return res.status(200).json({ streak });
+    // Fetch activity history for the calendar
+    const history = await UserQuestionHistory.aggregate([
+      { $match: { userId: req.user._id } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: -1 } }
+    ]);
+
+    const streakHistory = history.map(h => ({
+      date: h._id,
+      count: h.count
+    }));
+
+    return res.status(200).json({ streak, history: streakHistory });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error fetching streak:", error);

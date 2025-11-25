@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Settings, BookOpen, Save } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import apiClient from "@/services/apiClient";
+import StandardHeader from "@/components/ui/StandardHeader";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function ProfileSettingsPage() {
@@ -70,28 +71,11 @@ function ProfileSettingsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="border-b border-gray-200 bg-white px-4 py-4">
-        <div className="mx-auto max-w-4xl">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="mb-4 flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to Dashboard
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-              <Settings className="h-6 w-6 text-gray-900" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-              <p className="text-sm text-gray-600">Manage your exam preferences</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="mx-auto max-w-4xl px-4 py-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
+          <p className="text-gray-600">Manage your account and preferences</p>
+        </div>
         {error && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
             <p className="text-sm text-red-800">{error}</p>

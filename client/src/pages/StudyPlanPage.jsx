@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 import StandardHeader from "@/components/ui/StandardHeader";
 import Button from "@/components/ui/Button";
-import useExamStore from "@/store/examStore";
+import useStudyPlanStore from "@/store/studyPlanStore";
 
 function StudyPlanPage() {
-  const { generateStudyPlan, studyPlan, loading, error } = useExamStore();
+  const { generateStudyPlan, activePlan: studyPlan, loading, error } = useStudyPlanStore();
   const [targetDate, setTargetDate] = useState("");
 
   function handleGenerate() {
@@ -59,10 +59,10 @@ function StudyPlanPage() {
     }
   }
 
-  if (!studyPlan) {
+  if (!studyPlan && !loading) {
     return (
       <div className="min-h-screen bg-white">
-        <StandardHeader title="Study Plan" showBack={true} />
+        <StandardHeader title="Study Plan" />
 
         <div className="mx-auto max-w-4xl px-4 py-8">
           <div className="mb-8 text-center">
@@ -133,6 +133,14 @@ function StudyPlanPage() {
     );
   }
 
+  if (loading && !studyPlan) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-white">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
+      </div>
+    );
+  }
+
   const daysRemaining = getDaysRemaining(studyPlan.targetExamDate);
   const currentWeek = Math.ceil(
     (new Date() - new Date(studyPlan.startDate)) / (1000 * 60 * 60 * 24 * 7)
@@ -140,9 +148,11 @@ function StudyPlanPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <StandardHeader title="Study Plan" showBack={true} />
-
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Study Plan</h1>
+          <p className="text-gray-600">Track your progress and stay on schedule</p>
+        </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
           <div className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">

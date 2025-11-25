@@ -1,155 +1,236 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Trophy } from "lucide-react";
-import useActivityStore from "@/store/activityStore";
+import { Target, Trophy, CheckCircle } from "lucide-react";
+import usePostTestStore from "@/store/postTestStore";
+import useExamStore from "@/store/examStore";
+import useDashboardStore from "@/store/dashboardStore";
+import weekendClassService from "@/services/weekendClassService";
 
 const getDayName = (date) => {
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   return days[date.getDay()];
 };
 
-const getChallengeTypeForDay = (dayName) => {
-  const types = {
-    Monday: { title: "New Week Launch", desc: "15 questions from last class", xp: 15 },
-    Tuesday: { title: "Spaced Repetition", desc: "10 questions reviewing mistakes", xp: 10 },
-    Wednesday: { title: "Deep Dive", desc: "20 questions on weakest topic", xp: 20 },
-    Thursday: { title: "Speed Challenge", desc: "15 timed questions", xp: 15 },
-    Friday: { title: "Weekly Review", desc: "25 comprehensive questions", xp: 25 },
-  };
-  return types[dayName] || types.Monday;
-};
-
 function DailyChallengeCard() {
   const navigate = useNavigate();
-  const { todayActivity: challenge, fetchTodayActivity, loading, error } = useActivityStore();
+  const { studyPlan: activePlan, isLoading: dashboardLoading } = useDashboardStore();
+  const { postTestStatus, fetchPostTestStatus, loading: postTestLoading } = usePostTestStore();
+  const { startQuizSession, loading: quizLoading } = useExamStore();
+  const [weekendClass, setWeekendClass] = useState(null);
+  const [currentWeek, setCurrentWeek] = useState(null);
+  const [error, setError] = useState(null);
 
   const today = new Date();
   const dayName = getDayName(today);
   const isWeekend = dayName === "Saturday" || dayName === "Sunday";
 
   useEffect(() => {
-    if (!isWeekend) {
-      fetchTodayActivity();
-    }
-  }, [isWeekend, fetchTodayActivity]);
+    fetchPostTestStatus();
+  }, [fetchPostTestStatus]);
 
-  function handleStartChallenge() {
-    if (challenge?._id) {
-      navigate(`/dashboard/quiz-session?activityId=${challenge._id}`);
-    } else {
-      navigate("/dashboard/subjects");
+  useEffect(() => {
+    if (activePlan?.weeks) {
+      const current = activePlan.weeks.find((week) => {
+        const start = new Date(week.startDate);
+        const end = new Date(week.endDate);
+        return today >= start && today <= end;
+      });
+      setCurrentWeek(current);
+    }
+  }, [activePlan]);
+
+  useEffect(() => {
+    if (isWeekend) {
+      const fetchClass = async () => {
+        try {
+          const data = await weekendClassService.getUpcomingClass();
+          setWeekendClass(data);
+        } catch (error) {
+          if (process.env.NODE_ENV === "development") {
+            console.error("Failed to fetch weekend class", error);
+          }
+        }
+      };
+      fetchClass();
+    }
+  }, [isWeekend]);
+
+  async function handleStartQuiz() {
+    if (!currentWeek) return;
+    
+    try {
+      setError(null);
+      
+      const previousWeekPostTest = postTestStatus.find(
+        (s) => s.weekNumber === currentWeek.weekNumber - 1 && s.completed
+      );
+      
+      const currentWeekPostTest = postTestStatus.find(
+        (s) => s.weekNumber === currentWeek.weekNumber && s.completed
+      );
+
+      if (!currentWeekPostTest) {
+        await startQuizSession({
+          mode: "post-test",
+          weekNumber: currentWeek.weekNumber,
+        });
+      } else if (currentWeek.weekNumber === 1 || previousWeekPostTest) {
+        await startQuizSession({
+          mode: "assessment",
+          currentWeekNumber: currentWeek.weekNumber,
+        });
+      } else {
+        setError("Please complete the previous week's post-test first");
+        return;
+      }
+      
+      navigate("/dashboard/quiz-session");
+    } catch (err) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Start quiz error:", err);
+      }
+      setError(err.message || "Failed to start quiz");
     }
   }
 
-  if (loading) {
-    return <div className="h-48 animate-pulse rounded-lg bg-gray-200"></div>;
+  if (postTestLoading || dashboardLoading || !activePlan) {
+    return <div className="h-48 animate-pulse rounded-lg bg-gray-300"></div>;
   }
 
   if (isWeekend) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
-        <div className="flex items-center gap-3">
+      <div className="rounded-lg border border-gray-300 bg-gray-50 p-6">
+        <div className="mb-4 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-            <Calendar className="h-6 w-6 text-gray-400" />
+            <Target className="h-6 w-6 text-gray-400" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Weekend Class</h3>
-            <p className="text-sm text-gray-500">Enjoy your class today</p>
+            <p className="text-sm text-gray-500">Weekend class schedule</p>
           </div>
         </div>
+        {weekendClass ? (
+          <div className="rounded-lg border border-gray-300 bg-white p-4">
+            <h4 className="font-bold text-gray-900">{weekendClass.topic}</h4>
+            <p className="mb-2 text-sm text-gray-600">{weekendClass.description}</p>
+            <div className="mb-3 flex items-center gap-4 text-sm text-gray-500">
+              <span>{weekendClass.startTime} - {weekendClass.endTime}</span>
+            </div>
+            {weekendClass.meetingLink && (
+              <a 
+                href={weekendClass.meetingLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-block w-full rounded-lg bg-black px-4 py-2 text-center text-sm font-semibold text-white hover:bg-gray-800"
+              >
+                Join Class
+              </a>
+            )}
+          </div>
+        ) : (
+          <div className="py-4 text-center text-gray-500">
+            No class scheduled for today.
+          </div>
+        )}
       </div>
     );
   }
 
-  if (error) {
+  if (!currentWeek) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="rounded-lg border border-gray-300 bg-white p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-            <Calendar className="h-6 w-6 text-gray-900" />
+            <Target className="h-6 w-6 text-gray-900" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Daily Challenge</h3>
-            <p className="text-sm text-gray-500">Unable to load challenge</p>
+            <h3 className="text-lg font-semibold text-gray-900">Daily Practice</h3>
+            <p className="text-sm text-gray-500">No active week</p>
           </div>
         </div>
-        <button
-          onClick={fetchTodayActivity}
-          className="mt-4 w-full rounded-lg border border-gray-200 px-6 py-3 font-semibold text-gray-900 transition-colors hover:bg-gray-50"
-        >
-          Try Again
-        </button>
       </div>
     );
   }
 
-  const challengeType = getChallengeTypeForDay(dayName);
-  const isCompleted = challenge?.userStatus === "completed" || challenge?.userStatus === "perfect";
-  const isInProgress = challenge?.userStatus === "in_progress";
-  const progress = challenge?.answered || 0;
-  const total = challenge?.questionCount || parseInt(challengeType.desc.match(/\d+/)?.[0] || "15");
+  const previousWeekPostTest = postTestStatus.find(
+    (s) => s.weekNumber === currentWeek.weekNumber - 1 && s.completed
+  );
+  
+  const currentWeekPostTest = postTestStatus.find(
+    (s) => s.weekNumber === currentWeek.weekNumber && s.completed
+  );
+
+  const isPostTestCompleted = !!currentWeekPostTest;
+  const canAccessDailyPractice = currentWeek.weekNumber === 1 || previousWeekPostTest;
+  const showPostTest = !isPostTestCompleted;
+  const showDailyPractice = isPostTestCompleted && canAccessDailyPractice;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-black">
-            <Calendar className="h-6 w-6 text-white" />
+            <Target className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{dayName}'s Challenge</h3>
-            <p className="text-sm text-gray-500">{challengeType.title}</p>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {showPostTest ? "Post-Test" : "Daily Practice"}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {showPostTest ? "Complete this week's assessment" : "Mixed review questions"}
+            </p>
           </div>
         </div>
-        {!isCompleted && (
+        {!isPostTestCompleted && (
           <div className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1">
             <Trophy className="h-4 w-4 text-gray-900" />
-            <span className="text-sm font-semibold text-gray-900">+{challengeType.xp} XP</span>
+            <span className="text-sm font-semibold text-gray-900">+30 XP</span>
           </div>
         )}
       </div>
 
-      <p className="mb-4 text-gray-600">{challengeType.desc}</p>
-
-      {isCompleted ? (
-        <div className="rounded-lg bg-green-50 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-green-800">Challenge Completed</p>
-              <p className="text-sm text-green-600">Score: {challenge?.score || 0}%</p>
-            </div>
-            <div className="rounded-full bg-green-100 px-3 py-1">
-              <span className="text-sm font-semibold text-green-700">+{challengeType.xp} XP</span>
-            </div>
-          </div>
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          {error}
         </div>
-      ) : isInProgress ? (
+      )}
+
+      {showPostTest ? (
         <>
-          <div className="mb-4">
-            <div className="mb-2 flex items-center justify-between text-sm">
-              <span className="text-gray-600">Progress</span>
-              <span className="font-semibold text-gray-900">
-                {progress}/{total}
-              </span>
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-              <div className="h-full bg-black transition-all" style={{ width: `${(progress / total) * 100}%` }} />
-            </div>
+          <p className="mb-4 text-gray-600">
+            30 questions covering this week's class topics
+          </p>
+          <button
+            onClick={handleStartQuiz}
+            disabled={quizLoading}
+            className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+          >
+            Start Post-Test
+          </button>
+        </>
+      ) : showDailyPractice ? (
+        <>
+          <p className="mb-4 text-gray-600">
+            20 questions reviewing previous weeks and key concepts
+          </p>
+          <div className="mb-4 flex items-center gap-2 rounded-lg bg-green-50 p-3">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <span className="text-sm font-medium text-green-800">Post-Test Completed</span>
           </div>
           <button
-            onClick={handleStartChallenge}
-            className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800"
+            onClick={handleStartQuiz}
+            disabled={quizLoading}
+            className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
           >
-            Continue Challenge
+            Start Daily Practice
           </button>
         </>
       ) : (
-        <button
-          onClick={handleStartChallenge}
-          className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800"
-        >
-          Start Challenge
-        </button>
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center">
+          <p className="text-sm font-medium text-yellow-800">
+            Complete the previous week's Post-Test to unlock Daily Practice
+          </p>
+        </div>
       )}
     </div>
   );

@@ -10,7 +10,9 @@
 		"prod": "node server.js",
 		"db:check": "node -e \"import('./src/utils/MongoHelper.js').then(m => console.log(m.default.generateStartupInstructions()))\"",
 		"health": "curl -s http://localhost:5000/api/health | node -p 'JSON.parse(require(\"fs\").readFileSync(0, \"utf8\")).database.status'",
-		"seed:admin": "node src/scripts/adminSeed.js",
+		"seed": "node src/scripts/seed.js",
+    "seed:comprehensive": "node src/scripts/seed_comprehensive.js",
+    "seed:admin": "node src/scripts/adminSeed.js",
 		"db:seed:admin": "node src/scripts/adminSeed.js",
 		"db:seed": "node src/scripts/seed.js",
 		"test": "echo \"Error: no test specified\" && exit 1"

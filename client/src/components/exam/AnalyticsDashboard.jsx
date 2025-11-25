@@ -56,7 +56,7 @@ function AnalyticsDashboard() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-gray-500">Loading analytics...</div>
+      <div className="text-gray-500">Loading data...</div>
       </div>
     );
   }
@@ -73,7 +73,7 @@ function AnalyticsDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8">
       <div className="mx-auto max-w-7xl px-4">
         <h1 className="mb-8 text-3xl font-bold text-gray-900">
-          Performance Analytics
+          Analytics Dashboard
         </h1>
 
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -81,7 +81,7 @@ function AnalyticsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-500">
-                  OVERALL ACCURACY
+                  Overall Accuracy
                 </p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {overallAccuracy}%
@@ -97,7 +97,7 @@ function AnalyticsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-500">
-                  EXAM READINESS
+                  Exam Readiness
                 </p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {readiness.readinessScore || 0}%
@@ -112,7 +112,7 @@ function AnalyticsDashboard() {
           <div className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-500">AVG TIME</p>
+                <p className="text-sm font-semibold text-gray-500">Average Time</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {readiness.avgTimePerQuestion || 0}s
                 </p>
@@ -126,7 +126,7 @@ function AnalyticsDashboard() {
           <div className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-500">STREAK</p>
+                <p className="text-sm font-semibold text-gray-500">Study Streak</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {readiness.currentStreak || 0} days
                 </p>

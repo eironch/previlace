@@ -14,6 +14,18 @@ const userQuestionHistorySchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    subject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subject",
+      required: true,
+      index: true,
+    },
+    topic: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Topic",
+      required: true,
+      index: true,
+    },
     attempts: [
       {
         sessionId: {

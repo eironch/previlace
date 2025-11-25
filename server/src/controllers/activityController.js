@@ -44,9 +44,41 @@ export async function getActivitiesByWeek(req, res) {
         ua => ua.activityId.toString() === activity._id.toString()
       );
 
+      let status = userActivity?.status || "locked";
+
+      // Check prerequisites (Optional now, as per request to remove restrictions)
+      // if (activity.prerequisiteActivities && activity.prerequisiteActivities.length > 0) {
+      //   const prerequisitesMet = activity.prerequisiteActivities.every(prereqId => {
+      //     const prereqUserActivity = userActivities.find(ua => ua.activityId.toString() === prereqId.toString());
+      //     return prereqUserActivity && (prereqUserActivity.status === "completed" || prereqUserActivity.status === "perfect");
+      //   });
+      //
+      //   if (!prerequisitesMet) {
+      //     status = "locked";
+      //   } else if (!userActivity) {
+      //      status = "available"; 
+      //   }
+      // } else if (!userActivity) {
+      //     status = "available";
+      // }
+      
+      if (!userActivity) {
+          status = "available";
+      }
+
+      // Special logic for Mock Pretest (Week 0)
+      if (activity.activityType === "mock_pretest") {
+          // If user has any activity completed in Week 1 or later, expire pretest
+          // For now, simple check: if weekNumber > 0 is active/completed
+          // This might need a separate query, but for now let's assume if they are viewing Week 0, they can see it.
+          // But if they are viewing Week 0 and have Week 1 progress, it should be expired.
+          // Let's keep it simple: if status is not completed and they have progressed, maybe expire?
+          // For now, just return as is. The UI/Seeder controls visibility.
+      }
+
       return {
         ...activity.toObject(),
-        userStatus: userActivity?.status || "locked",
+        userStatus: status,
         userScore: userActivity?.score,
         completed: userActivity?.completedAt,
       };
@@ -389,7 +421,7 @@ export async function getTodayActivity(req, res) {
 
     const activities = await DailyActivity.find({
       activityDate: { $gte: today, $lt: tomorrow },
-      activityType: "challenge",
+      activityType: { $in: ["challenge", "post_test", "assessment", "mock_exam", "mock_pretest"] },
     })
       .populate("subjectId", "name")
       .populate("topicIds", "name")

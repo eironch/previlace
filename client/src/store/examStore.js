@@ -41,6 +41,16 @@ const useExamStore = create((set, get) => ({
           examLevel: config.examLevel,
           questionCount: config.questionCount,
         };
+      } else if (config.mode === "assessment") {
+        endpoint = "/exam/assessment";
+        payload = {
+          currentWeekNumber: config.currentWeekNumber,
+        };
+      } else if (config.mode === "post-test") {
+        endpoint = "/exam/post-test";
+        payload = {
+          weekNumber: config.weekNumber,
+        };
       }
 
       const response = await apiClient.post(endpoint, payload);

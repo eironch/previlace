@@ -18,7 +18,7 @@ const emailService = {
 
     try {
       const info = await transporter.sendMail({
-        from: `"Civilearn Review Center" <${process.env.EMAIL_USER}>`,
+        from: `"Previlace Review Center" <${process.env.EMAIL_USER}>`,
         to,
         subject,
         html,

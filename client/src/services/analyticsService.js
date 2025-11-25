@@ -30,6 +30,16 @@ export const getStudentAnalytics = async () => {
   return response.data;
 };
 
+export const getWeeklyProgress = async () => {
+  const response = await api.get('/analytics/weekly-progress');
+  return response.data;
+};
+
+export const getSubjectWeeklyProgress = async () => {
+  const response = await api.get('/analytics/subject-weekly-progress');
+  return response.data;
+};
+
 export default {
   getCategoryStatistics,
   getWeakAreas,
@@ -37,4 +47,6 @@ export default {
   getProgressReport,
   getPercentileRank,
   getStudentAnalytics,
+  getWeeklyProgress,
+  getSubjectWeeklyProgress,
 };

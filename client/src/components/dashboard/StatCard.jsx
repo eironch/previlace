@@ -16,18 +16,18 @@ function StatCard({ title, value, unit, icon: Icon, onClick, navigateTo }) {
   return (
     <div 
       onClick={handleClick}
-      className={`rounded-lg border border-gray-200 bg-white p-6 shadow-sm ${
+      className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm ${
         isClickable ? "cursor-pointer transition-all hover:border-black hover:shadow-lg" : ""
       }`}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
-          <p className="text-xs text-gray-500">{unit}</p>
+          <p className="text-xs font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-[10px] text-gray-500">{unit}</p>
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-          <Icon className="h-6 w-6 text-gray-900" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+          <Icon className="h-5 w-5 text-gray-900" />
         </div>
       </div>
     </div>

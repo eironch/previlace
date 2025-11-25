@@ -18,8 +18,8 @@ export default function AuthModal() {
 	};
 
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-			<div className="bg-white rounded-lg shadow-lg w-full max-w-md relative">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+			<div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
 				<button
 					onClick={closeAuthModal}
 					className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 z-10"
