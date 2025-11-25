@@ -356,6 +356,38 @@ const exportUsers = catchAsync(async (req, res) => {
   });
 });
 
+const createUser = catchAsync(async (req, res) => {
+  const { email, firstName, lastName, password, role = "student" } = req.body;
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new AppError("Email already in use", 400);
+  }
+
+  const user = await User.create({
+    email,
+    firstName,
+    lastName,
+    password,
+    role,
+    isEmailVerified: true,
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "User account created successfully",
+    data: {
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    },
+  });
+});
+
 const createInstructor = catchAsync(async (req, res) => {
   const { email, firstName, lastName, password, subjects } = req.body;
 
@@ -434,6 +466,7 @@ export default {
   getUserActivity,
   searchUsers,
   exportUsers,
+  createUser,
   createInstructor,
   getInstructors,
 };

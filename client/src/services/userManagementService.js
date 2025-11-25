@@ -41,6 +41,11 @@ const userManagementService = {
     });
     return response.data;
   },
+
+  async createUser(userData) {
+    const response = await apiClient.post("/admin/users", userData);
+    return response.data;
+  },
 };
 
 export default userManagementService;

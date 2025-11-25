@@ -9,11 +9,16 @@ import {
   TrendingUp,
   AlertCircle,
   RefreshCw,
+  LayoutDashboard,
+  FileText,
+  CheckSquare,
+  Layout
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import UserManagement from "../components/admin/UserManagement";
 import QuestionBankManager from "../components/questionBank/QuestionBankManager";
 import ReviewQueuePage from "./admin/ReviewQueuePage";
+import LandingPageManager from "../components/admin/LandingPageManager";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -24,6 +29,10 @@ function AdminPage() {
   const [recentUsers, setRecentUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
 
   async function fetchAdminData() {
     setIsLoading(true);
@@ -66,7 +75,7 @@ function AdminPage() {
 
   const optimizedStats = useMemo(() => {
     if (!stats?.overview) return null;
-    
+
     const current = stats.overview;
     const previous = stats.previousMonth || {
       totalUsers: Math.max(0, Math.floor(current.totalUsers * 0.85)),
@@ -114,17 +123,26 @@ function AdminPage() {
     fetchAdminData();
   }
 
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "users", label: "User Management", icon: Users },
+    { id: "questionbank", label: "Question Bank", icon: BookOpen },
+    { id: "review", label: "Review Queue", icon: CheckSquare },
+    { id: "landing", label: "Landing Page", icon: Layout },
+  ];
+
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-black"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-black"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
           <h1 className="mb-2 text-xl font-bold text-black">
@@ -143,170 +161,223 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-black">
-              Admin Dashboard
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Monitor system performance and user engagement
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
+    <div className="flex min-h-screen bg-gray-50 relative">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`w-64 bg-white border-r border-gray-200 fixed h-full z-30 flex flex-col transition-transform duration-300 ease-in-out 
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} 
+          ${isDesktopSidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'}`}
+      >
+        <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-black flex items-center gap-2">
+            <Activity className="h-6 w-6" />
+            Admin Panel
+          </h1>
+          <div className="flex items-center">
             <button
-              onClick={handleRefresh}
-              className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              onClick={() => setIsDesktopSidebarOpen(false)}
+              className="hidden lg:block text-gray-500 hover:text-gray-700 mr-2"
+              title="Collapse Sidebar"
             >
-              <RefreshCw className="h-4 w-4" />
-              <span>Refresh</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
             </button>
-            <div className="text-right">
-              <p className="text-sm font-medium text-black">
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden text-gray-500 hover:text-gray-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id
+                  ? "bg-black text-white"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center space-x-3 mb-4 px-2">
+            <div className="h-8 w-8 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
+              {user?.firstName?.[0]}{user?.lastName?.[0]}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium text-black truncate">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-xs text-gray-500">{user?.email}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center justify-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className={`flex-1 p-4 sm:p-8 w-full transition-all duration-300 ${isDesktopSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}`}>
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+              <div className="flex items-center gap-4">
+                {/* Desktop Open Button - Only visible when sidebar is closed */}
+                {!isDesktopSidebarOpen && (
+                  <button
+                    onClick={() => setIsDesktopSidebarOpen(true)}
+                    className="hidden lg:block p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                    title="Expand Sidebar"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
+
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {navItems.find(item => item.id === activeTab)?.label}
+                  </h2>
+                  <p className="text-gray-500 mt-1 text-sm sm:text-base">
+                    {activeTab === 'dashboard' && 'Overview of system performance and key metrics'}
+                    {activeTab === 'analytics' && 'Detailed analysis of user behavior and exam data'}
+                    {activeTab === 'users' && 'Manage user accounts, roles, and permissions'}
+                    {activeTab === 'questionbank' && 'Create and manage exam questions and categories'}
+                    {activeTab === 'review' && 'Review and approve submitted content'}
+                    {activeTab === 'landing' && 'Manage landing page content and testimonials'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="lg:hidden p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
             </div>
             <button
-              onClick={handleSignOut}
-              className="flex items-center space-x-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+              onClick={handleRefresh}
+              className="hidden sm:flex items-center justify-center space-x-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm"
             >
-              <LogOut className="h-4 w-4" />
-              <span>Sign Out</span>
+              <RefreshCw className="h-4 w-4" />
+              <span>Refresh Data</span>
             </button>
+          </div>
+
+          {/* Content Area */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[600px] p-6">
+            {activeTab === "dashboard" && (
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  <StatsCard
+                    title="Total Users"
+                    value={optimizedStats?.totalUsers || 0}
+                    icon={Users}
+                    change={optimizedStats?.growth?.totalUsers || 0}
+                  />
+                  <StatsCard
+                    title="Active Learners"
+                    value={optimizedStats?.activeLearners || 0}
+                    icon={BookOpen}
+                    change={optimizedStats?.growth?.activeLearners || 0}
+                  />
+                  <StatsCard
+                    title="Complete Profiles"
+                    value={optimizedStats?.completedProfiles || 0}
+                    icon={TrendingUp}
+                    change={optimizedStats?.growth?.completedProfiles || 0}
+                  />
+                  <StatsCard
+                    title="Active Students"
+                    value={optimizedStats?.activeStudents || 0}
+                    icon={Activity}
+                    change={optimizedStats?.growth?.activeStudents || 0}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <ExamTypeChart data={stats?.examTypes || []} />
+                  <EducationChart data={stats?.education || []} />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <RecentUsers users={recentUsers} />
+                  <RegistrationTrend data={stats?.monthlyRegistrations || []} />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <StrugglesChart data={stats?.struggles || []} />
+                </div>
+              </div>
+            )}
+
+            {activeTab === "analytics" && (
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <h3 className="mb-4 text-lg font-semibold text-black">
+                      Performance Analytics
+                    </h3>
+                    <p className="text-gray-500">
+                      Detailed performance metrics and insights coming soon.
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <h3 className="mb-4 text-lg font-semibold text-black">
+                      Learning Patterns
+                    </h3>
+                    <p className="text-gray-500">
+                      User learning behavior analysis coming soon.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "users" && <UserManagement />}
+
+            {activeTab === "questionbank" && <QuestionBankManager />}
+
+            {activeTab === "review" && <ReviewQueuePage />}
+
+            {activeTab === "landing" && <LandingPageManager />}
           </div>
         </div>
-
-        <div className="mb-8 border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "dashboard"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "analytics"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              Performance Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab("users")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "users"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              User Management
-            </button>
-            <button
-              onClick={() => setActiveTab("questionbank")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "questionbank"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              Question Bank
-            </button>
-            <button
-              onClick={() => setActiveTab("review")}
-              className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
-                activeTab === "review"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              Review
-            </button>
-          </nav>
-        </div>
-
-        {activeTab === "dashboard" && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <StatsCard
-                title="Total Users"
-                value={optimizedStats?.totalUsers || 0}
-                icon={Users}
-                change={optimizedStats?.growth?.totalUsers || 0}
-              />
-              <StatsCard
-                title="Active Learners"
-                value={optimizedStats?.activeLearners || 0}
-                icon={BookOpen}
-                change={optimizedStats?.growth?.activeLearners || 0}
-              />
-              <StatsCard
-                title="Complete Profiles"
-                value={optimizedStats?.completedProfiles || 0}
-                icon={TrendingUp}
-                change={optimizedStats?.growth?.completedProfiles || 0}
-              />
-              <StatsCard
-                title="Active Students"
-                value={optimizedStats?.activeStudents || 0}
-                icon={Activity}
-                change={optimizedStats?.growth?.activeStudents || 0}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <ExamTypeChart data={stats?.examTypes || []} />
-              <EducationChart data={stats?.education || []} />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <RecentUsers users={recentUsers} />
-              <RegistrationTrend data={stats?.monthlyRegistrations || []} />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <StrugglesChart data={stats?.struggles || []} />
-            </div>
-          </div>
-        )}
-
-        {activeTab === "analytics" && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-black">
-                  Performance Analytics
-                </h3>
-                <p className="text-gray-500">
-                  Detailed performance metrics and insights coming soon.
-                </p>
-              </div>
-              <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-black">
-                  Learning Patterns
-                </h3>
-                <p className="text-gray-500">
-                  User learning behavior analysis coming soon.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "users" && <UserManagement />}
-
-        {activeTab === "questionbank" && <QuestionBankManager />}
-
-        {activeTab === "review" && <ReviewQueuePage />}
-      </div>
+      </main>
     </div>
   );
 }

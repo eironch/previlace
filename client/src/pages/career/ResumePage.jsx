@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Mail, Phone, Linkedin, Briefcase, BookOpen, User, Zap, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import resumeService from '../../services/resumeService';
 
 // --- Configuration Data ---
 let idCounter = 0;
@@ -31,63 +33,63 @@ const initialCVData = {
 
 // Step 1: Personal Details Form
 const PersonalDetailsForm = ({ data, updateField }) => {
-    return (
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-          <User className="w-5 h-5 mr-2 text-gray-900"/> Personal Details
-        </h3>
-        <input
-          type="text"
-          placeholder="Full Name (e.g., Jane M. Doe)"
-          value={data.name}
-          onChange={(e) => updateField('name', e.target.value)}
-          className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150"
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email Address"
-          value={data.email}
-          onChange={(e) => updateField('email', e.target.value)}
-          className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150"
-          required
-        />
-        <input
-          type="tel"
-          placeholder="Phone Number"
-          value={data.phone}
-          onChange={(e) => updateField('phone', e.target.value)}
-          className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150"
-        />
-        <input
-          type="url"
-          placeholder="LinkedIn Profile URL (Optional)"
-          value={data.linkedin}
-          onChange={(e) => updateField('linkedin', e.target.value)}
-          className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150"
-        />
-      </div>
-    );
+  return (
+    <div className="space-y-4">
+      <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+        <User className="w-5 h-5 mr-2 text-gray-900" /> Personal Details
+      </h3>
+      <input
+        type="text"
+        placeholder="Full Name (e.g., Jane M. Doe)"
+        value={data.name}
+        onChange={(e) => updateField('name', e.target.value)}
+        className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150"
+        required
+      />
+      <input
+        type="email"
+        placeholder="Email Address"
+        value={data.email}
+        onChange={(e) => updateField('email', e.target.value)}
+        className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150"
+        required
+      />
+      <input
+        type="tel"
+        placeholder="Phone Number"
+        value={data.phone}
+        onChange={(e) => updateField('phone', e.target.value)}
+        className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150"
+      />
+      <input
+        type="url"
+        placeholder="LinkedIn Profile URL (Optional)"
+        value={data.linkedin}
+        onChange={(e) => updateField('linkedin', e.target.value)}
+        className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150"
+      />
+    </div>
+  );
 };
 
 // Step 2: Professional Summary Form
 const SummaryForm = ({ data, updateField }) => {
-    return (
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-          <Zap className="w-5 h-5 mr-2 text-gray-900"/> Professional Summary
-        </h3>
-        <p className="text-sm text-gray-500">A concise, powerful paragraph (3-4 sentences) highlighting your key achievements and career goals.</p>
-        <textarea
-          placeholder="E.g., Highly motivated marketing professional with 5+ years of experience in B2B SaaS, specializing in demand generation and SEO..."
-          value={data.summary}
-          onChange={(e) => updateField('summary', e.target.value)}
-          rows="6"
-          className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150 resize-y"
-          required
-        />
-      </div>
-    );
+  return (
+    <div className="space-y-4">
+      <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+        <Zap className="w-5 h-5 mr-2 text-gray-900" /> Professional Summary
+      </h3>
+      <p className="text-sm text-gray-500">A concise, powerful paragraph (3-4 sentences) highlighting your key achievements and career goals.</p>
+      <textarea
+        placeholder="E.g., Highly motivated marketing professional with 5+ years of experience in B2B SaaS, specializing in demand generation and SEO..."
+        value={data.summary}
+        onChange={(e) => updateField('summary', e.target.value)}
+        rows="6"
+        className="p-3 border border-gray-300 rounded-lg w-full focus:ring-gray-900 focus:border-gray-900 transition duration-150 resize-y"
+        required
+      />
+    </div>
+  );
 };
 
 // Step 3: Education Form
@@ -104,7 +106,7 @@ const EducationForm = ({ data, addItem, deleteItem }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-        <BookOpen className="w-5 h-5 mr-2 text-gray-900"/> Education History
+        <BookOpen className="w-5 h-5 mr-2 text-gray-900" /> Education History
       </h3>
 
       <div className="bg-white p-4 border border-gray-400 rounded-lg space-y-3">
@@ -121,18 +123,18 @@ const EducationForm = ({ data, addItem, deleteItem }) => {
           className="p-2 border border-gray-300 rounded-lg w-full text-sm"
         />
         <div className='flex space-x-2'>
-            <input
+          <input
             placeholder="Graduation Year (e.g., 2020)"
             value={newItem.year}
             onChange={(e) => setNewItem({ ...newItem, year: e.target.value })}
             className="p-2 border border-gray-300 rounded-lg w-1/3 text-sm"
-            />
-            <input
+          />
+          <input
             placeholder="City, Country"
             value={newItem.details}
             onChange={(e) => setNewItem({ ...newItem, details: e.target.value })}
             className="p-2 border border-gray-300 rounded-lg w-2/3 text-sm"
-            />
+          />
         </div>
         <button
           onClick={handleAdd}
@@ -176,7 +178,7 @@ const ExperienceForm = ({ data, addItem, deleteItem }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-        <Briefcase className="w-5 h-5 mr-2 text-gray-900"/> Work Experience
+        <Briefcase className="w-5 h-5 mr-2 text-gray-900" /> Work Experience
       </h3>
 
       <div className="bg-white p-4 border border-gray-400 rounded-lg space-y-3">
@@ -252,7 +254,7 @@ const SkillsForm = ({ data, setSkills }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-        <Zap className="w-5 h-5 mr-2 text-gray-900"/> Key Skills
+        <Zap className="w-5 h-5 mr-2 text-gray-900" /> Key Skills
       </h3>
       <p className="text-sm text-gray-500">Add 3-5 key skills or technologies, separated by categories if helpful.</p>
       <div className="flex space-x-2">
@@ -300,8 +302,8 @@ const HarvardCV = ({ data }) => {
     // Split by newline and filter out empty lines
     const lines = text.split('\n').filter(line => line.trim() !== '');
     return lines.map(line => {
-        // Remove common bullet point characters like *, -, or digits with a dot/space at the start
-        return line.trim().replace(/^[\*\-\d\.]\s*/, '');
+      // Remove common bullet point characters like *, -, or digits with a dot/space at the start
+      return line.trim().replace(/^[\*\-\d\.]\s*/, '');
     });
   };
 
@@ -339,7 +341,7 @@ const HarvardCV = ({ data }) => {
         <p className="font-semibold text-lg">Live CV Preview</p>
         <p className="text-sm mt-2">Start filling out the questionnaire to see your CV instantly generate here.</p>
         <div className="mt-4 text-xs text-gray-400">
-            [Layout: Full Name, Contact Info, Sections...]
+          [Layout: Full Name, Contact Info, Sections...]
         </div>
       </div>
     );
@@ -347,7 +349,7 @@ const HarvardCV = ({ data }) => {
 
 
   return (
-    <div className="bg-white p-6 shadow-xl max-w-full lg:max-w-4xl mx-auto my-0 rounded-lg overflow-x-auto print:shadow-none print:border-none sticky top-4">
+    <div className="resume-preview bg-white p-6 shadow-xl max-w-full lg:max-w-4xl mx-auto my-0 rounded-lg overflow-x-auto print:shadow-none print:border-none sticky top-4">
       <div className="p-4 border border-gray-300 rounded-md print:border-none">
         {/* Header - Name */}
         <h1 className="text-4xl font-extrabold text-gray-900 text-center uppercase tracking-wider">
@@ -431,99 +433,150 @@ const HarvardCV = ({ data }) => {
 };
 
 // Mobile Preview Modal Component
-const MobileCVPreviewModal = ({ data, onClose }) => { 
-    return (
-        <div className="fixed inset-0 z-[60] bg-white lg:hidden overflow-y-auto p-4 sm:p-8">
-            <div className="sticky top-0 bg-white z-50 pt-2 pb-4 flex justify-between items-center border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-gray-900">CV Preview</h2>
-                <button 
-                    onClick={onClose} 
-                    className="p-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 transition"
-                    aria-label="Close Preview"
-                >
-                    <X className="w-5 h-5" />
-                </button>
-            </div>
-            {/* Render the full CV inside the modal */}
-            <div className="mt-4">
-                <HarvardCV data={data} />
-            </div>
-        </div>
-    );
+const MobileCVPreviewModal = ({ data, onClose }) => {
+  return (
+    <div className="fixed inset-0 z-[60] bg-white lg:hidden overflow-y-auto p-4 sm:p-8">
+      <div className="sticky top-0 bg-white z-50 pt-2 pb-4 flex justify-between items-center border-b border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-900">CV Preview</h2>
+        <button
+          onClick={onClose}
+          className="p-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 transition"
+          aria-label="Close Preview"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+      {/* Render the full CV inside the modal */}
+      <div className="mt-4">
+        <HarvardCV data={data} />
+      </div>
+    </div>
+  );
 };
 
 
 // --- Main Application Component ---
 
 const App = () => {
-  // 1. Initialize state from localStorage or initial data
-  const [cvData, setCvData] = useState(() => {
-    try {
-      const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (localData) {
-        // Only load if localData is not null/undefined/empty string
-        const parsedData = JSON.parse(localData);
-        // We ensure mandatory array fields are arrays if they somehow got corrupted
-        if (parsedData) {
-            return {
-                ...initialCVData,
-                ...parsedData,
-                education: Array.isArray(parsedData.education) ? parsedData.education : [],
-                experience: Array.isArray(parsedData.experience) ? parsedData.experience : [],
-                skills: Array.isArray(parsedData.skills) ? parsedData.skills : [],
-            };
-        }
-      }
-    } catch (e) {
-      console.error("Error loading CV data from localStorage", e);
-      // Fallback to initial empty structure if parsing fails
-    }
-    return initialCVData;
-  });
+  // 1. Initialize state
+  const [cvData, setCvData] = useState(initialCVData);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // 2. Sync state to localStorage whenever cvData changes
+  // Load data from API on mount
   useEffect(() => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cvData));
-    } catch (e) {
-      console.error("Error saving CV data to localStorage", e);
-    }
-  }, [cvData]);
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const resume = await resumeService.getMyResume();
 
+        if (resume) {
+          // Map backend data to frontend structure
+          setCvData({
+            name: resume.personalInfo?.name || '',
+            email: resume.personalInfo?.email || '',
+            phone: resume.personalInfo?.phone || '',
+            linkedin: resume.personalInfo?.linkedin || '',
+            summary: resume.personalInfo?.summary || '',
+            education: resume.education || [],
+            experience: resume.experience || [],
+            skills: resume.skills || [],
+          });
+        }
+      } catch (error) {
+        console.error("Error loading resume data:", error);
+        // Fallback to localStorage if API fails
+        try {
+          const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (localData) {
+            const parsedData = JSON.parse(localData);
+            if (parsedData) {
+              setCvData(prev => ({ ...prev, ...parsedData }));
+            }
+          }
+        } catch (e) {
+          console.error("Error loading from local storage", e);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Debounced save to API
+  useEffect(() => {
+    // Skip initial load or empty data if we want
+    if (isLoading) return;
+
+    const saveData = async () => {
+      try {
+        setIsSaving(true);
+
+        // Map frontend structure to backend structure
+        const backendData = {
+          personalInfo: {
+            name: cvData.name,
+            email: cvData.email,
+            phone: cvData.phone,
+            linkedin: cvData.linkedin,
+            summary: cvData.summary,
+          },
+          education: cvData.education,
+          experience: cvData.experience,
+          skills: cvData.skills,
+        };
+
+        await resumeService.updateResume(backendData);
+
+        // Also save to localStorage as backup
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cvData));
+      } catch (error) {
+        console.error("Error saving resume data:", error);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    const timeoutId = setTimeout(saveData, 2000); // Auto-save after 2 seconds of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [cvData, isLoading]);
 
   // Local UI state (steps, modal visibility)
   const [step, setStep] = useState(0);
-  const [showMobilePreview, setShowMobilePreview] = useState(false); 
-  
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
+
   // 3. Data update handlers (pass these down)
   const updateField = useCallback((field, value) => {
-      setCvData(prev => ({ ...prev, [field]: value }));
+    setCvData(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const addItem = useCallback((collection, item) => {
-      setCvData(prev => ({
-          ...prev,
-          [collection]: [...prev[collection], { ...item, id: generateId() }],
-      }));
+    setCvData(prev => ({
+      ...prev,
+      [collection]: [...prev[collection], { ...item, id: generateId() }],
+    }));
   }, []);
 
   const deleteItem = useCallback((collection, id) => {
-      setCvData(prev => ({
-          ...prev,
-          [collection]: prev[collection].filter(item => item.id !== id),
-      }));
+    setCvData(prev => ({
+      ...prev,
+      [collection]: prev[collection].filter(item => item.id !== id),
+    }));
   }, []);
 
   const setSkills = useCallback((skillsArray) => {
-      setCvData(prev => ({ ...prev, skills: skillsArray }));
+    setCvData(prev => ({ ...prev, skills: skillsArray }));
   }, []);
 
   // --- Check to determine if user can proceed to the next step ---
   const canProceed = useCallback(() => {
     // Cannot proceed if already on the final step
-    if (step === STEPS.length - 1) return false; 
+    if (step === STEPS.length - 1) return false;
 
-    switch(step) {
+    switch (step) {
       case 0: // Personal Details: Requires Name and Email
         return cvData.name.trim() !== '' && cvData.email.trim() !== '';
       case 1: // Professional Summary: Requires Summary
@@ -542,9 +595,9 @@ const App = () => {
   const handleNext = () => {
     // Only move forward if canProceed is true (this is checked by the button's disabled state)
     if (canProceed()) {
-        setStep(prev => Math.min(prev + 1, STEPS.length - 1));
+      setStep(prev => Math.min(prev + 1, STEPS.length - 1));
     } else {
-        console.warn("Required fields are empty. Cannot proceed.");
+      console.warn("Required fields are empty. Cannot proceed.");
     }
   };
 
@@ -576,7 +629,7 @@ const App = () => {
               onClick={() => window.print()}
               className="mt-4 bg-gray-900 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 shadow-md flex items-center"
             >
-              <Briefcase className="w-4 h-4 mr-2"/> Print/Export to PDF
+              <Briefcase className="w-4 h-4 mr-2" /> Print/Export to PDF
             </button>
           </div>
         );
@@ -584,48 +637,57 @@ const App = () => {
         return null;
     }
   };
-  
+
   const proceedAllowed = canProceed();
   const atLastStep = step === STEPS.length - 1;
 
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8 font-['Inter'] pt-20 lg:pt-8">
-      
+
       {/* 1. New Fixed Mobile Header (Always visible on small screens) */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white shadow-md p-4 flex justify-between items-center border-b border-gray-200">
-          {/* Back Button / Navigation */}
-          <a 
-            href="/dashboard/career" 
-            className="flex items-center text-gray-700 hover:text-gray-900 transition mr-2"
-            aria-label="Return to Dashboard"
-          >
-              <ChevronLeft className="w-5 h-5" />
-          </a>
-          <h1 className="text-lg font-bold text-gray-900 flex-grow">Resume Builder</h1>
-          
-          {/* Mobile Preview Button */}
-          <button
-              onClick={() => setShowMobilePreview(true)}
-              className="bg-gray-900 text-white text-sm font-semibold p-2 px-3 rounded-lg shadow-xl hover:bg-gray-700 transition duration-150 flex items-center ml-auto"
-              aria-label="View CV Preview"
-          >
-              Preview <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
+        {/* Back Button / Navigation */}
+        <Link
+          to="/dashboard/career"
+          className="flex items-center text-gray-700 hover:text-gray-900 transition mr-2"
+          aria-label="Return to Dashboard"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </Link>
+        <h1 className="text-lg font-bold text-gray-900 flex-grow">Resume Builder</h1>
+
+        {/* Mobile Preview Button */}
+        <button
+          onClick={() => setShowMobilePreview(true)}
+          className="bg-gray-900 text-white text-sm font-semibold p-2 px-3 rounded-lg shadow-xl hover:bg-gray-700 transition duration-150 flex items-center ml-auto"
+          aria-label="View CV Preview"
+        >
+          Preview <ChevronRight className="w-4 h-4 ml-1" />
+        </button>
       </div>
 
       {/* 2. Desktop Header (Hidden on mobile) */}
-      <header className="text-center mb-8 hidden lg:block">
+      <header className="text-center mb-8 hidden lg:block relative">
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
+          <Link
+            to="/dashboard/career"
+            className="flex items-center text-gray-600 hover:text-gray-900 transition font-medium"
+          >
+            <ChevronLeft className="w-5 h-5 mr-1" /> Back to Career
+          </Link>
+        </div>
         <h1 className="text-3xl font-bold text-gray-900">Resume Builder</h1>
         <p className="text-gray-500">Data is automatically saved to your browser's local storage.</p>
+        {isSaving && <p className="text-xs text-green-600 mt-1">Saving...</p>}
       </header>
-      
+
       {/* Main Two-Column Layout (stacked on mobile) */}
       <div className="flex flex-col lg:flex-row max-w-7xl mx-auto lg:space-x-8">
-        
+
         {/* Left Column: Form and Navigation */}
         <div className="w-full lg:w-1/2 bg-white rounded-xl shadow-2xl p-6 mb-8 lg:mb-0 h-fit sticky lg:top-4">
-          
+
           {/* Progress Bar */}
           <div className="mb-6">
             <div className="flex justify-between mb-1 text-sm font-medium text-gray-700">
@@ -642,33 +704,39 @@ const App = () => {
 
           {/* Current Step Form */}
           <div className="p-4 border border-gray-100 rounded-lg">
-            {renderCurrentStep()}
+            {isLoading ? (
+              <div className="flex justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              </div>
+            ) : (
+              renderCurrentStep()
+            )}
           </div>
 
           {/* Navigation Buttons */}
           <div className={`mt-6 flex ${step === 0 ? 'justify-end' : 'justify-between'}`}>
-            
+
             {/* Previous Button (Hidden on step 0) */}
             {step > 0 && (
-                <button
+              <button
                 onClick={handleBack}
                 className={`py-2 px-4 rounded-lg transition duration-150 font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300`}
-                >
+              >
                 &larr; Previous
-                </button>
+              </button>
             )}
 
             {/* Next Button */}
             <button
               onClick={handleNext}
               // Disable if at the last step OR if the current step is incomplete
-              disabled={atLastStep || !proceedAllowed} 
+              disabled={atLastStep || !proceedAllowed}
               className={`py-2 px-4 rounded-lg transition duration-150 font-semibold shadow-md ${
                 // Apply grey style if at last step OR if proceeding is NOT allowed
-                atLastStep || !proceedAllowed 
+                atLastStep || !proceedAllowed
                   ? 'bg-gray-400 text-white cursor-not-allowed'
                   : 'bg-gray-900 hover:bg-gray-700 text-white'
-              }`}
+                }`}
             >
               {atLastStep ? 'Complete' : 'Next Step'} &rarr;
             </button>
@@ -676,11 +744,11 @@ const App = () => {
         </div>
 
         {/* Right Column: Live CV Preview (Visible on Large Screens) */}
-        <div className="w-full lg:w-1/2 hidden lg:block">
-            <HarvardCV data={cvData} /> 
+        <div className="resume-preview-container w-full lg:w-1/2 hidden lg:block">
+          <HarvardCV data={cvData} />
         </div>
       </div>
-      
+
       {/* Mobile Preview Modal */}
       {showMobilePreview && <MobileCVPreviewModal data={cvData} onClose={() => setShowMobilePreview(false)} />}
 

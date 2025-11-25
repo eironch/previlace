@@ -39,39 +39,38 @@ export default function JobBoardPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
      <div className="bg-white border-b border-gray-200">
-<div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-  
-  {/* 🚀 Top Navigation/Action Row (Upper Left & Upper Right) */}
-  <div className="flex justify-between items-center mb-6">
-    {/* Upper Left: Back Button */}
-    <button
-      onClick={() => navigate(-1)}
-      // Removed mb-6 and made styling cleaner
-      className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-    >
-      <ArrowLeft className="h-5 w-5" />
-      <span className="font-medium">Back</span>
-    </button>
-    
-    {/* Upper Right: Resume Builder Call to Action */}
-    <button
-      onClick={() => navigate("/dashboard/resume")} // Adjust the path as needed
-      className="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-grey-700 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
-    >
-      <Briefcase className="h-4 w-4 mr-2" />
-      Build My Resume
-    </button>
-  </div>
-  
-  <div className="text-center mb-6">
-    {/* Main Title and Description are now correctly centered below the action row */}
-    <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-      Find Your Dream Job
-    </h1>
-    <p className="mt-4 text-lg text-gray-600">
-      Browse hundreds of opportunities from top construction and engineering firms.
-    </p>
-  </div>
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        
+        {/* 🚀 Top Navigation/Action Row (Upper Left & Upper Right) */}
+        <div className="flex justify-between items-center mb-6">
+          {/* Upper Left: Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Back</span>
+          </button>
+          
+          {/* Upper Right: Resume Builder Call to Action */}
+          <button
+            onClick={() => navigate("/dashboard/resume")} // Adjust the path as needed
+            className="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-grey-700 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            <Briefcase className="h-4 w-4 mr-2" />
+            Build My Resume
+          </button>
+        </div>
+        
+        <div className="text-center mb-6">
+          {/* Main Title and Description are now correctly centered below the action row */}
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            Find Your Dream Job
+          </h1>
+          <p className="mt-4 text-lg text-gray-600">
+            Browse hundreds of opportunities from top construction and engineering firms.
+          </p>
+        </div>
 
           {/* Search Bar */}
           <div className="mt-8 mx-auto max-w-3xl">

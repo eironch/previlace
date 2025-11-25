@@ -15,14 +15,17 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
+  UserPlus,
 } from "lucide-react";
 import useUserManagementStore from "../../store/userManagementStore";
 import UserDetailsModal from "./UserDetailsModal";
+import UserGeneratorModal from "./UserGeneratorModal";
 import { formatDistanceToNow } from "date-fns";
 
 function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showGeneratorModal, setShowGeneratorModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   const [bulkAction, setBulkAction] = useState(null);
@@ -120,7 +123,7 @@ function UserManagement() {
     if (
       user.lastLogin &&
       new Date(user.lastLogin) >
-        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     ) {
       return (
         <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
@@ -198,6 +201,13 @@ function UserManagement() {
               <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
                 <Download className="h-4 w-4" />
                 Export
+              </button>
+              <button
+                onClick={() => setShowGeneratorModal(true)}
+                className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-white transition-colors hover:bg-gray-800"
+              >
+                <UserPlus className="h-4 w-4" />
+                Add User
               </button>
             </div>
           </div>
@@ -351,11 +361,10 @@ function UserManagement() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`rounded-full px-2 py-1 text-xs font-medium ${
-                          user.role === "admin"
-                            ? "bg-purple-100 text-purple-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${user.role === "admin"
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-blue-100 text-blue-800"
+                          }`}
                       >
                         {user.role}
                       </span>
@@ -367,8 +376,8 @@ function UserManagement() {
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {user.lastLogin
                         ? formatDistanceToNow(new Date(user.lastLogin), {
-                            addSuffix: true,
-                          })
+                          addSuffix: true,
+                        })
                         : "Never"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
@@ -494,11 +503,10 @@ function UserManagement() {
                     <button
                       key={pageNum}
                       onClick={() => setPage(pageNum)}
-                      className={`rounded border px-3 py-1.5 transition-colors ${
-                        pagination.currentPage === pageNum
-                          ? "border-blue-600 bg-blue-600 text-white"
-                          : "border-gray-300 hover:bg-gray-50"
-                      }`}
+                      className={`rounded border px-3 py-1.5 transition-colors ${pagination.currentPage === pageNum
+                        ? "border-blue-600 bg-blue-600 text-white"
+                        : "border-gray-300 hover:bg-gray-50"
+                        }`}
                     >
                       {pageNum}
                     </button>
@@ -524,6 +532,16 @@ function UserManagement() {
           onClose={() => {
             setShowDetailsModal(false);
             setSelectedUser(null);
+          }}
+        />
+      )}
+
+      {showGeneratorModal && (
+        <UserGeneratorModal
+          onClose={() => setShowGeneratorModal(false)}
+          onSuccess={() => {
+            fetchUsers();
+            // Optional: Show a success toast or notification
           }}
         />
       )}
