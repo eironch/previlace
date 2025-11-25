@@ -31,7 +31,7 @@ import MyTicketsPage from "./pages/student/MyTicketsPage";
 import TicketInboxPage from "./pages/instructor/TicketInboxPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import JobBoardPage from "./pages/career/JobBoardPage";
-import ResumeBuilderPage from "./pages/career/ResumeBuilderPage";
+import ResumePage from "./pages/career/ResumePage";
 import InterviewPrepPage from "./pages/career/InterviewPrepPage";
 import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -93,17 +93,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={
-            isAuthenticated ? (
-              user?.isProfileComplete ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Navigate to="/onboarding" replace />
-              )
-            ) : (
-              <LandingPage />
-            )
-          }
+          element={ <LandingPage />}
         />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
@@ -334,7 +324,7 @@ function App() {
           path="/dashboard/resume"
           element={
             <DashboardRoute>
-              <ResumeBuilderPage />
+              <ResumePage />
             </DashboardRoute>
           }
         />

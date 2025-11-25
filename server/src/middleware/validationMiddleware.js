@@ -21,14 +21,6 @@ export const validateRegister = [
     .withMessage("Password must be at least 8 characters")
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)
     .withMessage("Password must contain uppercase, lowercase, number, and special character"),
-  body("firstName")
-    .trim()
-    .isLength({ min: 1, max: 50 })
-    .withMessage("First name is required and must be less than 50 characters"),
-  body("lastName")
-    .trim()
-    .isLength({ min: 1, max: 50 })
-    .withMessage("Last name is required and must be less than 50 characters"),
   handleValidationErrors,
 ];
 

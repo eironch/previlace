@@ -40,10 +40,31 @@ export default function JobBoardPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-
-          <div className="text-center">
+          
+          {/* 🚀 Top Navigation/Action Row (Upper Left & Upper Right) */}
+          <div className="flex justify-between items-center mb-6">
+            {/* Upper Left: Back Button */}
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="font-medium">Back</span>
+            </button>
+            
+            {/* Upper Right: Resume Builder Call to Action */}
+            <button
+              onClick={() => navigate("/dashboard/resume")}
+              className="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-gray-800 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              <Briefcase className="h-4 w-4 mr-2" />
+              Build My Resume
+            </button>
+          </div>
+          
+          <div className="text-center mb-6">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              Find Your Dream Civil Engineering Job
+              Find Your Dream Job
             </h1>
             <p className="mt-4 text-lg text-gray-600">
               Browse hundreds of opportunities from top construction and engineering firms.

@@ -35,7 +35,7 @@ export default function Navigation() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
-            <div className="flex cursor-pointer items-center" onClick={() => navigate("/dashboard")}>
+            <div className="flex cursor-pointer items-center" onClick={() => navigate("/")}>
               <span className="text-xl font-bold text-gray-900">Previlace</span>
             </div>
 
