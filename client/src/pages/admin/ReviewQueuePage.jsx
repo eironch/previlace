@@ -91,7 +91,7 @@ function ReviewQueuePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ClipboardCheck className="h-6 w-6 text-black" />

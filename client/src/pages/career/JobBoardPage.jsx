@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Briefcase, MapPin, Filter, ArrowLeft } from "lucide-react";
+import { Search, Briefcase, MapPin, Filter } from "lucide-react";
 import { jobService } from "../../services/jobService";
 import JobCard from "../../components/career/JobCard";
 
@@ -41,21 +41,12 @@ export default function JobBoardPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           
-          {/* 🚀 Top Navigation/Action Row (Upper Left & Upper Right) */}
-          <div className="flex justify-between items-center mb-6">
-            {/* Upper Left: Back Button */}
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="font-medium">Back</span>
-            </button>
-            
+          {/* 🚀 Top Navigation/Action Row (Upper Right) */}
+          <div className="flex justify-end items-center mb-6">
             {/* Upper Right: Resume Builder Call to Action */}
             <button
               onClick={() => navigate("/dashboard/resume")}
-              className="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-gray-800 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
+              className="inline-flex items-center rounded-lg bg-black px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-gray-800 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-200"
             >
               <Briefcase className="h-4 w-4 mr-2" />
               Build My Resume

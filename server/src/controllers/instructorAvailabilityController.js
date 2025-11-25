@@ -23,7 +23,7 @@ export async function setAvailability(req, res) {
 
     if (availability) {
       availability.weeklySlots = weeklySlots || availability.weeklySlots;
-      availability.specificDates = specificDates || availability.specificDates;
+      availability.weekendAvailability = specificDates || availability.weekendAvailability;
       availability.subjects = subjects || availability.subjects;
       availability.maxSessionsPerWeek = maxSessionsPerWeek || availability.maxSessionsPerWeek;
       await availability.save();
@@ -31,7 +31,7 @@ export async function setAvailability(req, res) {
       availability = await InstructorAvailability.create({
         instructorId,
         weeklySlots: weeklySlots || [],
-        specificDates: specificDates || [],
+        weekendAvailability: specificDates || [], // Map specificDates from frontend to weekendAvailability in DB
         subjects: subjects || [],
         maxSessionsPerWeek: maxSessionsPerWeek || 4,
       });
@@ -64,7 +64,7 @@ export async function getAvailability(req, res) {
       return res.status(200).json({
         instructorId: userId,
         weeklySlots: [],
-        specificDates: [],
+        weekendAvailability: [],
         subjects: [],
         maxSessionsPerWeek: 4,
       });

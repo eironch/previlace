@@ -2,8 +2,14 @@ import mongoose from "mongoose";
 
 const weekendClassSchema = new mongoose.Schema(
   {
+    subject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subject",
+      required: true,
+    },
     topic: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Topic",
       required: true,
     },
     description: String,
@@ -22,8 +28,26 @@ const weekendClassSchema = new mongoose.Schema(
     instructor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
-    meetingLink: String,
+    mode: {
+      type: String,
+      enum: ["Online", "Offline"],
+      default: "Online",
+      required: true,
+    },
+    meetingLink: {
+      type: String,
+      required: function () {
+        return this.mode === "Online";
+      },
+    },
+    location: {
+      type: String, // For offline classes
+      required: function () {
+        return this.mode === "Offline";
+      },
+    },
     status: {
       type: String,
       enum: ["scheduled", "live", "completed", "cancelled"],

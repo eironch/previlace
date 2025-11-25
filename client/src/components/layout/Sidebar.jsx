@@ -11,6 +11,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  Users,
+  Calendar,
+  FileText,
+  CheckSquare,
+  Layers,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -23,14 +28,37 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen }) {
 
   // On mobile, we use isOpen/setIsOpen from props.
   // On desktop, we use local isCollapsed state.
-  
-  const navItems = [
+
+  const studentNavItems = [
     { icon: Home, title: "Dashboard", path: "/dashboard" },
     { icon: BookOpen, title: "Study", path: "/dashboard/subjects" },
     { icon: Briefcase, title: "Career", path: "/dashboard/jobs" },
     { icon: BarChart3, title: "Progress", path: "/dashboard/analytics" },
     { icon: MessageSquare, title: "Support", path: "/dashboard/tickets" },
   ];
+
+  const adminNavItems = [
+    { icon: Home, title: "Dashboard", path: "/admin" },
+    { icon: Users, title: "Users", path: "/admin/users" },
+    { icon: Calendar, title: "Classes", path: "/admin/classes" },
+    { icon: BookOpen, title: "Question Bank", path: "/admin/question-bank" },
+    { icon: CheckSquare, title: "Review Queue", path: "/admin/review-queue" },
+    { icon: FileText, title: "Files", path: "/admin/files" },
+  ];
+
+  const instructorNavItems = [
+    { icon: Home, title: "Dashboard", path: "/instructor" },
+    { icon: Calendar, title: "My Classes", path: "/instructor/classes" },
+    { icon: Settings, title: "Availability", path: "/instructor/availability" },
+    { icon: MessageSquare, title: "Inbox", path: "/dashboard/inbox" },
+  ];
+
+  let navItems = studentNavItems;
+  if (user?.role === "admin" || user?.role === "super_admin") {
+    navItems = adminNavItems;
+  } else if (user?.role === "instructor") {
+    navItems = instructorNavItems;
+  }
 
   const isActive = (path) => location.pathname === path;
 
@@ -112,7 +140,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen }) {
                   </button>
                   <button
                     onClick={logout}
-                    className="flex w-full items-center px-3 py-2 mt-1 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50"
+                    className="flex w-full items-center px-3 py-2 mt-1 text-sm font-medium bg-red-100 text-red-800 rounded-lg hover:bg-red-200"
                   >
                     <LogOut className="mr-3 h-5 w-5" />
                     Sign Out
@@ -211,7 +239,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen }) {
         
         <button
           onClick={logout}
-          className={`mt-1 flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 ${
+          className={`mt-1 flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 ${
             isCollapsed ? "justify-center" : ""
           }`}
           title={isCollapsed ? "Sign Out" : ""}

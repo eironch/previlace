@@ -12,8 +12,8 @@ const Button = forwardRef(({
 	
 	const variants = {
 		primary: "bg-black text-white hover:bg-gray-800 focus:ring-gray-500",
-		ghost: "bg-transparent text-black hover:bg-gray-100 focus:ring-gray-300",
-		outline: "border border-black text-black bg-white hover:bg-gray-50 focus:ring-gray-300",
+		ghost: "bg-transparent text-black hover:bg-gray-200 focus:ring-gray-300",
+		outline: "border border-black text-black bg-white hover:bg-gray-200 focus:ring-gray-300",
 	};
 
 	const sizes = {

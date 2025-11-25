@@ -7,6 +7,7 @@ import JourneyMap from "@/components/dashboard/JourneyMap";
 import DailyChallengeCard from "@/components/dashboard/DailyChallengeCard";
 import StatCard from "@/components/dashboard/StatCard";
 import StudyStreakModal from "@/components/dashboard/StudyStreakModal";
+import UpcomingClassCard from "@/components/dashboard/UpcomingClassCard";
 import LevelIndicator from "@/components/dashboard/LevelIndicator";
 
 function DashboardPage() {
@@ -54,8 +55,9 @@ function DashboardPage() {
             <LevelIndicator />
           </div>
         </div>
-        <div className="mb-6">
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
           <DailyChallengeCard />
+          <UpcomingClassCard />
         </div>
 
         <div className="mb-6 grid grid-cols-2 gap-2 lg:grid-cols-4">

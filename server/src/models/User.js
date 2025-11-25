@@ -52,6 +52,18 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "instructor", "admin", "super_admin"],
       default: "student",
     },
+    level: {
+      type: Number,
+      default: 1,
+    },
+    exp: {
+      type: Number,
+      default: 0,
+    },
+    nextLevelExp: {
+      type: Number,
+      default: 1000,
+    },
     reviewCenterId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ReviewCenter",

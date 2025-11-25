@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Settings, BookOpen, Save } from "lucide-react";
+import { ChevronLeft, Settings, BookOpen, Save, User, Lock, Bell } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import apiClient from "@/services/apiClient";
 import StandardHeader from "@/components/ui/StandardHeader";
@@ -15,56 +15,76 @@ function ProfileSettingsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // New states
+  const [activeSection, setActiveSection] = useState("profile"); // profile, password, notifications
+  const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
+
   useEffect(() => {
     if (user?.examType) {
       setExamLevel(user.examType);
     }
   }, [user]);
 
-  async function handleSave() {
-    if (!examLevel) {
-      setError("Please select an exam level");
-      return;
-    }
-
+  async function handleSaveProfile() {
     setSaving(true);
     setError("");
     setSuccess("");
 
     try {
-      const response = await apiClient.patch("/users/profile", {
-        examType: examLevel,
-      });
+      const updates = {};
+      if (user.role === 'student') {
+          if (!examLevel) {
+            setError("Please select an exam level");
+            setSaving(false);
+            return;
+          }
+          updates.examType = examLevel;
+      }
+
+      // Add other profile updates here if needed (name, email)
+
+      const response = await apiClient.patch("/users/profile", updates);
 
       if (response.data.success) {
         setUser(response.data.data.user);
-        setSuccess("Exam level updated successfully");
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1500);
+        setSuccess("Profile updated successfully");
       }
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to update exam level:", err);
-      }
+      console.error("Failed to update profile:", err);
       setError(err.response?.data?.message || "Failed to update settings");
     } finally {
       setSaving(false);
     }
   }
 
+  async function handlePasswordChange(e) {
+      e.preventDefault();
+      if (passwordForm.new !== passwordForm.confirm) {
+          setError("New passwords do not match");
+          return;
+      }
+      setSaving(true);
+      setError("");
+      setSuccess("");
+      
+      try {
+          await apiClient.patch("/users/update-password", {
+              currentPassword: passwordForm.current,
+              newPassword: passwordForm.new
+          });
+          setSuccess("Password updated successfully");
+          setPasswordForm({ current: "", new: "", confirm: "" });
+      } catch (err) {
+          setError(err.response?.data?.message || "Failed to update password");
+      } finally {
+          setSaving(false);
+      }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="border-b border-gray-200 bg-white px-4 py-4">
-          <div className="mx-auto max-w-4xl">
-            <SkeletonLoader variant="title" />
-          </div>
-        </div>
-        <div className="mx-auto max-w-4xl px-4 py-6">
-          <SkeletonLoader className="mb-4 h-32" />
           <SkeletonLoader className="h-64" />
-        </div>
       </div>
     );
   }
@@ -73,124 +93,175 @@ function ProfileSettingsPage() {
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-4xl px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="text-gray-600">Manage your account and preferences</p>
-        </div>
-        {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4">
-            <p className="text-sm text-green-800">{success}</p>
-          </div>
-        )}
-
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center gap-3 border-b border-gray-200 pb-4">
-            <BookOpen className="h-5 w-5 text-gray-900" />
-            <h2 className="text-lg font-bold text-gray-900">Exam Level</h2>
-          </div>
-
-          <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium text-gray-700">
-              Select your target exam level
-            </label>
-            <p className="mb-4 text-sm text-gray-600">
-              This determines which questions and quizzes you'll see throughout the platform
-            </p>
-
-            <div className="space-y-3">
-              <button
-                onClick={() => setExamLevel("Professional")}
-                className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
-                  examLevel === "Professional"
-                    ? "border-black bg-gray-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">Professional Level</h3>
-                  <div
-                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                      examLevel === "Professional"
-                        ? "border-black bg-black"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {examLevel === "Professional" && (
-                      <div className="h-2 w-2 rounded-full bg-white" />
-                    )}
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  For first and second level positions requiring professional qualifications
-                </p>
-              </button>
-
-              <button
-                onClick={() => setExamLevel("Sub-Professional")}
-                className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
-                  examLevel === "Sub-Professional"
-                    ? "border-black bg-gray-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">Sub-Professional Level</h3>
-                  <div
-                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                      examLevel === "Sub-Professional"
-                        ? "border-black bg-black"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {examLevel === "Sub-Professional" && (
-                      <div className="h-2 w-2 rounded-full bg-white" />
-                    )}
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  For clerical and support positions in government service
-                </p>
-              </button>
-            </div>
-          </div>
-
-          <button
-            onClick={handleSave}
-            disabled={saving || !examLevel}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-6 py-3 font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
-          >
-            {saving ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Save Settings
-              </>
-            )}
-          </button>
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <p className="text-gray-600">Manage your account preferences</p>
         </div>
 
-        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-red-900">Sign Out</h3>
-              <p className="text-sm text-red-700">Sign out of your account on this device</p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Sidebar */}
+            <div className="space-y-1">
+                <button
+                    onClick={() => setActiveSection("profile")}
+                    className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeSection === 'profile' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}
+                >
+                    <User className="w-4 h-4" /> Profile
+                </button>
+                <button
+                    onClick={() => setActiveSection("password")}
+                    className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeSection === 'password' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}
+                >
+                    <Lock className="w-4 h-4" /> Password
+                </button>
+                <button
+                    onClick={() => setActiveSection("notifications")}
+                    className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeSection === 'notifications' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}
+                >
+                    <Bell className="w-4 h-4" /> Notifications
+                </button>
             </div>
-            <button
-              onClick={() => useAuthStore.getState().logout()}
-              className="flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-            >
-              Sign Out
-            </button>
-          </div>
+
+            {/* Content */}
+            <div className="md:col-span-3 space-y-6">
+                {error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                    {error}
+                </div>
+                )}
+                {success && (
+                <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                    {success}
+                </div>
+                )}
+
+                {activeSection === 'profile' && (
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-6">
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-900 mb-4">Personal Information</h2>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                    <input type="text" value={user?.firstName || ''} disabled className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-500" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                    <input type="text" value={user?.lastName || ''} disabled className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-500" />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" value={user?.email || ''} disabled className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-500" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {user?.role === 'student' && (
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-900 mb-4">Exam Preferences</h2>
+                                <div className="space-y-3">
+                                    {['Professional', 'Sub-Professional'].map((level) => (
+                                        <button
+                                            key={level}
+                                            onClick={() => setExamLevel(level)}
+                                            className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
+                                            examLevel === level
+                                                ? "border-black bg-gray-200"
+                                                : "border-gray-200 bg-white hover:border-gray-300"
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-semibold text-gray-900">{level} Level</span>
+                                                <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${examLevel === level ? "border-black bg-black" : "border-gray-300"}`}>
+                                                    {examLevel === level && <div className="h-2 w-2 rounded-full bg-white" />}
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="pt-4 border-t border-gray-100">
+                            <button
+                                onClick={handleSaveProfile}
+                                disabled={saving}
+                                className="flex items-center justify-center gap-2 rounded-lg bg-black px-6 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                            >
+                                {saving ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {activeSection === 'password' && (
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Change Password</h2>
+                        <form onSubmit={handlePasswordChange} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.current}
+                                    onChange={e => setPasswordForm({...passwordForm, current: e.target.value})}
+                                    required
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-black focus:outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.new}
+                                    onChange={e => setPasswordForm({...passwordForm, new: e.target.value})}
+                                    required
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-black focus:outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.confirm}
+                                    onChange={e => setPasswordForm({...passwordForm, confirm: e.target.value})}
+                                    required
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-black focus:outline-none"
+                                />
+                            </div>
+                            <div className="pt-4">
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="flex items-center justify-center gap-2 rounded-lg bg-black px-6 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                                >
+                                    {saving ? "Updating..." : "Update Password"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
+
+                {activeSection === 'notifications' && (
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Notification Preferences</h2>
+                        <p className="text-gray-500 text-sm">Manage how you receive notifications.</p>
+                        {/* Placeholder for notification settings */}
+                        <div className="mt-4 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium text-gray-900">Email Notifications</p>
+                                    <p className="text-xs text-gray-500">Receive updates via email</p>
+                                </div>
+                                <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black" defaultChecked />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium text-gray-900">Class Reminders</p>
+                                    <p className="text-xs text-gray-500">Get reminded before class starts</p>
+                                </div>
+                                <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black" defaultChecked />
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
       </div>
     </div>

@@ -4,8 +4,7 @@ import { useTopicStore } from "@/store/topicStore";
 import { useAuthStore } from "@/store/authStore";
 import useExamStore from "@/store/examStore";
 import learningService from "@/services/learningService";
-import { ArrowLeft, BookOpen, Play, CheckCircle, AlertCircle } from "lucide-react";
-import StandardHeader from "@/components/ui/StandardHeader";
+import { ChevronLeft, BookOpen, Play, CheckCircle, AlertCircle } from "lucide-react";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 import FileUploadButton from "@/components/files/FileUploadButton";
 import FileList from "@/components/files/FileList";
@@ -83,7 +82,7 @@ function TopicDetailPage() {
           </div>
         </header>
 
-        <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
             <div className="mb-4 flex items-center gap-4">
               <SkeletonLoader variant="circle" className="h-16 w-16" />
@@ -124,9 +123,19 @@ function TopicDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <StandardHeader title={currentTopic.name} showBack={true} />
+      <header className="border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 transition-colors hover:text-black"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
+      </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
           <div className="mb-4 flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
@@ -315,21 +324,14 @@ function TopicDetailPage() {
           </div>
         )}
         
-        {/* Resources Section */}
-        <div className="mt-8 rounded-lg border border-gray-300 bg-white p-6">
+        <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
           <div className="mb-4 flex items-center justify-between">
             <h4 className="text-xl font-bold text-gray-900">Resources</h4>
             {(user?.role === "admin" || user?.role === "instructor") && (
               <FileUploadButton 
                 relatedType="topic" 
                 relatedId={id} 
-                onUploadComplete={() => {
-                  // Trigger refresh of file list (using a key or context would be better, 
-                  // but for now we can force a re-render or just rely on the list updating itself if we lift state)
-                  // Since FileList fetches on mount/update, we can pass a trigger.
-                  // For simplicity in this file, we'll just let the user refresh or implement a simple trigger state.
-                  window.location.reload(); 
-                }} 
+                onUploadComplete={() => window.location.reload()} 
               />
             )}
           </div>

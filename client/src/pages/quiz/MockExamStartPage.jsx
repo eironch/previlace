@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import useExamStore from "@/store/examStore";
-import { Target, Clock, BookOpen, ChevronRight } from "lucide-react";
+import { Target, Clock, BookOpen, ChevronLeft } from "lucide-react";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function MockExamStartPage() {
@@ -27,23 +27,36 @@ function MockExamStartPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="mx-4 max-w-md text-center">
-          <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-              <Target className="h-8 w-8 text-red-600" />
-            </div>
+      <div className="min-h-screen bg-white">
+        <header className="border-b border-gray-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2 text-gray-600 transition-colors hover:text-black"
+            >
+              <ChevronLeft className="h-5 w-5" />
+              <span className="font-medium">Back to Dashboard</span>
+            </button>
           </div>
-          <h2 className="mb-2 text-xl font-bold text-gray-900">
-            Failed to Start Mock Exam
-          </h2>
-          <p className="mb-6 text-gray-600">{error}</p>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800"
-          >
-            Return to Dashboard
-          </button>
+        </header>
+        <div className="flex h-[calc(100vh-73px)] items-center justify-center">
+          <div className="mx-4 max-w-md text-center">
+            <div className="mb-4 flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                <Target className="h-8 w-8 text-red-600" />
+              </div>
+            </div>
+            <h2 className="mb-2 text-xl font-bold text-gray-900">
+              Failed to Start Mock Exam
+            </h2>
+            <p className="mb-6 text-gray-600">{error}</p>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800"
+            >
+              Return to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -89,7 +102,7 @@ function MockExamStartPage() {
 
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
-              <ChevronRight className="h-5 w-5 text-gray-900" />
+              <Target className="h-5 w-5 text-gray-900" />
             </div>
             <div className="flex-1">
               <SkeletonLoader variant="text" className="mb-2 w-24" />

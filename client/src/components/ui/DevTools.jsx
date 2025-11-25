@@ -127,7 +127,7 @@ export default function DevTools() {
             <button 
               onClick={handleClearTestData} 
               disabled={isClearing}
-              className="w-full rounded border px-2 py-1 bg-red-100 hover:bg-red-200 disabled:opacity-50"
+              className="w-full rounded border px-2 py-1 bg-red-100 hover:bg-red-100 disabled:opacity-50"
             >
               {isClearing ? "Clearing..." : "Clear Test Data"}
             </button>

@@ -222,9 +222,11 @@ class StudyPlanService {
   }
 
   getCurrentWeek(startDate, currentDate) {
-    const diffTime = currentDate - startDate;
+    // Global Cohort Start Date: October 20, 2025
+    const COHORT_START_DATE = new Date("2025-10-20T00:00:00.000Z");
+    const diffTime = currentDate - COHORT_START_DATE;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.ceil(diffDays / 7);
+    return Math.max(1, Math.ceil(diffDays / 7));
   }
 
   calculateDaysUntilExam(targetDate) {

@@ -1,44 +1,145 @@
 import WeekendClass from "../models/WeekendClass.js";
-import { AppError } from "../utils/AppError.js";
+import User from "../models/User.js";
+import Topic from "../models/Topic.js";
+import Subject from "../models/Subject.js";
 
-export const getUpcomingClass = async (req, res, next) => {
+export const getAllClasses = async (req, res) => {
   try {
-    const upcomingClass = await WeekendClass.findOne({
-      date: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-      status: { $ne: "cancelled" },
-    }).sort({ date: 1 });
+    const { startDate, endDate, instructorId } = req.query;
+    const query = {};
 
-    res.json(upcomingClass);
+    if (startDate && endDate) {
+      query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+
+    if (instructorId) {
+      query.instructor = instructorId;
+    }
+
+    const classes = await WeekendClass.find(query)
+      .populate("instructor", "firstName lastName email")
+      .populate("subject", "name code")
+      .populate("topic", "name")
+      .sort({ date: 1, startTime: 1 });
+
+    res.status(200).json({ success: true, data: classes });
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const createOrUpdateClass = async (req, res, next) => {
+export const createClass = async (req, res) => {
   try {
-    const { topic, description, date, startTime, endTime, meetingLink } = req.body;
-
-    // For simplicity, we'll just create a new one or update the existing one for the given date
-    // But user asked to "set the time", implying managing the schedule.
-    // Let's just create a new one.
-    
-    const newClass = await WeekendClass.create({
+    const {
+      subject,
       topic,
       description,
       date,
       startTime,
       endTime,
+      instructor,
+      mode,
       meetingLink,
-      instructor: req.user.id,
+      location,
+    } = req.body;
+
+    // Basic validation
+    if (!subject || !topic || !date || !startTime || !endTime || !instructor || !mode) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    // Check for conflicts (basic check: same instructor, same date, overlapping time logic omitted for brevity but recommended)
+    // For now, just check if instructor has a class at the exact same start time on the same date
+    const existingClass = await WeekendClass.findOne({
+      instructor,
+      date: new Date(date),
+      startTime,
+      status: { $ne: "cancelled" },
     });
 
-    res.status(201).json(newClass);
+    if (existingClass) {
+      return res.status(409).json({
+        success: false,
+        message: "Instructor already has a class scheduled at this time.",
+      });
+    }
+
+    const newClass = await WeekendClass.create({
+      subject,
+      topic,
+      description,
+      date: new Date(date),
+      startTime,
+      endTime,
+      instructor,
+      mode,
+      meetingLink,
+      location,
+    });
+
+    const populatedClass = await WeekendClass.findById(newClass._id)
+      .populate("instructor", "firstName lastName")
+      .populate("subject", "name")
+      .populate("topic", "name");
+
+    res.status(201).json({ success: true, data: populatedClass });
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export default {
-  getUpcomingClass,
-  createOrUpdateClass,
+export const updateClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const updatedClass = await WeekendClass.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    })
+      .populate("instructor", "firstName lastName")
+      .populate("subject", "name")
+      .populate("topic", "name");
+
+    if (!updatedClass) {
+      return res.status(404).json({ success: false, message: "Class not found" });
+    }
+
+    res.status(200).json({ success: true, data: updatedClass });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
+
+export const deleteClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedClass = await WeekendClass.findByIdAndDelete(id);
+
+    if (!deletedClass) {
+      return res.status(404).json({ success: false, message: "Class not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Class deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getUpcomingClass = async (req, res) => {
+    try {
+        // Logic to get the single most relevant upcoming class, or list of them
+        // For the widget on dashboard
+        const upcoming = await WeekendClass.findOne({
+            date: { $gte: new Date() },
+            status: { $ne: 'cancelled' }
+        })
+        .sort({ date: 1, startTime: 1 })
+        .populate('topic', 'name')
+        .populate('subject', 'name');
+
+        res.status(200).json(upcoming);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

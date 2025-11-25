@@ -4,8 +4,7 @@ import { useSubjectStore } from "@/store/subjectStore";
 import { useTopicStore } from "@/store/topicStore";
 import { useAuthStore } from "@/store/authStore";
 import useExamStore from "@/store/examStore";
-import { ArrowLeft, BookOpen, Trophy, Play } from "lucide-react";
-import StandardHeader from "@/components/ui/StandardHeader";
+import { ChevronLeft, BookOpen, Trophy, Play } from "lucide-react";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function SubjectDetailPage() {
@@ -115,7 +114,17 @@ function SubjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <StandardHeader title={currentSubject.name} showBack={true} />
+      <header className="border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 transition-colors hover:text-black"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
+      </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">

@@ -147,8 +147,16 @@ const getDashboardData = catchAsync(async (req, res, next) => {
 				select: "name code icon",
 			})
 			.populate({
+				path: "weeks.saturdaySession.topics",
+				select: "name",
+			})
+			.populate({
 				path: "weeks.sundaySession.subjectId",
 				select: "name code icon",
+			})
+			.populate({
+				path: "weeks.sundaySession.topics",
+				select: "name",
 			})
 			.lean(),
 		UserQuestionHistory.aggregate([

@@ -20,6 +20,7 @@ router.post("/subject-quiz", examController.startSubjectQuiz);
 router.post("/topic-quiz", examController.startTopicQuiz);
 router.post("/post-test", examController.startPostTest);
 router.post("/assessment", examController.startAssessment);
+router.post("/daily-practice", examController.startDailyPractice);
 router.post("/pretest", examController.startPretest);
 router.post("/:sessionId/answer", validateAnswerSubmission, examController.submitAnswer);
 router.post("/:sessionId/complete", examController.completeQuizSession);

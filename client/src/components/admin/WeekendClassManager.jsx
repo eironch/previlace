@@ -27,7 +27,7 @@ export default function WeekendClassManager() {
       setUpcomingClass(data);
       if (data) {
         setFormData({
-          topic: data.topic,
+          topic: data.topic?.name || data.topic,
           description: data.description || '',
           date: new Date(data.date).toISOString().split('T')[0],
           startTime: data.startTime,
@@ -184,7 +184,7 @@ export default function WeekendClassManager() {
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex justify-between items-start">
               <div>
-                <h4 className="font-bold text-lg">{upcomingClass.topic}</h4>
+                <h4 className="font-bold text-lg">{upcomingClass.topic?.name || upcomingClass.topic}</h4>
                 <p className="text-gray-600 mt-1">{upcomingClass.description}</p>
                 <div className="mt-3 flex gap-4 text-sm text-gray-500">
                   <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {new Date(upcomingClass.date).toLocaleDateString()}</span>

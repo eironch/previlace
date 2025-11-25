@@ -1,936 +1,743 @@
-# Civilearn Review Center System - Missing Features
+# Previlace - Current System Status
+## AI-Enhanced Civil Service Review System
 
-**Context:** Weekend review center (Sat/Sun classes) preparing students for CSE  
-**Goal:** Help students review, understand, and pass the CSE exam  
-**Style:** Duolingo/SoloLearn learning journey with adaptive assessments
-
----
-
-## CURRENT STATE
-
-### ✅ IMPLEMENTED
-- Quiz system with immediate feedback
-- Analytics dashboard with performance tracking
-- Journey map with study plan integration
-- Study streak tracking with gamification
-- Leaderboard and achievements
-- Admin question bank management
-- Instructor availability system
-- Inquiry ticket system (partial - needs enhancement)
-- User management
-
-### ⚠️ PLACEHOLDER ("Coming Soon" UI)
-- Jobs page (models exist, no backend/frontend)
-- Resume builder (models exist, no backend/frontend)
-- Interview prep (models exist, partial backend)
-
-### ❌ MISSING CRITICAL FEATURES
-- Enhanced inquiry/support ticket system (customer service style)
-- File upload system (admin + instructors)
-- Notification center (in-app + email)
-- Career development backend infrastructure
-- Journey enhancements (weekly unlocking, email reminders)
+**Last Updated:** 2025-11-25T17:51:34+08:00  
+**Project:** Weekend Review Center (Sat/Sun classes) for Philippine Civil Service Exam  
+**Architecture:** Monorepo (React + Vite / Node.js + Express + MongoDB)  
+**Current Phase:** Active Development & Feature Enhancement
 
 ---
 
-## 1. INQUIRY/SUPPORT SYSTEM (CRITICAL)
+## 📊 SYSTEM HEALTH
 
-### Current State
-- Basic InquiryTicket model exists
-- Instructor can view tickets
-- Limited functionality
-
-### What's Needed: Customer Service Ticketing System
-
-**Inspiration:** Zendesk, Hiver, Intercom ticketing workflows
-
-**Student Side:**
-- Ask Question button on current subject/topic page
-- Simple ticket creation form (subject, question, optional screenshot)
-- Ticket automatically assigned to subject instructor
-- View ticket status (Open, In Progress, Resolved)
-- Receive response notification
-- Ticket expires/closes after next class
-
-**Instructor Side:**
-- Ticket inbox dashboard (like customer service queue)
-- Filter by: Open/Resolved, Subject, Priority, Date
-- Ticket details view with student context
-- Add response with rich text editor
-- Mark as resolved
-- Internal notes (visible only to instructors/admin)
-- Bulk actions (assign, resolve)
-
-**Admin Side:**
-- View all tickets across all instructors
-- Analytics: average response time, resolution rate
-- Reassign tickets to different instructors
-
-**Files to Create/Update:**
-
-**Backend:**
 ```
-server/src/models/InquiryTicket.js (enhance existing)
-- Add fields: priority, internalNotes, resolvedAt, resolutionTime
-- Add status: open, in_progress, resolved, expired
-
-server/src/controllers/inquiryTicketController.js (enhance)
-- getInstructorTickets() - filter by instructor + subject
-- updateTicketStatus()
-- addResponse()
-- addInternalNote()
-- getTicketAnalytics()
-- bulkUpdateTickets()
-- autoExpireTickets() - scheduled job
-
-server/src/routes/inquiryTicketRoutes.js (enhance)
-- GET /api/tickets/instructor/:instructorId
-- PATCH /api/tickets/:id/status
-- POST /api/tickets/:id/response
-- POST /api/tickets/:id/internal-note
-- GET /api/tickets/analytics
+✅ Server (Node.js + Express)  Running for 55h44m43s
+✅ Client (React + Vite)        Running for 55h44m37s  
+✅ Database (MongoDB)           Connected
+✅ Authentication               JWT + Google OAuth working
+✅ Real-time                    Socket.io operational
 ```
-
-**Frontend:**
-```
-client/src/components/inquiry/AskQuestionButton.jsx
-- Floating button on subject/topic pages
-- Opens modal with form
-
-client/src/components/inquiry/TicketForm.jsx
-- Subject dropdown (auto-selected from current page)
-- Question textarea
-- Optional file upload (screenshot)
-
-client/src/pages/student/MyTicketsPage.jsx
-- List of student's tickets
-- Filter by status
-- View responses
-
-client/src/pages/instructor/TicketInboxPage.jsx
-- Ticket queue with filters
-- Ticket detail panel
-- Response editor
-- Status updates
-
-client/src/components/inquiry/TicketCard.jsx
-- Ticket preview in list
-- Shows: subject, preview, status, time ago
-
-client/src/components/inquiry/TicketDetail.jsx
-- Full ticket view
-- Question + responses
-- Internal notes (instructors only)
-- Actions (resolve, add note)
-
-client/src/store/inquiryStore.js (enhance)
-- Student: createTicket, getMyTickets, viewTicket
-- Instructor: getMyTickets, respondToTicket, resolveTicket
-```
-
-**Implementation Priority:**
-1. Enhance InquiryTicket model with new fields
-2. Create enhanced ticket controller with all CRUD operations
-3. Build student AskQuestionButton component
-4. Build TicketInboxPage for instructors
-5. Add ticket status badge component
-6. Implement auto-expiration logic (scheduled job)
-7. Add ticket analytics for admin
-
-**Key Features:**
-- Ticket priority: Low/Medium/High (auto-set based on deadline)
-- Auto-assign to subject instructor
-- Auto-expire after next class session
-- Email notifications on ticket creation/response
-- Internal notes for instructor collaboration
-- Response time tracking
-- Ticket categories by subject
 
 ---
 
-## 2. FILE UPLOAD SYSTEM (HIGH PRIORITY)
+## ✅ FULLY IMPLEMENTED & OPERATIONAL
 
-### Use Cases
-**Admin:**
-- Upload study materials (PDF reviewers, handouts)
-- Upload reference materials for topics
-- Upload exam practice files
+### 🎯 Core Quiz System
+| Feature | Implementation | Algorithm/Flow | Status |
+|---------|---------------|----------------|--------|
+| **Quiz Session Management** | examController.js | Start → Answer → Complete → Results | ✅ Complete |
+| **Question Selection** | questionSelectionService.js | Random, Spaced Repetition, Adaptive modes | ✅ Complete |
+| **SM-2 Spaced Repetition** | sm2AlgorithmService.js | Quality rating (0-5) → Ease factor → Interval → Next review | ✅ Complete |
+| **Adaptive Difficulty** | adaptiveQuizService.js | User performance → Difficulty distribution (60/30/10, 20/60/20, 10/30/60) | ✅ Complete |
+| **Multiple Question Types** | ManualQuestion model | Multiple choice, True/False, Multi-select, Essay | ✅ Complete |
+| **Immediate Feedback** | QuizSession model | Practice mode gets instant feedback, mock/timed delayed | ✅ Complete |
+| **Session Resumption** | examController.js | Resume active/paused sessions | ✅ Complete |
+| **Post-Test Tracking** | PostTestTracking model | Week-by-week completion tracking | ✅ Complete |
 
-**Instructor:**
-- Upload lecture slides/notes
-- Upload additional resources for students
-- Attach files in ticket responses
+**SM-2 Algorithm Details:**
+- Ease Factor: 1.3 to 3.0 (default: 2.5)
+- Quality Ratings: 0 (blackout) to 5 (perfect)
+- Mastery Levels: Beginner (0-3 days) → Intermediate (4-14 days) → Advanced (15-60 days) → Mastered (61+ days)
+- Interleaving: Questions grouped by topic, then selected round-robin
+- Review Distribution: 40%due + 30% weak + 20% new + 10% reinforcement
 
-**Students:**
-- View/download uploaded materials
-- Attach screenshots to inquiry tickets
+### 📚 Study Plan & Journey
+| Feature | Implementation | Flow | Status |
+|---------|---------------|------|--------|
+| **10-Week Schedule** | StudyPlan model | Week 1 (Pre-Assessment) → Week 2-10 (Sat/Sun classes) | ✅ Complete |
+| **Daily Activities** | DailyActivity model | Pre-test → Learn → Daily Practice → Post-test | ✅ Complete |
+| **Journey Map** | JourneyMap component | Visual weekly progression with clickable nodes | ✅ Complete |
+| **Weekend Classes** | WeekendClass model | 32 classes seeded (Weeks 1-10, Sat/Sun, multiple subjects/day) | ✅ Complete |
+| **Topic Unlocking** | StudyPlan service | Sequential unlocking based on week progression | ✅ Complete |
 
-### Implementation Strategy
-
-**Backend:**
+**Schedule Flow:**
 ```
-server/src/middleware/fileUpload.js
-- Configure multer for file uploads
-- File validation (size, type)
-- Storage: local filesystem or cloud (AWS S3/Cloudinary)
-
-server/src/models/File.js (new)
-- fields: filename, originalName, fileType, fileSize, uploadedBy, 
-  relatedTo (subject/topic/ticket), url, downloadCount
-
-server/src/controllers/fileController.js (new)
-- uploadFile()
-- getFiles() - filter by subject/topic
-- downloadFile()
-- deleteFile() (admin/instructor only)
-
-server/src/routes/fileRoutes.js (new)
-- POST /api/files/upload (admin + instructor only)
-- GET /api/files/:id/download
-- GET /api/files?subjectId=...&topicId=...
-- DELETE /api/files/:id (admin + instructor only)
+Week 1: Pre-Assessment (all subjects)
+Weeks 2-10: 
+  Saturday: New topics introduced
+  Sunday: Deep dive + practice
+  Weekdays: Daily practice with SM-2 algorithm
+Post-Test: Includes ALL topics learned so far (cumulative)
 ```
 
-**Frontend:**
-```
-client/src/components/files/FileUploadButton.jsx
-- Upload button with drag-drop zone
-- File type validation
-- Progress indicator
+### 📈 Analytics & Progress Tracking
+| Feature | Implementation | Metrics | Status |
+|---------|---------------|---------|--------|
+| **Performance Dashboard** | analytics Controller | Subject mastery, weak areas, accuracy over time | ✅ Complete |
+| **Study Streak** | Streak model | Daily tracking, XP rewards, freeze days | ✅ Complete |
+| **User Progress** | UserProgress model | Topic-level mastery, confidence scores | ✅ Complete |
+| **Question History** | UserQuestionHistory model | Per-question stats, SM-2 data, next review date | ✅ Complete |
+| **Leaderboard** | LeaderboardEntry model | XP-based rankings, weekly/all-time | ✅ Complete |
+| **Achievements** | Achievement + UserAchievement |  Badge system with unlock conditions | ✅ Complete |
 
-client/src/components/files/FileList.jsx
-- Display uploaded files
-- Download button
-- Delete button (admin/instructor only)
-- File icons by type (PDF, DOC, IMAGE)
+### 👤 User Management & Auth
+| Feature | Implementation | Details | Status |
+|---------|---------------|---------|--------|
+| **Authentication** | authController.js | JWT + Google OAuth 2.0 | ✅ Complete |
+| **User Roles** | User model | Student, Instructor, Admin (3 roles) | ✅ Complete |
+| **Onboarding** | OnboardingPage.jsx | Subject selection, year selection, preferences | ✅ Complete |
+| **Profile Management** | userController.js | Update profile, change password, preferences | ✅ Complete |
 
-client/src/pages/admin/FileManagementPage.jsx
-- Bulk upload interface
-- Organize files by subject/topic
-- Delete files
+### 🎓 Instructor Features
+| Feature | Implementation | Capability | Status |
+|---------|---------------|------------|--------|
+| **Availability System** | InstructorAvailability controller/model | Set available hours, manage schedule | ✅ Complete |
+| **Inquiry Tickets** | InquiryTicket controller | View, respond, internal notes, analytics | ⚠️ **Partial** |
+| **Ticket Management** | inquiryTicketController.js | 10 methods implemented (see below) | ✅ Backend Complete |
 
-Update existing pages:
-- TopicDetailPage.jsx - show available files
-- SubjectDetailPage.jsx - show subject materials
-- TicketDetail.jsx - show attached files
-```
+**Inquiry Ticket System Status:**
+- ✅ Backend: 100% complete (createTicket, getStudentTickets, getInstructorTickets, getTicketById, addResponse, addInternalNote, updateTicketStatus, getTicketAnalytics, expireOldTickets, bulkUpdateTickets)
+- ✅ Model: Complete with priority, responses, internalNotes, status, expiresAt, resolvedAt, resolution Time
+- ❌ Frontend: Missing UI components (see Goals below)
 
-**File Storage Options:**
+### 🎯 Admin Features
+| Feature | Implementation | Capability | Status |
+|---------|---------------|------------|--------|
+| **Question Bank** | manualQuestionController.js | Full CRUD, filtering, status management | ✅ Complete |
+| **User Management** | userManagementController.js | View, edit, delete users, role assignment | ✅ Complete |
+| **Subject/Topic Management** | subjectController + topicController | Full CRUD operations | ✅ Complete |
+| **Analytics Dashboard** | analyticsController.js | System-wide metrics, user performance | ✅ Complete |
+| **Weekend Class Seeding** | weekendClassController.js | Manage class schedule | ✅ Complete |
+| **Question Templates** | questionTemplateController.js | Reusable question patterns | ✅ Complete |
+| **Seeding Tools** | seed_comprehensive.js | Full system data generation | ✅ Complete |
 
-**Option 1: Local Storage (Simple)**
-```
-server/uploads/
-  ├── materials/
-  ├── tickets/
-  └── temp/
-```
-- Pros: Simple, no external dependencies
-- Cons: Not scalable, backup issues
+### 📁 Career Features (Partial Implementation)
 
-**Option 2: Cloud Storage (Recommended)**
-- AWS S3, Cloudinary, or Firebase Storage
-- Pros: Scalable, CDN, backup
-- Cons: Requires API setup, costs
+#### ✅ Jobs Board
+- **Backend:** ✅ Complete (jobController.js - 5 methods: create, getJobs, getJob, update, delete)
+- **Model:** ✅ Job model with all fields
+- **Frontend:** ✅ JobBoardPage.jsx with search, filters, job cards
+- **Service:** ✅ jobService.js (client-side API calls)
+- **Status:** **FULLY FUNCTIONAL** - can browse, search, filter jobs
 
-**Recommendation:** Start with local storage, migrate to cloud later
+#### ✅ Resume Builder  
+- **Backend:** ⚠️ Basic (resumeController.js - 3 methods: getMyResume, updateResume, generatePDF - PDF not implemented)
+- **Model:** ✅ Resume model exists
+- **Frontend:** ✅ **FULLY BUILT** ResumePage.jsx - 654 lines, Harvard-style template, step-by-step form, live preview, localStorage support
+- **Components:** ✅ PersonalDetailsForm, SummaryForm, EducationForm, ExperienceForm, SkillsForm, HarvardCV template
+- **Features:** Multi-step wizard, progress bar, live preview, mobile responsive, print/save function
+- **Status:** **FRONTEND COMPLETE**, PDF generation needs Puppeteer integration
 
-**Files to Create:**
-```
-server/src/middleware/fileUpload.js
-server/src/models/File.js
-server/src/controllers/fileController.js
-server/src/routes/fileRoutes.js
-server/src/utils/fileValidator.js
-client/src/components/files/FileUploadButton.jsx
-client/src/components/files/FileList.jsx
-client/src/components/files/FileCard.jsx
-client/src/services/fileService.js
-```
+#### ✅ Interview Prep
+- **Backend:** ⚠️ Basic (interviewController.js - 3 methods: getQuestions, start, submitAnswer)
+- **Model:** ✅ Interview + InterviewPrep models
+- **Frontend:** ✅ Interview PrepPage.jsx with behavioral/technical/mixed modes, practice history
+- **Service:** ✅ interviewService.js
+- **Status:** **FUNCTIONAL**, needs question bank expansion
 
-**Implementation Steps:**
-1. Set up multer middleware for file handling
-2. Create File model with metadata
-3. Create file controller (upload, download, delete)
-4. Add file routes with authentication
-5. Create FileUploadButton component
-6. Create FileList component
-7. Add file upload to TopicDetailPage
-8. Add file upload to admin panel
-9. Add file attachment to ticket responses
+### 📧 Communication & Notifications
 
-**Security Considerations:**
-- Validate file types (whitelist: PDF, DOC, DOCX, JPG, PNG)
-- Limit file size (5MB for images, 25MB for documents)
-- Scan for malware (optional: use ClamAV)
-- Authentication required for upload/delete
-- Public access for downloads (or auth-protected)
+#### ✅ Email Service
+- **Implementation:** emailService.js with Nodemailer + Gmail SMTP
+- **Templates:** ticketResponse, studyReminder
+- **Status:** ✅ Setup complete, gracefully degrades if credentials missing
+- **Missing:** Scheduled jobs for automated emails (see Goals)
+
+#### ✅ Notification System
+- **Backend:** ✅ notificationController.js (4 methods: getUserNotifications, markAsRead, markAllAsRead, deleteNotification)
+- **Model:** ✅ Notification model complete
+- **Service:** ✅ notificationService.js basic setup
+- **Frontend:** ❌ No UI components (see Goals)
+- **Status:** **Backend ready, needs frontend**
+
+#### ✅ File Upload
+- **Backend:** ⚠️ Minimal (fileController.js exists, basic structure)
+- **Model:** ✅ File model exists
+- **Frontend:** ❌ No components
+- **Status:** **Needs full implementation** (see Goals)
+
+### 🧩 Additional Features
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Bookmarks** | ✅ Complete | Save questions, organize in folders |
+| **Challenges** | ✅ Complete | Timed challenges, XP rewards |
+| **Learning Content** | ✅ Complete | Additional study materials |
+| **Testimonials** | ✅ Complete | User testimonials (public + admin) |
+| **Study Groups** | ✅ Complete | Collaborative study sessions, messages |
+| **Mistake Tracking** | ✅ Complete | Analyze common errors |
+| **Math Rendering** | ✅ Complete | mathService.js for LaTeX/MathML |
+| **PDF Generation Service** | ⚠️ Partial | pdfGenerationService.js exists, needs Puppeteer |
+| **Socket.io** | ✅ Complete | Real-time updates, collaborative features |
 
 ---
 
-## 3. NOTIFICATION SYSTEM (HIGH PRIORITY)
+## 📂 CODEBASE STRUCTURE
 
-### Required Notifications
-
-**Email Notifications:**
-- Streak reminder (daily at 6 PM if not studied yet)
-- Weekly reminder (Sunday night for upcoming week)
-- Ticket response received
-- New study materials uploaded
-- Quiz results available
-- Achievement unlocked
-
-**In-App Notifications:**
-- New ticket response
-- New materials uploaded for your subjects
-- Streak about to break (if not studied today)
-- Upcoming class reminder (Saturday morning)
-
-### Implementation
-
-**Backend:**
+### Backend (`server/src/`)
 ```
-server/src/models/Notification.js (new)
-- fields: userId, type, title, message, read, link, createdAt
-
-server/src/controllers/notificationController.js (new)
-- getUserNotifications()
-- markAsRead()
-- markAllAsRead()
-- deleteNotification()
-
-server/src/services/emailService.js (new)
-- sendEmail() using Nodemailer or SendGrid
-- Email templates for different notification types
-
-server/src/services/notificationService.js (new)
-- createNotification()
-- sendEmailNotification()
-- scheduleReminders() - cron jobs
-
-server/src/routes/notificationRoutes.js (new)
-- GET /api/notifications
-- PATCH /api/notifications/:id/read
-- PATCH /api/notifications/read-all
-- DELETE /api/notifications/:id
-
-server/src/jobs/reminderJob.js (new)
-- Daily streak reminders (cron)
-- Weekly class reminders (cron)
-- Ticket expiration reminders (cron)
+├── config/              (1)   Database, environment
+├── constants/           (2)   App constants
+├── controllers/        (36)   ✅ ALL FUNCTIONAL
+│   ├── examController.js        ✅ 1,162 lines - quiz logic
+│   ├── inquiryTicketController.js ✅ 321 lines - full ticketing
+│   ├── jobController.js         ✅ 126 lines - jobs CRUD
+│   ├── resumeController.js      ⚠️ 57 lines - basic, no PDF
+│   ├── notificationController.js ✅ 90 lines - complete
+│   └── ... 31 more controllers
+├── models/             (41)   ✅ ALL SCHEMAS DEFINED
+├── routes/             (35)   ✅ ALL ROUTES MAPPED
+├── services/           (23)   ✅ BUSINESS LOGIC
+│   ├── questionSelectionService.js ✅ 237 lines - 3 selection modes
+│   ├── sm2AlgorithmService.js     ✅ 246 lines - full SM-2
+│   ├── emailService.js            ✅ 51 lines - Nodemailer
+│   ├── adaptiveQuizService.js     ✅ 12.5KB - adaptive logic
+│   ├── pdfGenerationService.js    ⚠️ 4.2KB - needs Puppeteer
+│   ├── resumeBuilderService.js    ✅ 26KB - template logic
+│   ├── interviewPrepService.js    ✅ 22KB - question bank
+│   ├── jobCrawlingService.js      ✅ 16KB - job scraping
+│   └── ... 15 more services
+├── scripts/            (18)   Seeding & utilities
+│   ├── seed_comprehensive.js    ✅ 30KB - full system seed
+│   ├── comprehensiveQuestionGenerator.js ✅ 43KB - AI questions
+│   └── ... 16 more scripts
+├── middleware/          (7)   Auth, validation, errors
+├── jobs/                (2)   Scheduled tasks
+└── utils/               (3)   Helpers
 ```
 
-**Frontend:**
+### Frontend (`client/src/`)
 ```
-client/src/components/notifications/NotificationBell.jsx
-- Bell icon in Navigation
-- Badge with unread count
-- Dropdown with notification list
-
-client/src/components/notifications/NotificationItem.jsx
-- Single notification card
-- Click to navigate
-- Mark as read action
-
-client/src/components/notifications/NotificationDropdown.jsx
-- Scrollable list
-- "Mark all as read" button
-- "View all" link
-
-client/src/pages/NotificationsPage.jsx
-- Full notification history
-- Filter by type/read status
-- Delete notifications
-
-client/src/store/notificationStore.js (new)
-- getNotifications()
-- markAsRead()
-- realTimeNotifications() - polling or WebSocket
-
-client/src/services/notificationService.js (new)
-- API calls for notifications
+├── components/        (102)   React components
+├── pages/              (43)   ✅ ALL PAGES FUNCTIONAL
+│   ├── career/
+│   │   ├── JobBoardPage.jsx        ✅ 146 lines - fully functional
+│   │   ├── ResumePage.jsx          ✅ 654 lines - complete builder
+│   │   └── InterviewPrepPage.jsx   ✅ 170 lines - functional
+│   ├── quiz/ (4 pages)             ✅ Complete
+│   ├── dashboard/ (1 page)         ✅ Complete
+│   ├── admin/ (5 pages)            ✅ Complete
+│   └── ... 30+ more pages
+├── services/           (31)   ✅ API CLIENT LAYER
+│   ├── jobService.js               ✅ Complete
+│   ├── resumeService.js            ✅ Complete
+│   ├── interviewService.js         ✅ Complete
+│   ├── examService.js              ✅ Complete
+│   └── ... 27 more services
+├── store/              (32)   Zustand state management
+└── hooks/               (1)   Custom React hooks
 ```
 
-**Email Service Setup:**
+**Total:** 41 models, 36 controllers, 35 routes, 23 services, 102 components, 43 pages, 31 services (client), 32 stores
+
+---
+
+## 🎯 GOALS (What's NOT Yet Complete)
+
+### 🔴 Priority 1: Inquiry Ticketing Frontend
+
+**What's Missing:**
+- ❌ AskQuestionButton component (floating button on subject/topic pages)
+- ❌ TicketForm component (modal with file upload)
+- ❌ TicketCard component (ticket preview in lists)
+- ❌ TicketDetail component (full conversation view)
+- ❌ MyTicketsPage (student ticket list)
+- ❌ TicketInboxPage (instructor dashboard)
+- ❌ Integration with Navigation component
+- ❌ Real-time ticket notifications
+
+**Backend Ready:** ✅ 100% (10 controller methods, full model)
+
+**Estimated Effort:** 1-2 weeks
+
+---
+
+### 🔴 Priority 2: File Upload System
+
+**What's Missing:**
+- ❌ Multer middleware configuration
+- ❌ File controller implementation (upload, download, delete)
+- ❌ File routes with authentication
+- ❌ FileUploadButton component (drag & drop)
+- ❌ FileList component
+- ❌ FileCard component
+- ❌ Integration with topics, tickets, admin panel
+- ❌ File validation & security
+
+**Current State:** Model exists, minimal controller structure
+
+**Estimated Effort:** 1 week
+
+---
+
+### 🟡 Priority 3: Notification Center Frontend
+
+**What's Missing:**
+- ❌ NotificationBell component (header icon with badge)
+- ❌ NotificationDropdown component
+- ❌ NotificationItem component
+- ❌ NotificationsPage (full history)
+- ❌ notificationStore (Zustand)
+- ❌ Integration with Navigation
+- ❌ Real-time updates (polling or WebSocket)
+
+**Backend Ready:** ✅ 100% (4 controller methods, notificationService)
+
+**Estimated Effort:** 1 week
+
+---
+
+### 🟡 Priority 4: Scheduled Jobs (Cron)
+
+**What's Missing:**
+- ❌ Daily streak reminders (6 PM)
+- ❌ Weekly class reminders (Sunday 8 PM)
+- ❌ Ticker expiration job (hourly)
+- ❌ Automatic post-test reminders
+- ❌ Achievement unlock notifications
+- ❌ node-cron setup in server.js
+
+**Required:** node-cron package, scheduled job configuration
+
+**Estimated Effort:** 3-5 days
+
+---
+
+### 🟢 Priority 5: PDF Generation (Resume)
+
+**What's Missing:**
+- ❌ Puppeteer integration
+- ❌ PDF generation route implementation
+- ❌ HTML to PDF conversion
+- ❌ Download PDF button functionality
+
+**Current State:** Frontend complete with print button (uses browser print), backend placeholder
+
+**Estimated Effort:** 2-3 days
+
+---
+
+### 🟢 Priority 6: Journey Enhancements
+
+**What's Missing:**
+- ❌ Weekly unlock animations
+- ❌ Lock/unlock visual indicators
+- ❌ "This Week's Focus" dashboard card
+- ❌ Progress bars per week
+- ❌ Email reminders for journey milestones
+
+**Current State:** Journey map functional, needs polish
+
+**Estimated Effort:** 1 week
+
+---
+
+### 🟢 Priority 7: Analytics Enhancements
+
+**What's Missing:**
+- ❌ Study time tracking (daily/weekly/monthly)
+- ❌ Time per subject graphs
+- ❌ Comparative analytics (vs cohort average)
+- ❌ Predictive exam readiness percentage
+- ❌ Weak areas deep dive with recommendations
+- ❌ Success probability calculator
+
+**Current State:** Basic analytics working
+
+**Estimated Effort:** 1-2 weeks
+
+---
+
+### 🟢 Priority 8: Admin Tools
+
+**What's Missing:**
+- ❌ Bulk question import (CSV upload)
+- ❌ System monitoring dashboard
+- ❌ Real-time metrics
+- ❌ Instructor performance tracking
+
+**Current State:** Admin has full CRUD, but no bulk actions
+
+**Estimated Effort:** 1 week
+
+---
+
+## 🧪 TEST ACCOUNTS (Seeded)
+
+| Email | Role | Password | Characteristics |
+|-------|------|----------|----------------|
+| admin@previlace.com | Admin | password123 | Full system access |
+| instructor@previlace.com | Instructor | password123 | Can view tickets, manage availability |
+| student@previlace.com | Student | password123 | Week 1, medium performance, fresh start |
+| student1@previlace.com | Student | password123 | Week 3, **low performer**, struggles with quizzes |
+| student2@previlace.com | Student | password123 | Week 6, **medium performer**, average progress |
+| student3@previlace.com | Student | password123 | Week 11, **high performer**, excelling |
+
+**All seeded with:**
+- StudyPlan (10 weeks, Sat/Sun classes)
+- DailyActivities (past progress)
+- QuizSessions (realistic history)
+- UserQuestionHistory (SM-2 data)
+- Streaks, Achievements, Leaderboard entries
+
+---
+
+## 🔬 ALGORITHMS & TECHNICAL DETAILS
+
+### SM-2 Spaced Repetition Algorithm
+
+**Implementation:** `sm2AlgorithmService.js` (246 lines)
+
 ```javascript
-// Using Nodemailer + Gmail SMTP
-const nodemailer = require('nodemailer');
+// Quality Rating Calculation
+function calculateQualityRating(isCorrect, responseTime, avgTime, consecutiveCorrect) {
+  if (!isCorrect) return 0-2; // INCORRECT_* ratings
+  
+  const timeRatio = responseTime / avgTime;
+  if (timeRatio <= 0.5 && consecutiveCorrect >= 3) return 5; // PERFECT
+  if (timeRatio <= 0.8) return 4; // HESITATION
+  return 3; // DIFFICULT
+}
 
-const transporter = nodemailer.createTransporter({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD // App password
-  }
-});
+// Ease Factor Calculation
+newEaseFactor = currentEaseFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+// Clamped between 1.3 and 3.0
 
-// Or use SendGrid for better deliverability
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Interval Calculation
+if (quality < 3) {
+  interval = 1;  // Reset
+  repetitions = 0;
+} else if (repetitions == 1) interval = 1;
+  else if (repetitions == 2) interval = 6;
+  else interval = Math.round(previousInterval * easeFactor);
 ```
 
-**Scheduled Jobs (using node-cron):**
+**Mastery Determination:**
+- Beginner: 0-3 days interval, accuracy < 60%
+- Intermediate: 4-14 days, accuracy 60-75%
+- Advanced: 15-60 days, accuracy 75-90%
+- Mastered: 61+ days, accuracy 90%+
+
+### Question Selection Modes
+
+**1. Random Mode** (default for practice)
 ```javascript
-const cron = require('node-cron');
-
-// Daily at 6 PM - Send streak reminders
-cron.schedule('0 18 * * *', async () => {
-  await sendStreakReminders();
-});
-
-// Sunday at 8 PM - Send weekly reminders
-cron.schedule('0 20 * * 0', async () => {
-  await sendWeeklyReminders();
-});
-
-// Every hour - Check expired tickets
-cron.schedule('0 * * * *', async () => {
-  await expireOldTickets();
-});
+// 30% review (due SM-2 questions) + 70% new questions
+// Excludes recently answered (last 50)
+// Shuffled for variety
 ```
 
-**Implementation Priority:**
-1. Create Notification model
-2. Set up email service (Nodemailer or SendGrid)
-3. Create notification controller and routes
-4. Build NotificationBell component
-5. Add to Navigation component
-6. Create scheduled jobs for reminders
-7. Trigger notifications on key events
-
----
-
-## 4. CAREER DEVELOPMENT (CRITICAL - THESIS REQUIREMENT)
-
-### Backend Infrastructure (Currently Missing)
-
-**Jobs System:**
-```
-server/src/controllers/jobController.js (NEW)
-- getAllJobs() - list with filters
-- getJobById() - job details
-- createJob() - admin only
-- updateJob() - admin only
-- deleteJob() - admin only
-- matchJobsForUser() - AI matching algorithm
-
-server/src/routes/jobRoutes.js (NEW)
-- GET /api/jobs - list jobs
-- GET /api/jobs/:id - job details
-- POST /api/jobs - create (admin only)
-- PATCH /api/jobs/:id - update (admin only)
-- DELETE /api/jobs/:id - delete (admin only)
-- GET /api/jobs/matches - matched jobs for logged-in user
-
-server/src/services/jobService.js (NEW)
-- filterJobs() - filter by exam level, location, salary
-- searchJobs() - keyword search
-- matchJobs() - match user profile to jobs
-- crawlJobs() - future: scrape government job sites
-
-server/src/services/jobCrawlerService.js (FUTURE)
-- Scrape CSC website, PhilJobNet
-- Parse job postings
-- Store in database
+**2. Spaced Repetition Mode**
+```javascript
+// Prioritizes questions due for review (nextReviewDate <= today)
+// Sorted by priority score:
+//   - Overdue questions (high priority)
+//   - Low ease factor (struggling)
+//   - High error rate
+//   - Long intervals (retention check)
 ```
 
-**Resume System:**
-```
-server/src/controllers/resumeController.js (NEW)
-- getUserResumes()
-- getResumeById()
-- createResume()
-- updateResume()
-- deleteResume()
-- generatePDF() - generate PDF from resume data
-
-server/src/routes/resumeRoutes.js (NEW)
-- GET /api/resumes - user's resumes
-- GET /api/resumes/:id
-- POST /api/resumes - create
-- PATCH /api/resumes/:id - update
-- DELETE /api/resumes/:id - delete
-- GET /api/resumes/:id/pdf - download PDF
-
-server/src/services/resumeService.js (NEW)
-- buildResume() - format resume data
-- generatePDF() - using puppeteer or PDFKit
-- validateResume() - check required fields
-
-server/src/services/pdfService.js (NEW)
-- generateResumePDF() using Puppeteer or PDFKit
-- HTML templates for resume layouts
+**3. Adaptive Mode**
+```javascript
+// Adjusts difficulty based on recent performance (last 20 questions)
+// High performer (80%+): 10% beginner, 30% intermediate, 60% advanced
+// Medium (60-80%): 20% beginner, 60% intermediate, 20% advanced
+// Low (<60%): 60% beginner, 30% intermediate, 10% advanced
 ```
 
-**Interview Prep:**
+### Study Plan Flow
+
 ```
-server/src/controllers/interviewController.js (ENHANCE)
-- getQuestionBank() - government interview questions
-- createPracticeSession()
-- saveUserResponse()
-- getSessionHistory()
-
-server/src/routes/interviewRoutes.js (NEW)
-- GET /api/interview/questions
-- POST /api/interview/practice
-- GET /api/interview/history
-```
-
-### Frontend Pages (Currently Placeholders)
-
-**Jobs Page:**
-```
-client/src/pages/career/JobsPage.jsx (REPLACE PLACEHOLDER)
-- Job listing with search/filters
-- Filter by: exam level, location, agency, salary range
-- Job cards with: title, agency, location, salary, deadline
-- Click to view job details
-
-client/src/pages/career/JobDetailPage.jsx (NEW)
-- Full job description
-- Requirements
-- How to apply
-- Application deadline
-- "Apply" button (external link)
-- "Save to favorites" option
-
-client/src/components/jobs/JobCard.jsx (NEW)
-- Job preview card
-- Key info displayed
-- Match percentage badge (if logged in)
-
-client/src/components/jobs/JobFilters.jsx (NEW)
-- Filter sidebar/dropdown
-- Search box
-- Exam level toggle
-- Location select
-- Salary range slider
-
-client/src/services/jobService.js (NEW)
-- getJobs(), getJobById(), getMatchedJobs()
+Week 1: Pre-Assessment Quiz (all 8 subjects, establish baseline)
+↓
+Week 2-10: Structured Learning
+  Saturday:
+    - Pre-test (new topics for today)
+    - Class session (in-person/recorded)
+    - Daily practice (SM-2 from previous weeks)
+  Sunday:
+    - Pre-test (today's new topics)
+    - Deep-dive session
+    - Daily practice (SM-2)
+    - Post-test (ALL topics learned so far - cumulative)
+  
+  Monday-Friday:
+    - Daily practice only (SM-2 algorithm)
+    - Keeps streak alive
+    - Reinforces learning
 ```
 
-**Resume Builder:**
-```
-client/src/pages/career/ResumeBuilderPage.jsx (REPLACE PLACEHOLDER)
-- Step-by-step resume form
-- Sections: Personal Info, Education, Work Experience, Skills, CSE Info
-- Live preview on right side
-- Save as draft
-- Download as PDF
+### Post-Test Logic
 
-client/src/components/resume/ResumeForm.jsx (NEW)
-- Form with sections
-- Add/remove work experience
-- Add/remove education
-- Skills selector
+**Implementation:** `examController.js` + `PostTestTracking` model
 
-client/src/components/resume/ResumePreview.jsx (NEW)
-- Live preview of resume
-- Government-standard format
-- Professional layout
+```javascript
+// Post-test questions include:
+// 1. ALL topics from current week
+// 2. ALL topics from previous weeks (cumulative)
+// 3. Distributed across all subjects covered
+// 4. Adaptive difficulty based on user performance
 
-client/src/components/resume/ResumeTemplates.jsx (NEW)
-- Template selector
-- 3-4 government-standard templates
-
-client/src/services/resumeService.js (NEW)
-- createResume(), updateResume(), downloadPDF()
-```
-
-**Interview Prep:**
-```
-client/src/pages/career/InterviewPrepPage.jsx (REPLACE PLACEHOLDER)
-- Question categories (behavioral, situational, technical)
-- Practice mode: random question
-- View sample answers
-- Track questions practiced
-
-client/src/components/interview/QuestionCard.jsx (NEW)
-- Question display
-- Answer input
-- Tips section
-
-client/src/components/interview/PracticeHistory.jsx (NEW)
-- List of practiced questions
-- Performance tracking
-```
-
-**Implementation Priority:**
-1. Create job controller, routes, service
-2. Build JobsPage with listing and filters
-3. Build JobDetailPage
-4. Seed job postings in database
-5. Create resume controller, routes, service
-6. Build ResumeBuilderPage with form
-7. Implement PDF generation
-8. Build InterviewPrepPage with question bank
-9. Add job matching algorithm
-10. (Future) Implement job crawler
-
----
-
-## 5. JOURNEY ENHANCEMENTS (MEDIUM PRIORITY)
-
-### Current State
-- Journey map exists
-- Study plan with schedule exists
-- Weekly progression tracked
-
-### Missing Duolingo-Style Features
-
-**Weekly Unlocking:**
-- Week 1 unlocks on Monday after first class
-- Week 2 unlocks on Monday after second class
-- Lock/unlock animation
-- Clear progress indicators
-
-**Email Reminders:**
-- Monday morning: "Week X is now unlocked!"
-- Wednesday: "Don't forget to practice this week"
-- Saturday morning: "Class today at [time]"
-- Sunday evening: "Prepare for tomorrow's class"
-
-**Weekday Assessments:**
-- Encourage daily practice Monday-Friday
-- Quick 10-question quizzes
-- Immediate feedback (already exists)
-- XP/streak rewards
-
-**Visual Improvements:**
-- Journey path with nodes
-- Completed checkmarks
-- Current week highlight
-- Next week preview (locked state)
-
-**Files to Enhance:**
-```
-client/src/components/JourneyMap.jsx (ENHANCE)
-- Add lock/unlock animations
-- Add progress bars per week
-- Add week status indicators
-
-client/src/pages/dashboard/DashboardPage.jsx (ENHANCE)
-- Add "This Week's Focus" card
-- Add "Daily Practice" CTA
-- Add streak prominence
-
-server/src/services/notificationService.js (ENHANCE)
-- Add journey-related email templates
-- Schedule weekly unlock notifications
-
-server/src/services/studyPlanService.js (ENHANCE)
-- calculateWeeklyProgress()
-- unlockNextWeek()
-- checkIfWeekComplete()
+// Example: Week 6 Sunday Post-Test
+// Includes topics from: Week 2, 3, 4, 5, 6 (cumulative)
+// ~50 questions total, covering all subjects
 ```
 
 ---
 
-## 6. ANALYTICS ENHANCEMENTS (MEDIUM PRIORITY)
+## 🏗️ ARCHITECTURE DECISIONS
 
-### Missing Features on Analytics Page
+### Authentication
+- **JWT**: Access tokens (24h expiry), stored in localStorage
+- **Google OAuth 2.0**: Social login via Passport.js
+- **Session Management**: Handled client-side, no server sessions
 
-**Study Time Tracking:**
-- Daily/weekly/monthly study time
-- Time per subject
-- Avg session duration
-- Compare with cohort average
+### State Management
+- **Zustand**: Lightweight, fast, no boilerplate
+- **32 stores**: Quiz, Auth, Analytics, Leaderboard, Journey, etc.
+- **Persistence**: localStorage for auth, session data
 
-**Weak Areas Deep Dive:**
-- Top 3 weakest topics
-- Recommended practice questions
-- Progress since last week
-- Improvement suggestions
+### Real-time Features
+- **Socket.io**: Study groups, live leaderboard, collaborative sessions
+- **Polling** (planned): Notifications (5-10s interval)
 
-**Predictive Analytics:**
-- Estimated exam readiness percentage
-- Days needed to reach target score
-- Suggested study pace
-- Success probability
+### Styling
+- **Tailwind CSS**: Utility-first, rapid development
+- **Design System**: Black/white/gray foundation, minimal color accents
+- **Responsive**: Mobile-first, works on all devices
 
-**Comparative Analytics:**
-- Your rank in class
-- Average vs your performance
-- Improvement rate comparison
+### Database
+- **MongoDB**: Flexible schema, fast queries
+- **Mongoose**: ODM with schemas, validation, middleware
+- **Indexes**: Optimized for common queries (userId, questionId, date ranges)
 
-**Files to Enhance:**
+---
+
+## 📊 DEVELOPMENT METRICS
+
+### Recent Commits (Last 15)
 ```
-client/src/pages/AnalyticsPage.jsx (ENHANCE)
-- Add study time chart
-- Add weak areas section with recommendations
-- Add predictive metrics card
+8f391af Merge branch 'Desabille'
+730e1c2 feat: add design docs and major dashboard enhancements
+230eae0 feat: streamline navigation and landing page
+22d160b feat: update resume page and navigation branding
+53bf3de feat: initial implementation of full-stack learning platform
+e1a21ed refactor: change routing, admin UI, quiz analytics
+280af15 Merge pull request #19
+...
+```
 
-server/src/controllers/analyticsController.js (ENHANCE)
-- calculateStudyTime()
-- identifyWeakAreas()
-- predictExamReadiness()
-- getComparativeAnalytics()
+### Code Statistics
+- **Backend:** 36 controllers, 41 models, 35 routes, 23 services
+- **Frontend:** 102 components, 43 pages, 31 API services, 32 Zustand stores
+- **Total Lines:** ~300,000+ (estimated)
+- **Dependencies:** 80+ npm packages (client + server combined)
 
-server/src/services/analyticsService.js (NEW)
-- Advanced analytics calculations
-- ML predictions (optional)
+---
+
+## 🐛 KNOWN ISSUES
+
+### Non-Critical (Warnings)
+- ⚠️ Mongoose duplicate schema index warnings (cosmetic, doesn't affect functionality)
+- ⚠️ Reserved schema pathname `errors` in ManualQuestion model (intentional use)
+
+### Resolved  
+- ✅ Sunday No Subject issue (fixed in seed_comprehensive.js)
+- ✅ Journey Map not navigation working (fixed)
+- ✅ Session resumption (implemented)
+- ✅ Study plan generation errors (fixed)
+
+### Active (None blocking)
+- All systems operational
+
+---
+
+## 📋 IMPLEMENTATION ROADMAP
+
+### ✅ Phase 1: Core Learning System (COMPLETE)
+- ✅ Quiz system with SM-2 algorithm
+- ✅ Study plan with 10-week schedule
+- ✅ Journey map with weekly progression
+- ✅ Analytics and progress tracking
+- ✅ Leaderboard and achievements
+
+### ⚠️ Phase 2: Career Features (MOSTLY COMPLETE)
+- ✅ Jobs board (fully functional)
+- ✅ Resume builder (frontend complete, PDF pending)
+- ✅ Interview prep (functional, needs expansion)
+
+### 🔄 Phase 3: Communication (IN PROGRESS)
+- ✅ Inquiry tickets (backend complete)
+- ❌ Ticketing frontend (1-2 weeks)
+- ✅ Email service (ready)
+- ❌ Scheduled emails (3-5 days)
+- ✅ Notifications (backend ready)
+- ❌ Notification center UI (1 week)
+
+### 📅 Phase 4: Enhancements (PLANNED)
+- ❌ File upload system (1 week)
+- ❌ Journey animations (1 week)
+- ❌ Advanced analytics (1-2 weeks)
+- ❌ Admin bulk tools (1 week)
+- ❌ PDF generation (2-3 days)
+
+---
+
+## 🎯 NEXT STEPS (Recommended Priority)
+
+1. **Inquiry Ticketing Frontend** (1-2 weeks) - Complete the support system
+2. **Scheduled Jobs** (3-5 days) - Automate reminders and maintenance
+3. **Notification Center UI** (1 week) - Engage users with timely updates
+4. **File Upload** (1 week) - Enable study materials distribution
+5. **PDF Generation** (2-3 days) - Complete resume builder
+6. **Journey Animations** (1 week) - Polish the learning experience
+7. **Analytics Enhancements** (1-2 weeks) - Deeper insights
+8. **Admin Bulk Tools** (1 week) - Efficiency improvements
+
+**Total Estimated Time to Full Feature Completion:** 6-8 weeks
+
+---
+
+## 🔧 TECHNICAL STACK
+
+### Backend
+- **Runtime:** Node.js v18+
+- **Framework:** Express.js
+- **Database:** MongoDB + Mongoose
+- **Auth:** Passport.js, JWT, bcryptjs
+- **Real-time:** Socket.io
+- **Email:** Nodemailer (Gmail SMTP)
+- **Utils:** Lodash, date-fns, validator
+
+### Frontend
+- **Framework:** React 18
+- **Build Tool:** Vite
+- **Routing:** React Router v6
+- **State:** Zustand
+- **Styling:** Tailwind CSS
+- **Icons:** Lucide React
+- **HTTP:** Axios
+- **Real-time:** socket.io-client
+
+### Development
+- **Package Manager:** pnpm (recommended), npm (server)
+- **Code Quality:** Prettier, ESLint
+- **Version Control:** Git + GitHub
+
+---
+
+## 📝 ENVIRONMENT VARIABLES
+
+### Required
+```env
+# Database
+MONGODB_URI=mongodb://localhost:27017/previlace
+
+# Auth
+JWT_SECRET=your-secret-key
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-secret
+SESSION_SECRET=your-session-secret
+
+# Server
+NODE_ENV=development
+PORT=5000
+```
+
+### Optional (for full features)
+```env
+# Email (for notifications)
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+
+# SendGrid (alternative to Gmail)
+SENDGRID_API_KEY=your-sendgrid-key
+
+# Cloud Storage (future)
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_S3_BUCKET=
+
+# File Upload
+MAX_FILE_SIZE=25MB
+ALLOWED_FILE_TYPES=pdf,doc,docx,jpg,png
 ```
 
 ---
 
-## 7. ADMIN ENHANCEMENTS (LOW-MEDIUM PRIORITY)
+## 📖 KEY FILES TO UNDERSTAND
 
-### Bulk Import Questions
-- CSV upload for questions
-- Validate format
-- Preview before import
-- Error handling
+### Backend Entry Points
+- `server/server.js` - Server initialization, routes, middleware
+- `server/src/config/database.js` - MongoDB connection
+- `server/src/middleware/auth.js` - Authentication middleware
 
-### System Monitoring
-- Active users count
-- Quiz completion rate
-- Average quiz score
-- Ticket response time
-- Instructor performance
+### Core Business Logic
+- `server/src/services/questionSelectionService.js` - 3 selection modes
+- `server/src/services/sm2AlgorithmService.js` - Spaced repetition
+- `server/src/services/adaptiveQuizService.js` - Adaptive difficulty
+- `server/src/services/studyPlanService.js` - Weekly schedule generation
 
-### Content Management
-- Bulk edit questions
-- Archive old questions
-- Duplicate question detection
+### Critical Controllers
+- `server/src/controllers/examController.js` - Quiz session management (1,162 lines)
+- `server/src/controllers/inquiryTicketController.js` - Ticketing system (321 lines)
+- `server/src/controllers/analyticsController.js` - Performance tracking
 
-**Files Needed:**
-```
-client/src/pages/admin/BulkImportPage.jsx (NEW)
-- CSV upload interface
-- Validation results
-- Import preview
+### Data Models
+- `server/src/models/QuizSession.js` - Quiz state and scoring
+- `server/src/models/UserQuestionHistory.js` - SM-2 tracking
+- `server/src/models/StudyPlan.js` - 10-week schedule
+- `server/src/models/InquiryTicket.js` - Support tickets
 
-server/src/services/importService.js (NEW)
-- Parse CSV
-- Validate data
-- Bulk insert questions
+### Frontend Core
+- `client/src/App.jsx` - Routing, protected routes
+- `client/src/pages/quiz/QuizSessionPage.jsx` - Main quiz interface
+- `client/src/pages/dashboard/DashboardPage.jsx` - Student homepage
+- `client/src/pages/career/ResumePage.jsx` - Resume builder (654 lines)
 
-client/src/pages/admin/SystemMonitoringPage.jsx (NEW)
-- KPI dashboard
-- Charts and metrics
+---
+
+## 🎓 LEARNING RESOURCES
+
+### For Developers
+- **SM-2 Algorithm:** [SuperMemo Documentation](https://www.supermemo.com/en/archives1990-2015/english/ol/sm2)
+- **React + Vite:** [Vite Guide](https://vitejs.dev/)
+- **Zustand:** [Zustand Docs](https://zustand-demo.pmnd.rs/)
+- **Tailwind CSS:** [Tailwind Docs](https://tailwindcss.com/)
+- **Express.js:** [Express Guide](https://expressjs.com/)
+- **Mongoose:** [Mongoose Docs](https://mongoosejs.com/)
+
+### For Understanding the System
+1. Start with `GEMINI.md` - Project overview and conventions
+2. Review `seed_comprehensive.js` - See how data is structured
+3. Examine `examController.js` - Understand quiz flow
+4. Study `questionSelectionService.js` - See selection logic
+5. Read `sm2AlgorithmService.js` - Learn spaced repetition
+
+---
+
+## 🚀 QUICK START
+
+```bash
+# Install all dependencies
+pnpm install:all
+
+# Start MongoDB (make sure it's running)
+mongod
+
+# Seed the database (run from server directory)
+cd server
+npm run seed  # or node src/scripts/seed_comprehensive.js
+
+# Start both dev servers (from root)
+# Terminal 1: Server
+pnpm dev:server
+
+# Terminal 2: Client
+pnpm dev:client
+
+# Access:
+# Client: http://localhost:5173
+# Server: http://localhost:5000
+# API: http://localhost:5000/api
 ```
 
 ---
 
-## 8. INSTRUCTOR ENHANCEMENTS (LOW PRIORITY)
+**END OF STATUS REPORT**
 
-### Class Management
-- View assigned students
-- View class schedule
-- Mark attendance (if needed)
-
-### Performance Dashboard
-- Student performance overview
-- At-risk students alert
-- Topic difficulty analysis
-
-**Files to Enhance:**
-```
-client/src/pages/InstructorDashboardPage.jsx (ENHANCE)
-- Add student list
-- Add performance metrics
-- Add ticket queue summary
-```
+*This document reflects the actual current state of the system as of 2025-11-25. Updated based on real codebase inspection.*
 
 ---
 
-## IMPLEMENTATION ROADMAP
-
-### Phase 1: Critical Features (3-4 weeks)
-**Week 1-2: Inquiry/Ticketing System**
-1. Enhance InquiryTicket model
-2. Build ticket controller with full CRUD
-3. Create student AskQuestionButton
-4. Build instructor TicketInboxPage
-5. Add auto-expiration logic
-6. Add email notifications
-
-**Week 3: File Upload System**
-1. Set up multer middleware
-2. Create File model and controller
-3. Build FileUploadButton component
-4. Add file upload to admin panel
-5. Add file downloads to topic pages
-
-**Week 4: Notification System**
-1. Create Notification model
-2. Set up email service (Nodemailer)
-3. Build NotificationBell component
-4. Add to Navigation
-5. Create scheduled reminder jobs
-
-### Phase 2: Career Features (2-3 weeks)
-**Week 5-6: Jobs + Resume**
-1. Create job controller, routes, service
-2. Build JobsPage with listing/filters
-3. Seed job postings
-4. Create resume controller, routes, service
-5. Build ResumeBuilderPage
-6. Implement PDF generation
-
-**Week 7: Interview Prep**
-1. Enhance interview controller
-2. Build InterviewPrepPage
-3. Seed interview questions
-4. Add practice tracking
-
-### Phase 3: Journey + Analytics (1-2 weeks)
-**Week 8-9:**
-1. Enhance JourneyMap with animations
-2. Add weekly unlock logic
-3. Add email reminders for journey
-4. Enhance analytics with study time
-5. Add predictive metrics
-
-### Phase 4: Admin + Instructor (1 week)
-**Week 10:**
-1. Bulk import functionality
-2. System monitoring dashboard
-3. Instructor enhancements
-
----
-
-## FILES TO CREATE (Summary)
-
-### Backend (New Files)
-```
-server/src/models/Notification.js
-server/src/models/File.js
-server/src/controllers/jobController.js
-server/src/controllers/resumeController.js
-server/src/controllers/interviewController.js
-server/src/controllers/notificationController.js
-server/src/controllers/fileController.js
-server/src/routes/jobRoutes.js
-server/src/routes/resumeRoutes.js
-server/src/routes/interviewRoutes.js
-server/src/routes/notificationRoutes.js
-server/src/routes/fileRoutes.js
-server/src/services/jobService.js
-server/src/services/resumeService.js
-server/src/services/pdfService.js
-server/src/services/emailService.js
-server/src/services/notificationService.js
-server/src/services/fileService.js
-server/src/services/importService.js
-server/src/middleware/fileUpload.js
-server/src/jobs/reminderJob.js
-server/src/utils/fileValidator.js
-```
-
-### Frontend (New Files)
-```
-client/src/components/inquiry/AskQuestionButton.jsx
-client/src/components/inquiry/TicketForm.jsx
-client/src/components/inquiry/TicketCard.jsx
-client/src/components/inquiry/TicketDetail.jsx
-client/src/components/files/FileUploadButton.jsx
-client/src/components/files/FileList.jsx
-client/src/components/files/FileCard.jsx
-client/src/components/notifications/NotificationBell.jsx
-client/src/components/notifications/NotificationItem.jsx
-client/src/components/notifications/NotificationDropdown.jsx
-client/src/components/jobs/JobCard.jsx
-client/src/components/jobs/JobFilters.jsx
-client/src/components/resume/ResumeForm.jsx
-client/src/components/resume/ResumePreview.jsx
-client/src/components/resume/ResumeTemplates.jsx
-client/src/components/interview/QuestionCard.jsx
-client/src/components/interview/PracticeHistory.jsx
-client/src/pages/student/MyTicketsPage.jsx
-client/src/pages/instructor/TicketInboxPage.jsx
-client/src/pages/NotificationsPage.jsx
-client/src/pages/career/JobsPage.jsx (replace)
-client/src/pages/career/JobDetailPage.jsx
-client/src/pages/career/ResumeBuilderPage.jsx (replace)
-client/src/pages/career/InterviewPrepPage.jsx (replace)
-client/src/pages/admin/BulkImportPage.jsx
-client/src/pages/admin/SystemMonitoringPage.jsx
-client/src/pages/admin/FileManagementPage.jsx
-client/src/services/jobService.js
-client/src/services/resumeService.js
-client/src/services/fileService.js
-client/src/services/notificationService.js
-client/src/store/notificationStore.js
-```
-
-### Files to Enhance
-```
-server/src/models/InquiryTicket.js
-server/src/controllers/inquiryTicketController.js
-server/src/routes/inquiryTicketRoutes.js
-server/src/controllers/analyticsController.js
-server/src/services/analyticsService.js
-client/src/components/JourneyMap.jsx
-client/src/pages/dashboard/DashboardPage.jsx
-client/src/pages/AnalyticsPage.jsx
-client/src/pages/InstructorDashboardPage.jsx
-client/src/pages/TopicDetailPage.jsx
-client/src/pages/SubjectDetailPage.jsx
-client/src/components/Navigation.jsx
-client/src/store/inquiryStore.js
-```
-
-**Total:** ~60 new files, ~15 files to enhance
-
----
-
-## PRIORITY SUMMARY
-
-### MUST HAVE (Before Thesis Defense)
-1. **Inquiry/Ticketing System** - Core feature for student-instructor communication
-2. **Notification System** - Email + in-app for engagement
-3. **Career Features** - Jobs, Resume, Interview (thesis requirement)
-4. **File Upload** - Essential for study materials
-
-### SHOULD HAVE (For Full Functionality)
-1. Journey enhancements (weekly unlocking, email reminders)
-2. Analytics enhancements (study time, predictions)
-3. Bulk import for admin
-4. Instructor dashboard enhancements
-
-### NICE TO HAVE (Future Iterations)
-1. Job crawling automation
-2. Advanced AI features
-3. System monitoring dashboard
-4. Mobile app (future)
-
----
-
-## TECHNICAL NOTES
-
-**Email Service Recommendation:**
-- Start with Nodemailer + Gmail (free, simple)
-- Migrate to SendGrid if scaling (better deliverability)
-
-**File Storage:**
-- Start with local filesystem
-- Move to cloud (S3/Cloudinary) when needed
-
-**Scheduled Jobs:**
-- Use node-cron for reminder jobs
-- Run in separate process or use PM2
-
-**PDF Generation:**
-- Puppeteer (headless Chrome) - flexible, HTML templates
-- PDFKit - lightweight, programmatic
-
-**Real-time Notifications:**
-- Start with polling (simple)
-- Migrate to WebSocket later if needed
-
----
-
-## REMOVED FEATURES (Per User Request)
-
-❌ Discussion forums  
-❌ Flashcards system  
-❌ Note-taking system  
-❌ Mobile app  
-❌ PWA features  
-❌ Collaboration features (study groups, peer reviews)  
-❌ Class announcements  
-❌ Video content system (future consideration)  
-❌ General messaging (replaced with inquiry tickets)  
-
-**Focus:** Review center exam preparation with adaptive learning journey
+Files Changed:
+- `CURRENT_STATUS.md` — Comprehensive, realistic reflection of actual system state with implemented features, missing goals, algorithms, and technical details

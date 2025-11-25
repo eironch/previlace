@@ -29,6 +29,9 @@ import FileManagementPage from "./pages/admin/FileManagementPage";
 import InstructorDashboardPage from "./pages/InstructorDashboardPage";
 import MyTicketsPage from "./pages/student/MyTicketsPage";
 import TicketInboxPage from "./pages/instructor/TicketInboxPage";
+import ClassManagementPage from "./pages/admin/ClassManagementPage";
+import InstructorClassesPage from "./pages/instructor/InstructorClassesPage";
+import InstructorAvailabilityPage from "./pages/instructor/InstructorAvailabilityPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import JobBoardPage from "./pages/career/JobBoardPage";
 import ResumePage from "./pages/career/ResumePage";
@@ -370,6 +373,33 @@ function App() {
           element={
             <DashboardRoute requireAdmin>
               <FileManagementPage />
+            </DashboardRoute>
+          }
+        />
+
+        <Route
+          path="/admin/classes"
+          element={
+            <DashboardRoute requireAdmin>
+              <ClassManagementPage />
+            </DashboardRoute>
+          }
+        />
+
+        <Route
+          path="/instructor/classes"
+          element={
+            <DashboardRoute>
+              <InstructorClassesPage />
+            </DashboardRoute>
+          }
+        />
+
+        <Route
+          path="/instructor/availability"
+          element={
+            <DashboardRoute>
+              <InstructorAvailabilityPage />
             </DashboardRoute>
           }
         />
