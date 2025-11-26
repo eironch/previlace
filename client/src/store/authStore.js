@@ -13,13 +13,13 @@ export const useAuthStore = create((set, get) => ({
 
   initializeAuth: async () => {
     const state = get();
-    
+
     if (state.isInitialized || initializationInProgress) {
       return;
     }
 
     initializationInProgress = true;
-    
+
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const authStatus = urlParams.get("auth");
@@ -30,14 +30,14 @@ export const useAuthStore = create((set, get) => ({
       if (authStatus === "success" && userData) {
         try {
           const user = JSON.parse(decodeURIComponent(userData));
-          
+
           if (tokenData) {
             const tokens = JSON.parse(decodeURIComponent(tokenData));
             authService.setTokens(tokens.accessToken, tokens.refreshToken);
           }
-          
+
           localStorage.setItem("user_data", JSON.stringify(user));
-          
+
           set({
             user,
             permissions: user.permissions || [],
@@ -47,6 +47,15 @@ export const useAuthStore = create((set, get) => ({
             isInitialized: true,
           });
           window.history.replaceState({}, document.title, window.location.pathname);
+
+          // Redirect based on user role/status after successful Google Auth
+          if (user.role === "admin" || user.role === "super_admin") {
+            window.location.href = "/admin";
+          } else if (!user.isProfileComplete) {
+            window.location.href = "/onboarding";
+          } else {
+            window.location.href = "/dashboard";
+          }
           return;
         } catch (parseError) {
           set({
@@ -75,7 +84,7 @@ export const useAuthStore = create((set, get) => ({
       }
 
       const storedUser = authService.getStoredUser();
-      
+
       if (!storedUser) {
         set({
           isLoading: false,
@@ -117,7 +126,7 @@ export const useAuthStore = create((set, get) => ({
 
     try {
       const { user } = await authService.login(credentials);
-      
+
       set({
         user,
         permissions: user.permissions || [],

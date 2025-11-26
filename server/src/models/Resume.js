@@ -3,21 +3,15 @@ import mongoose from "mongoose";
 const experienceSchema = new mongoose.Schema({
   title: { type: String, required: true },
   company: { type: String, required: true },
-  location: String,
-  startDate: { type: Date, required: true },
-  endDate: Date,
-  current: { type: Boolean, default: false },
+  duration: String, // Changed from startDate/endDate to match frontend
   description: String,
 });
 
 const educationSchema = new mongoose.Schema({
-  school: { type: String, required: true },
+  institution: { type: String, required: true }, // Changed from school
   degree: { type: String, required: true },
-  fieldOfStudy: String,
-  startDate: { type: Date, required: true },
-  endDate: Date,
-  current: { type: Boolean, default: false },
-  description: String,
+  year: String, // Changed from startDate/endDate
+  details: String, // Added to match frontend
 });
 
 const resumeSchema = new mongoose.Schema(
@@ -26,24 +20,22 @@ const resumeSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true, // One resume per user for now
+      unique: true,
     },
     personalInfo: {
-      firstName: { type: String, required: true },
-      lastName: { type: String, required: true },
-      email: { type: String, required: true },
-      phone: String,
-      address: String,
-      linkedin: String,
-      website: String,
-      summary: String,
+      name: { type: String, default: "" }, // Changed from firstName/lastName
+      email: { type: String, default: "" },
+      phone: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      summary: { type: String, default: "" },
     },
     experience: [experienceSchema],
     education: [educationSchema],
     skills: [String],
+    // Kept for potential future use but not currently in frontend
     certifications: [
       {
-        name: { type: String, required: true },
+        name: String,
         issuer: String,
         date: Date,
         url: String,
@@ -51,7 +43,7 @@ const resumeSchema = new mongoose.Schema(
     ],
     projects: [
       {
-        name: { type: String, required: true },
+        name: String,
         description: String,
         url: String,
         technologies: [String],
@@ -59,7 +51,7 @@ const resumeSchema = new mongoose.Schema(
     ],
     template: {
       type: String,
-      default: "modern", // modern, classic, minimal
+      default: "modern",
     },
   },
   {

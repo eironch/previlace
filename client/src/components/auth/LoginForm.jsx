@@ -11,14 +11,13 @@ import { useAppStore } from "@/store/appStore";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
-    email: "",
+    identifier: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, handleGoogleAuth, error, clearError, isLoading } =
-    useAuthStore();
+  const { login, error, clearError, isLoading } = useAuthStore();
   const navigate = useNavigate();
   const { setCurrentAuthForm, closeAuthModal } = useAppStore();
 
@@ -53,11 +52,6 @@ export default function LoginForm() {
     }
   }
 
-  const handleGoogleClick = () => {
-    closeAuthModal();
-    handleGoogleAuth();
-  };
-
   const disabled = isSubmitting || isLoading;
 
   return (
@@ -78,15 +72,15 @@ export default function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email
+            <label htmlFor="identifier" className="text-sm font-medium text-gray-700">
+              Email or Student ID
             </label>
             <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="your@email.com"
-              value={formData.email}
+              id="identifier"
+              name="identifier"
+              type="text"
+              placeholder="Enter Email or Student ID"
+              value={formData.identifier}
               onChange={handleChange}
               required
               disabled={disabled}
@@ -139,27 +133,6 @@ export default function LoginForm() {
           </Button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full rounded-md border border-gray-300 px-4 py-2 transition-colors hover:bg-gray-50"
-          onClick={handleGoogleClick}
-          disabled={disabled}
-        >
-          Continue with Google
-        </Button>
-
         <div className="space-y-2 text-center">
           <button
             type="button"
@@ -169,17 +142,6 @@ export default function LoginForm() {
           >
             Forgot your password?
           </button>
-          <div className="text-sm text-gray-600">
-            Don't have an account?{" "}
-            <button
-              type="button"
-              className="font-medium text-gray-900 hover:underline"
-              onClick={() => setCurrentAuthForm("register")}
-              disabled={disabled}
-            >
-              Sign up
-            </button>
-          </div>
         </div>
       </div>
     </div>

@@ -946,3 +946,17 @@ xl: 1280px
 - Heavy shadows
 - Complex animations
 - Alert.alert (doesn't work)
+## UI/UX Standards
+
+### Layout & Structure
+- **Full Width**: Dashboard and main content pages must use the full available width. Do not use `max-w-7xl` or similar constraints on the main content container unless specifically required for reading content.
+- **Scrolling**: The header must remain fixed at the top while the content area scrolls. Use `flex flex-col h-full` on the page container and `flex-1 overflow-y-auto` on the content container.
+
+### Headers
+- **StandardHeader**: All pages (Admin and Student) must use the `StandardHeader` component for consistency.
+- **Title & Description**: Always provide a clear title and description in the header.
+- **Actions**: Place primary page actions (e.g., "Create", "Save", "Refresh") in the header's action area.
+
+### Navigation
+- **Routes**: Ensure all sidebar links have corresponding routes defined in `App.jsx`.
+- **Redirects**: Avoid redirecting to the dashboard for valid sidebar links. Implement placeholder pages if the feature is not yet ready.

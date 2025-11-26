@@ -236,7 +236,7 @@ function DailyChallengeCard() {
             </div>
             <div className="flex items-center justify-between">
               <span>Coverage</span>
-              <span className="font-medium text-gray-900">This week's topics</span>
+              <span className="font-medium text-gray-900">Topics Covered</span>
             </div>
           </div>
           <button

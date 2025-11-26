@@ -10,8 +10,7 @@ async function getMyResume(req, res, next) {
       resume = await Resume.create({
         user: req.user.id,
         personalInfo: {
-          firstName: req.user.firstName,
-          lastName: req.user.lastName,
+          name: `${req.user.firstName} ${req.user.lastName}`,
           email: req.user.email,
         },
       });

@@ -14,22 +14,16 @@ import QuizResultsPage from "./pages/quiz/QuizResultsPage";
 import MockExamStartPage from "./pages/quiz/MockExamStartPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ProfileSettingsPage from "./pages/settings/ProfileSettingsPage";
-import StudyStreakPage from "./pages/StudyStreakPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ChallengePage from "./pages/ChallengePage";
 
 import ExamReadinessPage from "./pages/ExamReadinessPage";
 import StudyPlanPage from "./pages/StudyPlanPage";
-import PerformancePage from "./pages/PerformancePage";
-import QuestionBankPage from "./pages/admin/QuestionBankPage";
-import ReviewQueuePage from "./pages/admin/ReviewQueuePage";
-import UserManagementPage from "./pages/admin/UserManagementPage";
-import FileManagementPage from "./pages/admin/FileManagementPage";
+
 import InstructorDashboardPage from "./pages/InstructorDashboardPage";
 import MyTicketsPage from "./pages/student/MyTicketsPage";
 import TicketInboxPage from "./pages/instructor/TicketInboxPage";
-import ClassManagementPage from "./pages/admin/ClassManagementPage";
 import InstructorClassesPage from "./pages/instructor/InstructorClassesPage";
 import InstructorAvailabilityPage from "./pages/instructor/InstructorAvailabilityPage";
 import NotificationsPage from "./pages/NotificationsPage";
@@ -206,14 +200,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/dashboard/study-streak"
-          element={
-            <DashboardRoute>
-              <StudyStreakPage />
-            </DashboardRoute>
-          }
-        />
+
 
         <Route
           path="/dashboard/achievements"
@@ -261,28 +248,10 @@ function App() {
         />
 
         <Route
-          path="/dashboard/performance"
+          path="/dashboard/jobs"
           element={
             <DashboardRoute>
-              <PerformancePage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/admin"
-          element={
-            <DashboardRoute requireAdmin>
-              <AdminPage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/instructor"
-          element={
-            <DashboardRoute>
-              <InstructorDashboardPage />
+              <JobBoardPage />
             </DashboardRoute>
           }
         />
@@ -296,93 +265,14 @@ function App() {
           }
         />
 
-        <Route
-          path="/dashboard/inbox"
-          element={
-            <DashboardRoute>
-              <TicketInboxPage />
-            </DashboardRoute>
-          }
-        />
+
 
         <Route
-          path="/dashboard/notifications"
+          path="/admin/*"
           element={
-            <DashboardRoute>
-              <NotificationsPage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/jobs"
-          element={
-            <DashboardRoute>
-              <JobBoardPage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/resume"
-          element={
-            <DashboardRoute>
-              <ResumePage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/interview"
-          element={
-            <DashboardRoute>
-              <InterviewPrepPage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/admin/question-bank"
-          element={
-            <DashboardRoute requireAdmin>
-              <QuestionBankPage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/admin/review-queue"
-          element={
-            <DashboardRoute requireAdmin>
-              <ReviewQueuePage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/admin/users"
-          element={
-            <DashboardRoute requireAdmin>
-              <UserManagementPage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/admin/files"
-          element={
-            <DashboardRoute requireAdmin>
-              <FileManagementPage />
-            </DashboardRoute>
-          }
-        />
-
-        <Route
-          path="/admin/classes"
-          element={
-            <DashboardRoute requireAdmin>
-              <ClassManagementPage />
-            </DashboardRoute>
+            <ProtectedRoute requireAdmin>
+              <AdminPage />
+            </ProtectedRoute>
           }
         />
 

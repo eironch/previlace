@@ -25,11 +25,10 @@ export const validateRegister = [
 ];
 
 export const validateLogin = [
-  body("email")
+  body("identifier")
     .trim()
-    .isEmail()
-    .withMessage("Valid email is required")
-    .normalizeEmail(),
+    .notEmpty()
+    .withMessage("Email or Student ID is required"),
   body("password")
     .notEmpty()
     .withMessage("Password is required"),

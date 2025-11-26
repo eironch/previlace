@@ -1,11 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useManualQuestionStore } from "../../store/manualQuestionStore";
 import { useSubjectStore } from "../../store/subjectStore";
 import { useTopicStore } from "../../store/topicStore";
 import {
-  ArrowLeft,
-  Save,
-  Eye,
   CheckCircle2,
   XCircle,
   Plus,
@@ -20,7 +17,7 @@ import Select from "../ui/Select";
 import QuestionPreview from "./QuestionPreview";
 import MathInput from "../ui/MathInput";
 
-function QuestionCreationForm({ questionType, onBack, onSuccess }) {
+const QuestionCreationForm = forwardRef(({ questionType = {}, onBack, onSuccess, showPreview }, ref) => {
   const { createQuestion, isCreating, error } = useManualQuestionStore();
   const { subjects, fetchSubjects, loading: subjectsLoading } = useSubjectStore();
   const { topics, fetchTopicsBySubject, loading: topicsLoading } = useTopicStore();
@@ -37,13 +34,13 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
     correctAnswer: "",
     explanation: "",
     explanationMath: "",
-    difficulty: questionType.difficulty || "Beginner",
-    subjectArea: questionType.subjectArea,
-    category: questionType.name,
+    difficulty: questionType?.difficulty || "Beginner",
+    subjectArea: questionType?.subjectArea || "",
+    category: questionType?.name || "",
     examLevel:
-      questionType.examLevel === "Both"
+      questionType?.examLevel === "Both"
         ? "Professional"
-        : questionType.examLevel,
+        : questionType?.examLevel || "Professional",
     language: "English",
     tags: [],
     passageText: "",
@@ -53,9 +50,12 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
     points: 1,
   });
 
-  const [showPreview, setShowPreview] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [submitError, setSubmitError] = useState(null);
+
+  useImperativeHandle(ref, () => ({
+    submit: (status) => handleSubmit(status)
+  }));
 
   useEffect(() => {
     fetchSubjects();
@@ -67,6 +67,32 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
       setFormData((prev) => ({ ...prev, topicId: "" }));
     }
   }, [formData.subjectId]);
+
+  useEffect(() => {
+    if (questionType?.name) {
+      setFormData(prev => ({ 
+        ...prev, 
+        category: questionType.name,
+        difficulty: questionType.difficulty || prev.difficulty,
+        subjectArea: questionType.subjectArea || prev.subjectArea
+      }));
+
+      // Auto-select subject if it matches the subjectArea
+      if (subjects.length > 0 && questionType.subjectArea) {
+        const matchingSubject = subjects.find(s => 
+          s.name.toLowerCase() === questionType.subjectArea.toLowerCase() ||
+          s.name.toLowerCase().includes(questionType.subjectArea.toLowerCase())
+        );
+        
+        if (matchingSubject) {
+          setFormData(prev => ({
+            ...prev,
+            subjectId: matchingSubject._id
+          }));
+        }
+      }
+    }
+  }, [questionType, subjects]);
 
   function updateFormData(field, value) {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -188,48 +214,6 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-4xl px-6 py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={onBack}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-black">Create Question</h1>
-              <p className="text-gray-600">Type: {questionType.name}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => setShowPreview(!showPreview)}
-              className="flex items-center gap-2"
-            >
-              <Eye className="h-5 w-5" />
-              {showPreview ? "Edit" : "Preview"}
-            </Button>
-
-            <Button
-              onClick={() => handleSubmit("draft")}
-              disabled={isCreating}
-              variant="ghost"
-              className="flex items-center gap-2"
-            >
-              <Save className="h-5 w-5" />
-              Save Draft
-            </Button>
-
-            <Button
-              onClick={() => handleSubmit("review")}
-              disabled={isCreating}
-              className="flex items-center gap-2"
-            >
-              <CheckCircle2 className="h-5 w-5" />
-              Submit for Review
-            </Button>
-          </div>
-        </div>
-
         {(error || submitError) && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
             <div className="flex items-center gap-2 text-red-700">
@@ -249,6 +233,26 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-black">
+                    Question Type
+                  </label>
+                  <select
+                    value={formData.questionType}
+                    onChange={(e) => {
+                      const type = e.target.value;
+                      updateFormData("questionType", type);
+                      // Reset options if switching between types that might have different structures
+                      // For now, most are multiple choice based, but good to keep in mind
+                    }}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                  >
+                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="true_false">True/False</option>
+                    <option value="identification">Identification</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-black">
                     Subject
                   </label>
                   {subjectsLoading ? (
@@ -258,7 +262,14 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
                   ) : (
                     <select
                       value={formData.subjectId}
-                      onChange={(e) => updateFormData("subjectId", e.target.value)}
+                      onChange={(e) => {
+                        const selectedSubject = subjects.find(s => s._id === e.target.value);
+                        setFormData(prev => ({
+                          ...prev,
+                          subjectId: e.target.value,
+                          subjectArea: selectedSubject?.name || prev.subjectArea,
+                        }));
+                      }}
                       className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
                     >
                       <option value="">Select Subject</option>
@@ -543,6 +554,6 @@ function QuestionCreationForm({ questionType, onBack, onSuccess }) {
       </div>
     </div>
   );
-}
+});
 
 export default QuestionCreationForm;

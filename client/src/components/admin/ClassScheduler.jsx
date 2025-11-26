@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { Calendar, Clock, Plus, User, BookOpen, MapPin, Video, MoreVertical, Edit, Trash, X } from 'lucide-react';
+import AdminSkeleton from '../ui/AdminSkeleton';
+import useAdminCacheStore from '../../store/adminCacheStore';
 import weekendClassService from '../../services/weekendClassService';
 import subjectService from '../../services/subjectService';
 import instructorService from '../../services/instructorService';
 
-export default function ClassScheduler() {
+const ClassScheduler = forwardRef((props, ref) => {
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [instructors, setInstructors] = useState([]);
@@ -32,6 +34,16 @@ export default function ClassScheduler() {
 
   const [topics, setTopics] = useState([]); // Topics for the currently selected subject in dropdown
 
+  const { getCachedData, setCachedData } = useAdminCacheStore();
+  const CACHE_KEY = 'weekend-classes-data';
+
+  useImperativeHandle(ref, () => ({
+    openModal: () => {
+      resetForm();
+      setShowModal(true);
+    }
+  }));
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -43,8 +55,19 @@ export default function ClassScheduler() {
   }, [currentTopic.subject]);
 
   const fetchData = async () => {
+    const cached = getCachedData(CACHE_KEY);
+    
+    if (cached) {
+      setClasses(cached.data.classes);
+      setSubjects(cached.data.subjects);
+      setInstructors(cached.data.instructors);
+      setLoading(false);
+      
+      if (!cached.isStale) return;
+    }
+
     try {
-      setLoading(true);
+      if (!cached) setLoading(true);
       const [classesData, subjectsData, instructorsData] = await Promise.all([
         weekendClassService.getAllClasses(),
         subjectService.getAllSubjects(),
@@ -53,6 +76,12 @@ export default function ClassScheduler() {
       setClasses(classesData);
       setSubjects(subjectsData);
       setInstructors(instructorsData);
+      
+      setCachedData(CACHE_KEY, { 
+        classes: classesData, 
+        subjects: subjectsData, 
+        instructors: instructorsData 
+      });
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -229,75 +258,80 @@ export default function ClassScheduler() {
     return satClasses.length > 0 || sunClasses.length > 0;
   });
 
+  if (loading) {
+    return <AdminSkeleton />;
+  }
+
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Class Schedule</h2>
-          <p className="text-gray-500 text-sm mt-1">Showing upcoming weekend classes</p>
-        </div>
-        <button
-          onClick={() => { resetForm(); setShowModal(true); }}
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Schedule Session
-        </button>
-      </div>
-
       {/* Upcoming Weekends List */}
       <div className="space-y-8">
-        {upcomingWeekends.map((weekend, index) => (
-          <div key={index} className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-500" />
-              Weekend of {format(weekend.saturday, 'MMMM d')} - {format(weekend.sunday, 'MMMM d, yyyy')}
-            </h3>
-            
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-              <div className="grid grid-cols-2 border-b border-gray-200 bg-gray-50">
-                <div className={`p-3 text-center border-r border-gray-200 ${isSameDay(weekend.saturday, new Date()) ? 'bg-blue-50' : ''}`}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase">Saturday</p>
-                  <p className={`text-sm font-bold ${isSameDay(weekend.saturday, new Date()) ? 'text-blue-600' : 'text-gray-900'}`}>{format(weekend.saturday, 'MMM d')}</p>
-                </div>
-                <div className={`p-3 text-center ${isSameDay(weekend.sunday, new Date()) ? 'bg-blue-50' : ''}`}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase">Sunday</p>
-                  <p className={`text-sm font-bold ${isSameDay(weekend.sunday, new Date()) ? 'text-blue-600' : 'text-gray-900'}`}>{format(weekend.sunday, 'MMM d')}</p>
-                </div>
-              </div>
+        {upcomingWeekends.length === 0 ? (
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
+            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Classes Scheduled</h3>
+            <p className="text-gray-500 mb-6">Get started by scheduling your first weekend class session.</p>
+            <button
+              onClick={() => { resetForm(); setShowModal(true); }}
+              className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Schedule Your First Session
+            </button>
+          </div>
+        ) : (
+          upcomingWeekends.map((weekend, index) => (
+            <div key={index} className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-gray-500" />
+                Weekend of {format(weekend.saturday, 'MMMM d')} - {format(weekend.sunday, 'MMMM d, yyyy')}
+              </h3>
               
-              <div className="grid grid-cols-2 min-h-[150px]">
-                {/* Saturday Column */}
-                <div className="border-r border-gray-200 p-3 space-y-3 bg-white">
-                  {getClassesForDay(weekend.saturday).length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-400 py-4">
-                      <p className="text-xs">No classes scheduled</p>
-                    </div>
-                  ) : (
-                    <DaySessionCard 
-                      classes={getClassesForDay(weekend.saturday)} 
-                      onEdit={handleEdit} 
-                    />
-                  )}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                <div className="grid grid-cols-2 border-b border-gray-200 bg-gray-50">
+                  <div className={`p-3 text-center border-r border-gray-200 ${isSameDay(weekend.saturday, new Date()) ? 'bg-blue-50' : ''}`}>
+                    <p className="text-xs font-semibold text-gray-500 uppercase">Saturday</p>
+                    <p className={`text-sm font-bold ${isSameDay(weekend.saturday, new Date()) ? 'text-blue-600' : 'text-gray-900'}`}>{format(weekend.saturday, 'MMM d')}</p>
+                  </div>
+                  <div className={`p-3 text-center ${isSameDay(weekend.sunday, new Date()) ? 'bg-blue-50' : ''}`}>
+                    <p className="text-xs font-semibold text-gray-500 uppercase">Sunday</p>
+                    <p className={`text-sm font-bold ${isSameDay(weekend.sunday, new Date()) ? 'text-blue-600' : 'text-gray-900'}`}>{format(weekend.sunday, 'MMM d')}</p>
+                  </div>
                 </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 min-h-[150px]">
+                  {/* Saturday Column */}
+                  <div className="border-b md:border-b-0 md:border-r border-gray-200 p-3 space-y-3 bg-white">
+                    {getClassesForDay(weekend.saturday).length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-gray-400 py-4">
+                        <p className="text-xs">No classes scheduled</p>
+                      </div>
+                    ) : (
+                      <DaySessionCard 
+                        classes={getClassesForDay(weekend.saturday)} 
+                        onEdit={handleEdit} 
+                      />
+                    )}
+                  </div>
 
-                {/* Sunday Column */}
-                <div className="p-3 space-y-3 bg-white">
-                  {getClassesForDay(weekend.sunday).length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-400 py-4">
-                      <p className="text-xs">No classes scheduled</p>
-                    </div>
-                  ) : (
-                    <DaySessionCard 
-                      classes={getClassesForDay(weekend.sunday)} 
-                      onEdit={handleEdit} 
-                    />
-                  )}
+                  {/* Sunday Column */}
+                  <div className="p-3 space-y-3 bg-white">
+                    {getClassesForDay(weekend.sunday).length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-gray-400 py-4">
+                        <p className="text-xs">No classes scheduled</p>
+                      </div>
+                    ) : (
+                      <DaySessionCard 
+                        classes={getClassesForDay(weekend.sunday)} 
+                        onEdit={handleEdit} 
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Modal */}
@@ -521,7 +555,9 @@ export default function ClassScheduler() {
       )}
     </div>
   );
-}
+});
+
+export default ClassScheduler;
 
 function DaySessionCard({ classes, onEdit }) {
   // Calculate overall start and end time

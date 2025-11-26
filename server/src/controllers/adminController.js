@@ -1,4 +1,6 @@
 import User from "../models/User.js";
+import QuizSession from "../models/QuizSession.js";
+import DailyActivity from "../models/DailyActivity.js";
 import { catchAsync } from "../utils/AppError.js";
 
 const getAdminStats = catchAsync(async (req, res) => {
@@ -14,6 +16,9 @@ const getAdminStats = catchAsync(async (req, res) => {
     strugglesStats,
     studyModeStats,
     monthlyRegistrations,
+    performanceStats,
+    categoryStats,
+    activityStats,
   ] = await Promise.all([
     User.countDocuments(baseQuery),
     User.countDocuments({
@@ -72,7 +77,57 @@ const getAdminStats = catchAsync(async (req, res) => {
       { $sort: { "_id.year": -1, "_id.month": -1 } },
       { $limit: 6 },
     ]),
+    // Performance Stats
+    QuizSession.aggregate([
+      { $match: { status: "completed" } },
+      {
+        $group: {
+          _id: null,
+          avgScore: { $avg: "$score.percentage" },
+          avgTime: { $avg: "$timing.totalTimeSpent" },
+          totalSessions: { $sum: 1 },
+          passedSessions: {
+            $sum: { $cond: [{ $gte: ["$score.percentage", 75] }, 1, 0] },
+          },
+        },
+      },
+    ]),
+    // Category Performance (Placeholder for now)
+    QuizSession.aggregate([
+       { $match: { status: "completed" } },
+       { $limit: 1 } // Just to return something for now
+    ]),
+    // Activity by Hour (Learning Patterns)
+    DailyActivity.aggregate([
+      {
+        $group: {
+          _id: { $hour: "$activityDate" }, // Fixed field name
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
   ]);
+
+  // Process Performance Stats
+  const perfStats = performanceStats[0] || {
+    avgScore: 0,
+    avgTime: 0,
+    totalSessions: 0,
+    passedSessions: 0,
+  };
+  const passRate =
+    perfStats.totalSessions > 0
+      ? Math.round((perfStats.passedSessions / perfStats.totalSessions) * 100)
+      : 0;
+
+  // Process Activity by Hour
+  const activityByHour = Array(24).fill(0);
+  activityStats.forEach((item) => {
+    if (item._id >= 0 && item._id < 24) {
+      activityByHour[item._id] = item.count;
+    }
+  });
 
   const overview = {
     totalUsers,
@@ -98,6 +153,14 @@ const getAdminStats = catchAsync(async (req, res) => {
       struggles: strugglesStats,
       studyModes: studyModeStats,
       monthlyRegistrations,
+      performance: {
+        avgScore: Math.round(perfStats.avgScore || 0),
+        avgTime: Math.round((perfStats.avgTime || 0) / 1000 / 60), // Convert ms to minutes
+        passRate,
+      },
+      learningPatterns: {
+        activityByHour,
+      },
     },
   });
 });
