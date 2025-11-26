@@ -9,6 +9,7 @@ import StatCard from "@/components/dashboard/StatCard";
 import StudyStreakModal from "@/components/dashboard/StudyStreakModal";
 import UpcomingClassCard from "@/components/dashboard/UpcomingClassCard";
 import LevelIndicator from "@/components/dashboard/LevelIndicator";
+import StandardHeader from "@/components/ui/StandardHeader";
 
 function DashboardPage() {
   const { user } = useAuthStore();
@@ -44,17 +45,16 @@ function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 className="mb-2 text-3xl font-bold text-gray-900">Welcome back, {user?.firstName || "Student"}</h2>
-              <p className="text-gray-600">Track your exam preparation progress</p>
-            </div>
-            <LevelIndicator />
-          </div>
-        </div>
+    <div className="bg-gray-50">
+      <StandardHeader 
+        title={`Welcome back, ${user?.firstName || "Student"}`}
+        description="Track your exam preparation progress"
+        onRefresh={fetchDashboardData}
+      >
+        <LevelIndicator />
+      </StandardHeader>
+      
+      <main className="p-4 sm:p-6 lg:p-8">
         <div className="mb-6 grid gap-6 lg:grid-cols-2">
           <DailyChallengeCard />
           <UpcomingClassCard />

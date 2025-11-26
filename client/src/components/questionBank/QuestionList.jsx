@@ -232,7 +232,7 @@ function QuestionList({
 
   function getQuestionTypeIcon(type) {
     const iconMap = {
-      multiple_choice: CheckSquare,
+      multiple_choice: List,
       true_false: ToggleLeft,
       fill_blank: Type,
       matching: Shuffle,

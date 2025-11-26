@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useInquiryStore } from "../../store/inquiryStore";
 import TicketCard from "../../components/inquiry/TicketCard";
 import TicketDetail from "../../components/inquiry/TicketDetail";
-import { Filter, MessageSquareOff, ArrowLeft } from "lucide-react";
+import { Filter, MessageSquareOff } from "lucide-react";
+import StandardHeader from "@/components/ui/StandardHeader";
 
 export default function MyTicketsPage() {
   const navigate = useNavigate();
@@ -21,16 +22,14 @@ export default function MyTicketsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="flex flex-col h-full bg-gray-50">
+      <StandardHeader 
+        title="Support Center" 
+        description="View and manage your support tickets"
+        onRefresh={getStudentTickets}
+      />
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Support Tickets</h1>
-          <p className="mt-2 text-gray-600">
-            View and manage your questions to instructors.
-          </p>
-        </div>
-
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="grid h-[calc(100vh-200px)] gap-6 lg:grid-cols-3">
           {/* Ticket List */}
           <div className="flex flex-col rounded-lg border border-gray-200 bg-white shadow-sm lg:col-span-1">

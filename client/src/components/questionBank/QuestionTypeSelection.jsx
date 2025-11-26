@@ -19,7 +19,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "vocabulary",
     name: "Vocabulary",
-    subjectArea: "Verbal Ability",
+    subjectArea: "Verbal Reasoning",
     description: "Word definitions, synonyms, antonyms, and usage",
     icon: BookOpen,
     examLevel: "Both",
@@ -33,7 +33,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "grammar",
     name: "Grammar",
-    subjectArea: "Verbal Ability",
+    subjectArea: "Verbal Reasoning",
     description: "Sentence structure, parts of speech, and language rules",
     icon: FileText,
     examLevel: "Both",
@@ -47,7 +47,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "reading-comprehension",
     name: "Reading Comprehension",
-    subjectArea: "Verbal Ability",
+    subjectArea: "Verbal Reasoning",
     description: "Understanding and analyzing written passages",
     icon: Book,
     examLevel: "Both",
@@ -61,7 +61,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "mathematics",
     name: "Mathematics",
-    subjectArea: "Numerical Ability",
+    subjectArea: "Numerical Reasoning",
     description: "Arithmetic, algebra, geometry, and problem solving",
     icon: Calculator,
     examLevel: "Both",
@@ -89,7 +89,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "clerical",
     name: "Clerical",
-    subjectArea: "Clerical Ability",
+    subjectArea: "Clerical Operations",
     description: "Data organization, filing, and administrative tasks",
     icon: Target,
     examLevel: "Subprofessional",
@@ -103,7 +103,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "analytical-reasoning",
     name: "Analytical Reasoning",
-    subjectArea: "Logic",
+    subjectArea: "Analytical Reasoning",
     description: "Logical thinking, pattern recognition, and problem solving",
     icon: Brain,
     examLevel: "Professional",

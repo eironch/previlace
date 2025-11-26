@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Mail, Phone, Linkedin, Briefcase, BookOpen, User, Zap, X, ChevronRight, ChevronLeft, Download, Printer } from 'lucide-react';
 import StandardHeader from '../../components/ui/StandardHeader';
+import resumeService from '../../services/resumeService';
 
 // --- Configuration Data ---
 let idCounter = 0;
@@ -296,7 +298,8 @@ const HarvardCV = ({ data }) => {
     if (!text) return [];
     const lines = text.split('\n').filter(line => line.trim() !== '');
     return lines.map(line => {
-        return line.trim().replace(/^[\*\-\d\.]\s*/, '');
+      // Remove common bullet point characters like *, -, or digits with a dot/space at the start
+      return line.trim().replace(/^[\*\-\d\.]\s*/, '');
     });
   };
 
@@ -337,7 +340,7 @@ const HarvardCV = ({ data }) => {
 
 
   return (
-    <div className="bg-white p-8 shadow-lg max-w-full mx-auto rounded-none print:shadow-none print:p-0 min-h-[800px]">
+    <div className="bg-white p-8 shadow-lg max-w-full mx-auto rounded-none print:shadow-none print:p-0 min-h-[800px] sticky top-4">
         {/* Header - Name */}
         <h1 className="text-3xl font-bold text-gray-900 text-center uppercase tracking-wider mb-2">
           {name || '[Your Full Name]'}
@@ -439,59 +442,116 @@ const MobileCVPreviewModal = ({ data, onClose }) => {
 // --- Main Application Component ---
 
 const ResumePage = () => {
-  const [cvData, setCvData] = useState(() => {
-    try {
-      const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (localData) {
-        const parsedData = JSON.parse(localData);
-        if (parsedData) {
-            return {
-                ...initialCVData,
-                ...parsedData,
-                education: Array.isArray(parsedData.education) ? parsedData.education : [],
-                experience: Array.isArray(parsedData.experience) ? parsedData.experience : [],
-                skills: Array.isArray(parsedData.skills) ? parsedData.skills : [],
-            };
-        }
-      }
-    } catch (e) {
-      console.error("Error loading CV data from localStorage", e);
-    }
-    return initialCVData;
-  });
+  // 1. Initialize state
+  const [cvData, setCvData] = useState(initialCVData);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
+  // Load data from API on mount
   useEffect(() => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cvData));
-    } catch (e) {
-      console.error("Error saving CV data to localStorage", e);
-    }
-  }, [cvData]);
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const resume = await resumeService.getMyResume();
 
+        if (resume) {
+          // Map backend data to frontend structure
+          setCvData({
+            name: resume.personalInfo?.name || '',
+            email: resume.personalInfo?.email || '',
+            phone: resume.personalInfo?.phone || '',
+            linkedin: resume.personalInfo?.linkedin || '',
+            summary: resume.personalInfo?.summary || '',
+            education: resume.education || [],
+            experience: resume.experience || [],
+            skills: resume.skills || [],
+          });
+        }
+      } catch (error) {
+        console.error("Error loading resume data:", error);
+        // Fallback to localStorage if API fails
+        try {
+          const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (localData) {
+            const parsedData = JSON.parse(localData);
+            if (parsedData) {
+              setCvData(prev => ({ ...prev, ...parsedData }));
+            }
+          }
+        } catch (e) {
+          console.error("Error loading from local storage", e);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Debounced save to API
+  useEffect(() => {
+    // Skip initial load or empty data if we want
+    if (isLoading) return;
+
+    const saveData = async () => {
+      try {
+        setIsSaving(true);
+
+        // Map frontend structure to backend structure
+        const backendData = {
+          personalInfo: {
+            name: cvData.name,
+            email: cvData.email,
+            phone: cvData.phone,
+            linkedin: cvData.linkedin,
+            summary: cvData.summary,
+          },
+          education: cvData.education,
+          experience: cvData.experience,
+          skills: cvData.skills,
+        };
+
+        await resumeService.updateResume(backendData);
+
+        // Also save to localStorage as backup
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cvData));
+      } catch (error) {
+        console.error("Error saving resume data:", error);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    const timeoutId = setTimeout(saveData, 2000); // Auto-save after 2 seconds of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [cvData, isLoading]);
 
   const [step, setStep] = useState(0);
   const [showMobilePreview, setShowMobilePreview] = useState(false); 
   
+  // 3. Data update handlers (pass these down)
   const updateField = useCallback((field, value) => {
-      setCvData(prev => ({ ...prev, [field]: value }));
+    setCvData(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const addItem = useCallback((collection, item) => {
-      setCvData(prev => ({
-          ...prev,
-          [collection]: [...prev[collection], { ...item, id: generateId() }],
-      }));
+    setCvData(prev => ({
+      ...prev,
+      [collection]: [...prev[collection], { ...item, id: generateId() }],
+    }));
   }, []);
 
   const deleteItem = useCallback((collection, id) => {
-      setCvData(prev => ({
-          ...prev,
-          [collection]: prev[collection].filter(item => item.id !== id),
-      }));
+    setCvData(prev => ({
+      ...prev,
+      [collection]: prev[collection].filter(item => item.id !== id),
+    }));
   }, []);
 
   const setSkills = useCallback((skillsArray) => {
-      setCvData(prev => ({ ...prev, skills: skillsArray }));
+    setCvData(prev => ({ ...prev, skills: skillsArray }));
   }, []);
 
   const canProceed = useCallback(() => {
@@ -546,7 +606,7 @@ const ResumePage = () => {
       default: return null;
     }
   };
-  
+
   const proceedAllowed = canProceed();
   const atLastStep = step === STEPS.length - 1;
 
@@ -594,7 +654,13 @@ const ResumePage = () => {
                     </div>
 
                     <div className="p-6">
-                        {renderCurrentStep()}
+                        {isLoading ? (
+                          <div className="flex justify-center p-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                          </div>
+                        ) : (
+                          renderCurrentStep()
+                        )}
                     </div>
 
                     <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">

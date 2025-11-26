@@ -11,7 +11,6 @@ import {
 
 const router = express.Router();
 
-router.post("/register", authLimiter, validateRegister, authController.register);
 router.post("/login", authLimiter, validateLogin, authController.login);
 router.post("/logout", authController.logout);
 router.post("/logout-all", authenticate, authController.logoutAll);
@@ -25,8 +24,5 @@ router.post("/resend-verification", authenticate, authController.resendEmailVeri
 
 router.get("/me", authenticate, authController.getMe);
 router.post("/update-password", authenticate, authController.updatePassword);
-
-router.get("/google", authController.googleAuth);
-router.get("/google/callback", authController.googleCallback, authController.googleCallbackSuccess);
 
 export default router;

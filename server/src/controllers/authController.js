@@ -42,59 +42,18 @@ const generateTokens = (userId) => {
 
 
 
-const register = catchAsync(async (req, res, next) => {
-	const { email, password, firstName, lastName } = req.body;
+const login = catchAsync(async (req, res, next) => {
+	const { identifier, password } = req.body;
 
-	const existingUser = await User.findOne({ email });
-	if (existingUser) {
-		return next(new AppError("User already exists", 400));
+	if (!identifier || !password) {
+		return next(new AppError("Please provide identifier and password", 400));
 	}
 
-	const emailVerificationToken = crypto.randomBytes(32).toString("hex");
-	const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+	// Check if identifier is email or studentId
+	const user = await User.findOne({
+		$or: [{ email: identifier }, { studentId: identifier }]
+	}).select("+password");
 
-	const user = await User.create({
-		email,
-		password,
-		firstName,
-		lastName,
-		emailVerificationToken,
-		emailVerificationExpires,
-	});
-
-	const { accessToken, refreshToken } = generateTokens(user._id);
-	
-	await user.addRefreshToken(
-		refreshToken,
-		req.headers["user-agent"],
-		req.ip || req.connection.remoteAddress
-	);
-
-	setTokenCookies(res, accessToken, refreshToken);
-
-	res.status(201).json({
-		success: true,
-		data: {
-			user: {
-				id: user._id,
-				email: user.email,
-				firstName: user.firstName,
-				lastName: user.lastName,
-				isEmailVerified: user.isEmailVerified,
-				isProfileComplete: user.isProfileComplete,
-				role: user.role,
-				avatar: user.avatar
-			},
-			accessToken,
-			refreshToken
-		}
-	});
-});
-
-const login = catchAsync(async (req, res, next) => {
-	const { email, password } = req.body;
-
-	const user = await User.findOne({ email }).select("+password");
 	if (!user) {
 		return next(new AppError("Invalid credentials", 401));
 	}
@@ -122,6 +81,7 @@ const login = catchAsync(async (req, res, next) => {
 			user: {
 				id: user._id,
 				email: user.email,
+				studentId: user.studentId,
 				firstName: user.firstName,
 				lastName: user.lastName,
 				isEmailVerified: user.isEmailVerified,
@@ -284,6 +244,7 @@ const getMe = catchAsync(async (req, res, next) => {
 			user: {
 				id: user._id,
 				email: user.email,
+				studentId: user.studentId,
 				firstName: user.firstName,
 				lastName: user.lastName,
 				avatar: user.avatar,
@@ -357,75 +318,7 @@ const refreshToken = catchAsync(async (req, res, next) => {
 	}
 });
 
-const googleAuth = passport.authenticate("google", {
-	scope: ["profile", "email"],
-	session: false,
-	prompt: "consent",
-	accessType: "offline",
-});
-
-const googleCallback = (req, res, next) => {
-	passport.authenticate("google", {
-		session: false,
-	}, (err, user, info) => {
-		if (err || !user) {
-			const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-			return res.redirect(`${clientUrl}?error=auth_failed`);
-		}
-
-		req.user = user;
-		next();
-	})(req, res, next);
-};
-
-const googleCallbackSuccess = catchAsync(async (req, res, next) => {
-	const { accessToken, refreshToken } = generateTokens(req.user.user._id);
-	
-	await req.user.user.addRefreshToken(
-		refreshToken,
-		req.headers["user-agent"],
-		req.ip || req.connection.remoteAddress
-	);
-
-	const isProduction = process.env.NODE_ENV === "production";
-	const cookieOptions = {
-		httpOnly: true,
-		secure: isProduction,
-		sameSite: isProduction ? "None" : "Lax",
-	};
-
-	res.cookie("accessToken", accessToken, {
-		...cookieOptions,
-		maxAge: 60 * 60 * 1000,
-	});
-
-	res.cookie("refreshToken", refreshToken, {
-		...cookieOptions,
-		maxAge: 30 * 24 * 60 * 60 * 1000,
-	});
-
-	const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-	const userData = encodeURIComponent(JSON.stringify({
-		id: req.user.user._id,
-		email: req.user.user.email,
-		firstName: req.user.user.firstName,
-		lastName: req.user.user.lastName,
-		avatar: req.user.user.avatar,
-		isEmailVerified: req.user.user.isEmailVerified,
-		isProfileComplete: req.user.user.isProfileComplete,
-		role: req.user.user.role
-	}));
-	
-	const tokenData = encodeURIComponent(JSON.stringify({
-		accessToken,
-		refreshToken
-	}));
-
-	res.redirect(`${clientUrl}?auth=success&user=${userData}&tokens=${tokenData}`);
-});
-
 export default {
-	register,
 	login,
 	logout,
 	logoutAll,
@@ -436,7 +329,4 @@ export default {
 	getMe,
 	updatePassword,
 	refreshToken,
-	googleAuth,
-	googleCallback,
-	googleCallbackSuccess,
 };

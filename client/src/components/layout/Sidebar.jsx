@@ -11,56 +11,77 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  LayoutDashboard,
+  Layout,
   Users,
   Calendar,
   FileText,
   CheckSquare,
-  Layers,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 
-export default function Sidebar({ isMobile, isOpen, setIsOpen }) {
+export const studentNavItems = [
+  { id: "dashboard", icon: Home, title: "Dashboard", path: "/dashboard" },
+  { id: "subjects", icon: BookOpen, title: "Study", path: "/dashboard/subjects" },
+  { id: "jobs", icon: Briefcase, title: "Career", path: "/dashboard/jobs" },
+  { id: "analytics", icon: BarChart3, title: "Progress", path: "/dashboard/analytics" },
+  { id: "tickets", icon: MessageSquare, title: "Support", path: "/dashboard/tickets" },
+];
+
+export const adminNavItems = [
+  { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
+  { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
+  { id: "users", icon: Users, title: "Users", path: "/admin/users" },
+  { id: "questions", icon: BookOpen, title: "Questions", path: "/admin/questions" },
+  { id: "classes", icon: Calendar, title: "Class Schedule", path: "/admin/classes" },
+  { id: "resources", icon: FileText, title: "Resources", path: "/admin/resources" },
+];
+
+export const superAdminNavItems = [
+  { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
+  { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
+  { id: "users", icon: Users, title: "Users", path: "/admin/users" },
+  { id: "questions", icon: BookOpen, title: "Questions", path: "/admin/questions" },
+  { id: "classes", icon: Calendar, title: "Class Schedule", path: "/admin/classes" },
+  { id: "landing", icon: Layout, title: "Landing Page", path: "/admin/landing" },
+  { id: "resources", icon: FileText, title: "Resources", path: "/admin/resources" },
+];
+
+export const instructorNavItems = [
+  { id: "dashboard", icon: Home, title: "Dashboard", path: "/instructor" },
+  { id: "classes", icon: Calendar, title: "My Classes", path: "/instructor/classes" },
+  { id: "availability", icon: Settings, title: "Availability", path: "/instructor/availability" },
+  { id: "inbox", icon: MessageSquare, title: "Inbox", path: "/dashboard/inbox" },
+];
+
+export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabChange, isCollapsed: controlledIsCollapsed, setIsCollapsed: controlledSetIsCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [localIsCollapsed, setLocalIsCollapsed] = useState(false);
+
+  const isCollapsed = controlledIsCollapsed !== undefined ? controlledIsCollapsed : localIsCollapsed;
+  const setIsCollapsed = controlledSetIsCollapsed || setLocalIsCollapsed;
 
   // On mobile, we use isOpen/setIsOpen from props.
-  // On desktop, we use local isCollapsed state.
-
-  const studentNavItems = [
-    { icon: Home, title: "Dashboard", path: "/dashboard" },
-    { icon: BookOpen, title: "Study", path: "/dashboard/subjects" },
-    { icon: Briefcase, title: "Career", path: "/dashboard/jobs" },
-    { icon: BarChart3, title: "Progress", path: "/dashboard/analytics" },
-    { icon: MessageSquare, title: "Support", path: "/dashboard/tickets" },
-  ];
-
-  const adminNavItems = [
-    { icon: Home, title: "Dashboard", path: "/admin" },
-    { icon: Users, title: "Users", path: "/admin/users" },
-    { icon: Calendar, title: "Classes", path: "/admin/classes" },
-    { icon: BookOpen, title: "Question Bank", path: "/admin/question-bank" },
-    { icon: CheckSquare, title: "Review Queue", path: "/admin/review-queue" },
-    { icon: FileText, title: "Files", path: "/admin/files" },
-  ];
-
-  const instructorNavItems = [
-    { icon: Home, title: "Dashboard", path: "/instructor" },
-    { icon: Calendar, title: "My Classes", path: "/instructor/classes" },
-    { icon: Settings, title: "Availability", path: "/instructor/availability" },
-    { icon: MessageSquare, title: "Inbox", path: "/dashboard/inbox" },
-  ];
+  // On desktop, we use local isCollapsed state (or controlled).
 
   let navItems = studentNavItems;
-  if (user?.role === "admin" || user?.role === "super_admin") {
+  if (user?.role === "super_admin") {
+    navItems = superAdminNavItems;
+  } else if (user?.role === "admin") {
     navItems = adminNavItems;
   } else if (user?.role === "instructor") {
     navItems = instructorNavItems;
   }
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (item) => {
+    if (activeTab && item.id) {
+      return activeTab === item.id;
+    }
+    return location.pathname === item.path;
+  };
 
   const sidebarVariants = {
     expanded: { width: 240 },
@@ -100,18 +121,22 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen }) {
                 <nav className="flex-1 px-2 py-4 space-y-1">
                   {navItems.map((item) => (
                     <button
-                      key={item.path}
+                      key={item.id || item.path}
                       onClick={() => {
-                        navigate(item.path);
+                        if (onTabChange && item.id) {
+                          onTabChange(item.id);
+                        } else {
+                          navigate(item.path);
+                        }
                         setIsOpen(false);
                       }}
                       className={`flex w-full items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
-                        isActive(item.path)
+                        isActive(item)
                           ? "bg-black text-white"
                           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                       }`}
                     >
-                      <item.icon className={`mr-3 h-5 w-5 ${isActive(item.path) ? "text-white" : "text-gray-500"}`} />
+                      <item.icon className={`mr-3 h-5 w-5 ${isActive(item) ? "text-white" : "text-gray-500"}`} />
                       {item.title}
                     </button>
                   ))}
@@ -174,10 +199,16 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen }) {
       <nav className="flex-1 space-y-1 px-2 py-4">
         {navItems.map((item) => (
           <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
+            key={item.id || item.path}
+            onClick={() => {
+              if (onTabChange && item.id) {
+                onTabChange(item.id);
+              } else {
+                navigate(item.path);
+              }
+            }}
             className={`group flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-              isActive(item.path)
+              isActive(item)
                 ? "bg-black text-white shadow-md"
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             } ${isCollapsed ? "justify-center" : ""}`}
@@ -185,7 +216,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen }) {
           >
             <item.icon
               className={`h-5 w-5 flex-shrink-0 transition-colors ${
-                isActive(item.path) ? "text-white" : "text-gray-500 group-hover:text-gray-900"
+                isActive(item) ? "text-white" : "text-gray-500 group-hover:text-gray-900"
               } ${!isCollapsed ? "mr-3" : ""}`}
             />
             {!isCollapsed && (

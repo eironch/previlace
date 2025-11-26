@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Plus, Edit, Trash, ChevronRight, ChevronDown, BookOpen } from 'lucide-react';
 import subjectService from '../../services/subjectService';
 
-export default function SubjectManager() {
+const SubjectManager = forwardRef((props, ref) => {
   const [subjects, setSubjects] = useState([]);
   const [expandedSubject, setExpandedSubject] = useState(null);
   const [topics, setTopics] = useState({});
@@ -17,6 +17,14 @@ export default function SubjectManager() {
 
   const [subjectForm, setSubjectForm] = useState({ name: '', code: '', description: '', examLevel: 'Professional' });
   const [topicForm, setTopicForm] = useState({ name: '', code: '', description: '', difficulty: 'Intermediate' });
+
+  useImperativeHandle(ref, () => ({
+    openSubjectModal: () => {
+      setEditingSubject(null);
+      setSubjectForm({ name: '', code: '', description: '', examLevel: 'Professional' });
+      setShowSubjectModal(true);
+    }
+  }));
 
   useEffect(() => {
     fetchSubjects();
@@ -92,13 +100,6 @@ export default function SubjectManager() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-900">Subjects & Topics</h2>
-        <button
-          onClick={() => { setEditingSubject(null); setSubjectForm({ name: '', code: '', description: '', examLevel: 'Professional' }); setShowSubjectModal(true); }}
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Add Subject
-        </button>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
@@ -208,4 +209,6 @@ export default function SubjectManager() {
       )}
     </div>
   );
-}
+});
+
+export default SubjectManager;

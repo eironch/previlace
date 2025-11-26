@@ -235,8 +235,10 @@ function DailyChallengeCard() {
               <span className="font-medium text-gray-900">45 minutes</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Coverage</span>
-              <span className="font-medium text-gray-900">This week's topics</span>
+              <span>Topics</span>
+              <span className="font-medium text-gray-900">
+                {currentWeek?.weekNumber ? `Week ${currentWeek.weekNumber - 1}` : "Week 4"}
+              </span>
             </div>
           </div>
           <button

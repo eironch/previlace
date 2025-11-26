@@ -77,19 +77,7 @@ function QuestionBankManager() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            onClick={refreshData}
-            disabled={isRefreshing}
-            className="flex items-center gap-2"
-          >
-            {isRefreshing ? (
-              <Loader className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            Refresh
-          </Button>
+
           <Button onClick={handleCreateNew} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             Create Question

@@ -325,12 +325,12 @@ export default function LandingPage() {
               Real stories from learners who achieved success with Previlace
             </p>
           </div>
-            <ApprovedTestimonials />
+          <ApprovedTestimonials />
 
           {showSubmitTestimonialButton && (
             <div className="flex justify-center mt-10">
               <Button
-              size="lg"
+                size="lg"
                 className="bg-black text-white hover:bg-gray-800 transition shadow-lg hover:shadow-xl cursor-pointer"
                 onClick={() => setIsSubmissionModalOpen(true)}
               >
@@ -340,7 +340,7 @@ export default function LandingPage() {
             </div>
           )}
 
-          
+
         </section>
 
         {/* CTA */}

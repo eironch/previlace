@@ -87,7 +87,6 @@ export default function AdminStatsEditor() {
         label, key, value: formData[key]
     })), [formData]);
 
-
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">Landing Page Metrics</h2>
@@ -95,14 +94,6 @@ export default function AdminStatsEditor() {
             {/* --- Summary / Refresh Controls --- */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h3 className="text-lg font-semibold text-black mb-2 md:mb-0">Current Live Values</h3>
-                <button 
-                    onClick={fetchStats}
-                    className="flex items-center text-sm text-black hover:text-gray-700 transition-colors"
-                    disabled={isStatsLoading}
-                >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isStatsLoading ? 'animate-spin' : ''}`} />
-                    Refresh Data
-                </button>
             </div>
 
             {/* --- Stats Summary Panel --- */}
