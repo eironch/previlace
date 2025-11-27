@@ -95,7 +95,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={ <LandingPage />}
+          element={<LandingPage />}
         />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
@@ -282,6 +282,24 @@ function App() {
         />
 
         <Route
+          path="/instructor/dashboard"
+          element={
+            <DashboardRoute>
+              <InstructorDashboardPage />
+            </DashboardRoute>
+          }
+        />
+
+        <Route
+          path="/instructor/inbox"
+          element={
+            <DashboardRoute>
+              <TicketInboxPage />
+            </DashboardRoute>
+          }
+        />
+
+        <Route
           path="/instructor/classes"
           element={
             <DashboardRoute>
@@ -295,6 +313,14 @@ function App() {
           element={
             <DashboardRoute>
               <InstructorAvailabilityPage />
+            </DashboardRoute>
+          }
+        />
+        <Route
+          path="/dashboard/resume"
+          element={
+            <DashboardRoute>
+              <ResumePage />
             </DashboardRoute>
           }
         />

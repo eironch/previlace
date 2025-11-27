@@ -13,6 +13,7 @@
 		"seed": "node src/scripts/seed_master.js",
 		"seed:core": "node -e 'import(\"./src/scripts/seed_core.js\").then(m => m.seedCore().then(() => process.exit(0)))'",
 		"seed:users": "node -e 'import(\"./src/scripts/seed_users.js\").then(m => m.seedUsers().then(() => process.exit(0)))'",
+		"seed:instructor": "node src/scripts/seed_instructor.js",
 		"seed:questions": "node -e 'import(\"./src/scripts/seed_questions.js\").then(async m => { await import(\"./src/config/database.js\").then(d => d.default()); const s = await import(\"./src/models/Subject.js\").then(m=>m.default.find({})); const t = await import(\"./src/models/Topic.js\").then(m=>m.default.find({})); await m.seedQuestions(s, t); process.exit(0); })'",
 		"seed:schedule": "node -e 'import(\"./src/scripts/seed_schedule.js\").then(async m => { await import(\"./src/config/database.js\").then(d => d.default()); const s = await import(\"./src/models/Subject.js\").then(m=>m.default.find({})); const t = await import(\"./src/models/Topic.js\").then(m=>m.default.find({})); await m.seedWeekendClasses(s, t); process.exit(0); })'",
 		"seed:profiles": "node -e 'console.log(\"Use seed:master for profiles as it requires complex dependencies\")'",
