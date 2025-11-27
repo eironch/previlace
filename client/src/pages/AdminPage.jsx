@@ -35,6 +35,8 @@ import FileManagementPage from "./admin/FileManagementPage";
 import ClassManagementPage from "./admin/ClassManagementPage";
 import LandingPageManager from "../components/admin/LandingPageManager";
 import AdminAnalyticsPage from "./admin/AdminAnalyticsPage";
+import AdminRegistrationPage from "./admin/AdminRegistrationPage";
+
 import { useLocation, useNavigate } from "react-router-dom";
 import StatsCard from "@/components/admin/dashboard/StatsCard";
 import RecentUsers from "@/components/admin/dashboard/RecentUsers";
@@ -51,19 +53,20 @@ function AdminPage() {
   const navigate = useNavigate();
 
   const getTabFromPath = (path) => {
-      if (path === "/admin") return "dashboard";
-      if (path.includes("/admin/analytics")) return "analytics";
-      if (path.includes("/admin/users")) return "users";
-      if (path.includes("/admin/questions")) return "questions";
-      if (path.includes("/admin/classes")) return "classes";
-      if (path.includes("/admin/resources")) return "resources";
-      if (path.includes("/admin/landing")) return "landing";
-      return "dashboard";
+    if (path === "/admin") return "dashboard";
+    if (path.includes("/admin/registrations")) return "registrations";
+    if (path.includes("/admin/analytics")) return "analytics";
+    if (path.includes("/admin/users")) return "users";
+    if (path.includes("/admin/questions")) return "questions";
+    if (path.includes("/admin/classes")) return "classes";
+    if (path.includes("/admin/resources")) return "resources";
+    if (path.includes("/admin/landing")) return "landing";
+    return "dashboard";
   };
 
   const activeTab = getTabFromPath(location.pathname);
   const { user } = useAuthStore();
-  
+
   const { getCachedData, setCachedData } = useAdminCacheStore();
   const CACHE_KEY = 'admin-dashboard-data';
 
@@ -175,97 +178,98 @@ function AdminPage() {
       />
 
       <main className="flex-1 flex flex-col w-full transition-all duration-300 overflow-hidden">
-         {activeTab === "users" && <UserManagement />}
-         {activeTab === "questions" && user?.role === "super_admin" && <QuestionManagementPage />}
-         {activeTab === "classes" && user?.role === "super_admin" && <ClassManagementPage />}
-         {activeTab === "resources" && <FileManagementPage />}
+        {activeTab === "users" && <UserManagement />}
+        {activeTab === "registrations" && <AdminRegistrationPage />}
+        {activeTab === "questions" && user?.role === "super_admin" && <QuestionManagementPage />}
+        {activeTab === "classes" && user?.role === "super_admin" && <ClassManagementPage />}
+        {activeTab === "resources" && <FileManagementPage />}
 
-         {activeTab === "dashboard" && (
-            <DashboardSection 
-                stats={stats} 
-                optimizedStats={optimizedStats} 
-                isLoading={isLoading} 
-                loadData={loadData}
-                setIsMobileMenuOpen={setIsMobileMenuOpen}
-            />
-         )}
+        {activeTab === "dashboard" && (
+          <DashboardSection
+            stats={stats}
+            optimizedStats={optimizedStats}
+            isLoading={isLoading}
+            loadData={loadData}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+          />
+        )}
 
-         {activeTab === "analytics" && (
-            <AdminAnalyticsPage />
-         )}
+        {activeTab === "analytics" && (
+          <AdminAnalyticsPage />
+        )}
 
-         {activeTab === "landing" && user?.role === "super_admin" && (
-            <LandingSection />
-         )}
+        {activeTab === "landing" && user?.role === "super_admin" && (
+          <LandingSection />
+        )}
       </main>
-    </div>
+    </div >
   );
 }
 
 function DashboardSection({ stats, optimizedStats, isLoading, loadData, setIsMobileMenuOpen }) {
-    return (
-        <>
-            <StandardHeader
-                title="Dashboard"
-                description="Overview of system performance and key metrics"
-                onRefresh={loadData}
-                startContent={
-                <button
-                    onClick={() => setIsMobileMenuOpen(true)}
-                    className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-200"
-                >
-                    <Menu className="w-6 h-6" />
-                </button>
-                }
-            />
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8">
-                <div className="min-h-full">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-300 min-h-full p-6">
-                        {isLoading && !stats ? (
-                            <div className="space-y-12 animate-pulse">
-                                <section>
-                                    <div className="mb-6 h-8 w-64 bg-gray-200 rounded"></div>
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-                                        {[1, 2, 3, 4].map(i => (
-                                            <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-                                        ))}
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                                        <div className="h-80 bg-gray-200 rounded-lg"></div>
-                                        <div className="h-80 bg-gray-200 rounded-lg"></div>
-                                    </div>
-                                </section>
-                            </div>
-                        ) : (
-                            <AdminDashboard 
-                                stats={stats} 
-                                optimizedStats={optimizedStats} 
-                            />
-                        )}
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <>
+      <StandardHeader
+        title="Dashboard"
+        description="Overview of system performance and key metrics"
+        onRefresh={loadData}
+        startContent={
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-200"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        }
+      />
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+        <div className="min-h-full">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-300 min-h-full p-6">
+            {isLoading && !stats ? (
+              <div className="space-y-12 animate-pulse">
+                <section>
+                  <div className="mb-6 h-8 w-64 bg-gray-200 rounded"></div>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div className="h-80 bg-gray-200 rounded-lg"></div>
+                    <div className="h-80 bg-gray-200 rounded-lg"></div>
+                  </div>
+                </section>
+              </div>
+            ) : (
+              <AdminDashboard
+                stats={stats}
+                optimizedStats={optimizedStats}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 function LandingSection() {
-    return (
-        <>
-            <StandardHeader
-                title="Landing Page"
-                description="Manage landing page content and testimonials"
-                onRefresh={() => {}}
-            />
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8">
-                <div className="h-full">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-300 min-h-[600px] p-6">
-                        <LandingPageManager />
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <>
+      <StandardHeader
+        title="Landing Page"
+        description="Manage landing page content and testimonials"
+        onRefresh={() => { }}
+      />
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+        <div className="h-full">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-300 min-h-[600px] p-6">
+            <LandingPageManager />
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 function AdminDashboard({ stats, optimizedStats }) {
@@ -300,13 +304,13 @@ function AdminDashboard({ stats, optimizedStats }) {
         </div>
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-             <ExamTypeChart data={stats?.examTypes || []} />
-             <SystemHealth data={stats?.systemHealth} />
+            <ExamTypeChart data={stats?.examTypes || []} />
+            <SystemHealth data={stats?.systemHealth} />
           </div>
           <RegistrationTrend data={stats?.monthlyRegistrations || []} />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-             <LearningPatterns stats={stats} />
-             <UserRetention data={stats?.userRetention || []} />
+            <LearningPatterns stats={stats} />
+            <UserRetention data={stats?.userRetention || []} />
           </div>
           <CategoryPerformanceChart data={stats?.categoryStats || []} />
           <RecentUsers />

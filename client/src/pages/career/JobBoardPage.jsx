@@ -38,16 +38,16 @@ export default function JobBoardPage() {
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
-      <StandardHeader 
-        title="Career Center" 
+      <StandardHeader
+        title="Career Center"
         description="Find your dream job and build your career"
       >
         <button
-          onClick={() => navigate("/dashboard/resume")}
+          onClick={() => navigate("/dashboard/cv")}
           className="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-gray-800 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-200"
         >
           <Briefcase className="h-4 w-4 mr-2" />
-          Build My Resume
+          Build My CV
         </button>
       </StandardHeader>
 

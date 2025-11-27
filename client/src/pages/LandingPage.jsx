@@ -75,10 +75,10 @@ export default function LandingPage() {
       </Button>
       <Button
         size="sm"
-        onClick={() => openAuthModal("register")}
+        onClick={() => navigate("/register")}
         className="cursor-pointer"
       >
-        Get Started
+        Apply Now
       </Button>
     </div>
   );
@@ -199,10 +199,10 @@ export default function LandingPage() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => openAuthModal("register")}
+                    onClick={() => navigate("/register")}
                     className="w-full"
                   >
-                    Get Started
+                    Apply Now
                   </Button>
                 </div>
               ) : (
@@ -267,10 +267,10 @@ export default function LandingPage() {
               <>
                 <Button
                   size="lg"
-                  onClick={() => openAuthModal("register")}
+                  onClick={() => navigate("/register")}
                   className="cursor-pointer"
                 >
-                  Start Learning
+                  Apply Now
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button
@@ -360,9 +360,9 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 className="border-white text-black hover:bg-white"
-                onClick={() => openAuthModal("register")}
+                onClick={() => navigate("/register")}
               >
-                Create Your Free Account
+                Apply Now
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (

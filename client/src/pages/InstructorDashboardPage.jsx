@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
-import { Calendar, Clock, Video, MapPin, Users, Star, TrendingUp, ArrowRight, Mail, CheckCircle } from "lucide-react";
+import { Calendar, Clock, Video, MapPin, Users, Star, TrendingUp, ArrowRight, Mail, CheckCircle, BookOpen } from "lucide-react";
 import weekendClassService from "../services/weekendClassService";
+import apiClient from "../services/apiClient";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import StandardHeader from "../components/ui/StandardHeader";
@@ -44,6 +45,7 @@ const ActionCard = ({ title, description, icon: Icon, to, colorClass = "bg-gray-
 const InstructorDashboardPage = () => {
   const { user } = useAuthStore();
   const [upcomingClasses, setUpcomingClasses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalClasses: 0,
@@ -55,7 +57,13 @@ const InstructorDashboardPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const all = await weekendClassService.getAllClasses({ instructorId: user._id });
+        const [classesRes, subjectsRes] = await Promise.all([
+          weekendClassService.getAllClasses({ instructorId: user._id }),
+          apiClient.get("/subjects/instructor/my-subjects")
+        ]);
+
+        const all = classesRes;
+        const mySubjects = subjectsRes.data.data;
 
         // Filter upcoming
         const upcoming = all
@@ -64,6 +72,8 @@ const InstructorDashboardPage = () => {
           .slice(0, 5);
 
         setUpcomingClasses(upcoming);
+        setSubjects(mySubjects);
+
         setStats(prev => ({
           ...prev,
           totalClasses: all.length,
@@ -88,27 +98,60 @@ const InstructorDashboardPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatCard
-            title="Total Classes"
-            value={stats.totalClasses}
-            icon={Calendar}
-            trend="+12%"
-            trendLabel="vs. last month"
-          />
-          <StatCard
-            title="Students Reached"
-            value={stats.studentsReached}
-            icon={Users}
-            trend="+5%"
-            trendLabel="New enrollments"
-          />
-          <StatCard
-            title="Instructor Rating"
-            value={stats.rating}
-            icon={Star}
-            trendLabel="Consistent performance"
-          />
+        {/* Subjects Analytics Grid */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Your Subjects Overview</h2>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2].map(i => (
+                <div key={i} className="h-40 bg-gray-200 rounded-xl animate-pulse"></div>
+              ))}
+            </div>
+          ) : subjects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {subjects.map(subject => (
+                <div key={subject._id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="p-2 bg-gray-50 rounded-lg">
+                      <BookOpen className="w-6 h-6 text-gray-900" />
+                    </div>
+                    {subject.stats?.averageScore > 0 && (
+                      <span className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded-full ${subject.stats.averageScore >= 80 ? 'bg-green-50 text-green-600' :
+                        subject.stats.averageScore >= 60 ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'
+                        }`}>
+                        {subject.stats.averageScore}% Avg Score
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">{subject.name}</h3>
+                  <p className="text-sm text-gray-500 mb-4 line-clamp-1">{subject.description}</p>
+
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                    <div>
+                      <p className="text-xs text-gray-500">Active Students</p>
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3 text-gray-400" />
+                        <p className="text-lg font-semibold">{subject.stats?.activeStudents || 0}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Open Tickets</p>
+                      <div className="flex items-center gap-1">
+                        <Mail className="w-3 h-3 text-gray-400" />
+                        <p className="text-lg font-semibold">{subject.stats?.openTickets || 0}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
+              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-gray-900">No subjects assigned</h3>
+              <p className="text-gray-500">You haven't been assigned any subjects yet.</p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

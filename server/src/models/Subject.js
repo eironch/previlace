@@ -49,6 +49,10 @@ const subjectSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    instructor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   {
     timestamps: true,
@@ -115,11 +119,11 @@ subjectSchema.statics.getWithProgress = async function (userId, examLevel) {
       ...subject,
       progress: progress
         ? {
-            completedTopics: progress.completedTopics.length,
-            totalAttempts: progress.totalAttempts,
-            averageScore: progress.averageScore,
-            lastAccessedAt: progress.lastAccessedAt,
-          }
+          completedTopics: progress.completedTopics.length,
+          totalAttempts: progress.totalAttempts,
+          averageScore: progress.averageScore,
+          lastAccessedAt: progress.lastAccessedAt,
+        }
         : null,
     };
   });

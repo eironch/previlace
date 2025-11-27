@@ -28,7 +28,7 @@ import InstructorClassesPage from "./pages/instructor/InstructorClassesPage";
 import InstructorAvailabilityPage from "./pages/instructor/InstructorAvailabilityPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import JobBoardPage from "./pages/career/JobBoardPage";
-import ResumePage from "./pages/career/ResumePage";
+import CVPage from "./pages/career/CVPage";
 import InterviewPrepPage from "./pages/career/InterviewPrepPage";
 import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -36,6 +36,8 @@ import AuthModal from "./components/auth/AuthModal";
 import { ScrollToTop } from "./components/ScrollToTop";
 import DevTools from "./components/ui/DevTools";
 import { useAppStore } from "./store/appStore";
+import RegistrationPage from "./pages/RegistrationPage";
+
 
 import DashboardLayout from "./components/layout/DashboardLayout";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -270,6 +272,11 @@ function App() {
           }
         />
 
+        <Route
+          path="/register"
+          element={<RegistrationPage />}
+        />
+
 
 
         <Route
@@ -282,7 +289,7 @@ function App() {
         />
 
         <Route
-          path="/instructor/dashboard"
+          path="/instructor"
           element={
             <DashboardRoute>
               <InstructorDashboardPage />
@@ -317,10 +324,10 @@ function App() {
           }
         />
         <Route
-          path="/dashboard/resume"
+          path="/dashboard/cv"
           element={
             <DashboardRoute>
-              <ResumePage />
+              <CVPage />
             </DashboardRoute>
           }
         />

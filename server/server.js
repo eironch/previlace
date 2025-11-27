@@ -47,6 +47,7 @@ import jobRoutes from "./src/routes/jobRoutes.js";
 import resumeRoutes from "./src/routes/resumeRoutes.js";
 import interviewRoutes from "./src/routes/interviewRoutes.js";
 import weekendClassRoutes from "./src/routes/weekendClassRoutes.js";
+import registrationRoutes from "./src/routes/registrationRoutes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
@@ -175,6 +176,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/weekend-classes", weekendClassRoutes);
+app.use("/api/registrations", registrationRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

@@ -25,12 +25,14 @@ export const studentNavItems = [
   { id: "dashboard", icon: Home, title: "Dashboard", path: "/dashboard" },
   { id: "subjects", icon: BookOpen, title: "Study", path: "/dashboard/subjects" },
   { id: "jobs", icon: Briefcase, title: "Career", path: "/dashboard/jobs" },
+  { id: "cv", icon: FileText, title: "CV Builder", path: "/dashboard/cv" },
   { id: "analytics", icon: BarChart3, title: "Progress", path: "/dashboard/analytics" },
   { id: "tickets", icon: MessageSquare, title: "Support", path: "/dashboard/tickets" },
 ];
 
 export const adminNavItems = [
   { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
+  { id: "registrations", icon: FileText, title: "Registrations", path: "/admin/registrations" },
   { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
   { id: "users", icon: Users, title: "Users", path: "/admin/users" },
   { id: "resources", icon: FileText, title: "Resources", path: "/admin/resources" },
@@ -38,6 +40,7 @@ export const adminNavItems = [
 
 export const superAdminNavItems = [
   { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
+  { id: "registrations", icon: FileText, title: "Registrations", path: "/admin/registrations" },
   { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
   { id: "users", icon: Users, title: "Users", path: "/admin/users" },
   { id: "questions", icon: BookOpen, title: "Questions", path: "/admin/questions" },
@@ -78,7 +81,12 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
     if (activeTab && item.id) {
       return activeTab === item.id;
     }
-    return location.pathname === item.path;
+    // Exact match for root dashboard paths
+    if (item.path === "/dashboard" || item.path === "/instructor" || item.path === "/admin") {
+      return location.pathname === item.path;
+    }
+    // Prefix match for sub-routes
+    return location.pathname.startsWith(item.path);
   };
 
   const sidebarVariants = {
@@ -129,8 +137,8 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
                         setIsOpen(false);
                       }}
                       className={`flex w-full items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${isActive(item)
-                          ? "bg-black text-white"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-black text-white"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         }`}
                     >
                       <item.icon className={`mr-3 h-5 w-5 ${isActive(item) ? "text-white" : "text-gray-500"}`} />
@@ -205,8 +213,8 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
               }
             }}
             className={`group flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isActive(item)
-                ? "bg-black text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              ? "bg-black text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               } ${isCollapsed ? "justify-center" : ""}`}
             title={isCollapsed ? item.title : ""}
           >

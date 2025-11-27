@@ -332,15 +332,15 @@ const HarvardCV = ({ data }) => {
     return (
       <div className="bg-gray-50 p-12 border-2 border-dashed border-gray-300 rounded-xl text-center text-gray-500 h-full flex flex-col justify-center items-center">
         <Briefcase className="w-12 h-12 mb-4 text-gray-300" />
-        <p className="font-semibold text-lg text-gray-700">Live Resume Preview</p>
-        <p className="text-sm mt-2 max-w-xs mx-auto">Start filling out the form on the left to see your professional resume take shape here.</p>
+        <p className="font-semibold text-lg text-gray-700">Live CV Preview</p>
+        <p className="text-sm mt-2 max-w-xs mx-auto">Start filling out the form on the left to see your professional CV take shape here.</p>
       </div>
     );
   }
 
 
   return (
-    <div className="bg-white p-8 shadow-lg max-w-full mx-auto rounded-none print:shadow-none print:p-0 min-h-[800px] sticky top-4 resume-preview">
+    <div className="bg-white p-8 shadow-lg max-w-full mx-auto rounded-none print:shadow-none print:p-0 min-h-[800px] sticky top-4 cv-preview">
       {/* Header - Name */}
       <h1 className="text-3xl font-bold text-gray-900 text-center uppercase tracking-wider mb-2">
         {name || '[Your Full Name]'}
@@ -422,7 +422,7 @@ const MobileCVPreviewModal = ({ data, onClose }) => {
   return (
     <div className="fixed inset-0 z-[60] bg-white lg:hidden overflow-y-auto p-4 sm:p-8">
       <div className="sticky top-0 bg-white z-50 pt-2 pb-4 flex justify-between items-center border-b border-gray-300">
-        <h2 className="text-xl font-bold text-gray-900">Resume Preview</h2>
+        <h2 className="text-xl font-bold text-gray-900">CV Preview</h2>
         <button
           onClick={onClose}
           className="p-2 bg-gray-200 text-gray-900 rounded-full hover:bg-gray-200 transition"
@@ -431,7 +431,7 @@ const MobileCVPreviewModal = ({ data, onClose }) => {
           <X className="w-5 h-5" />
         </button>
       </div>
-      <div className="mt-4 resume-preview-container">
+      <div className="mt-4 cv-preview-container">
         <HarvardCV data={data} />
       </div>
     </div>
@@ -452,23 +452,23 @@ const ResumePage = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const resume = await resumeService.getMyResume();
+        const cv = await resumeService.getMyResume();
 
-        if (resume) {
+        if (cv) {
           // Map backend data to frontend structure
           setCvData({
-            name: resume.personalInfo?.name || '',
-            email: resume.personalInfo?.email || '',
-            phone: resume.personalInfo?.phone || '',
-            linkedin: resume.personalInfo?.linkedin || '',
-            summary: resume.personalInfo?.summary || '',
-            education: resume.education || [],
-            experience: resume.experience || [],
-            skills: resume.skills || [],
+            name: cv.personalInfo?.name || '',
+            email: cv.personalInfo?.email || '',
+            phone: cv.personalInfo?.phone || '',
+            linkedin: cv.personalInfo?.linkedin || '',
+            summary: cv.personalInfo?.summary || '',
+            education: cv.education || [],
+            experience: cv.experience || [],
+            skills: cv.skills || [],
           });
         }
       } catch (error) {
-        console.error("Error loading resume data:", error);
+        console.error("Error loading CV data:", error);
         // Fallback to localStorage if API fails
         try {
           const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -517,7 +517,7 @@ const ResumePage = () => {
         // Also save to localStorage as backup
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cvData));
       } catch (error) {
-        console.error("Error saving resume data:", error);
+        console.error("Error saving CV data:", error);
       } finally {
         setIsSaving(false);
       }
@@ -594,7 +594,7 @@ const ResumePage = () => {
               <Briefcase className="w-8 h-8 text-green-600" />
             </div>
             <h3 className="text-2xl font-bold text-gray-900">Ready to Export!</h3>
-            <p className="text-gray-600 mt-2 mb-6">Your resume is ready. Review the preview on the right and click below to print or save as PDF.</p>
+            <p className="text-gray-600 mt-2 mb-6">Your CV is ready. Review the preview on the right and click below to print or save as PDF.</p>
             <button
               onClick={() => window.print()}
               className="inline-flex items-center justify-center bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg transition duration-150 shadow-lg w-full sm:w-auto"
@@ -614,7 +614,7 @@ const ResumePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <StandardHeader
-        title="Resume Builder"
+        title="CV Builder"
         showBack={true}
         backPath="/dashboard/jobs"
       >
@@ -693,7 +693,7 @@ const ResumePage = () => {
           <div className="hidden lg:block w-full lg:w-7/12 xl:w-2/3">
             <div className="sticky top-8">
               <div className="mb-4 flex justify-between items-center">
-                <h2 className="text-lg font-bold text-gray-900">Live Preview</h2>
+                <h2 className="text-lg font-bold text-gray-900">Live CV Preview</h2>
                 <button
                   onClick={() => window.print()}
                   className="text-sm font-medium text-gray-600 hover:text-black flex items-center"
@@ -701,7 +701,7 @@ const ResumePage = () => {
                   <Printer className="w-4 h-4 mr-1" /> Print
                 </button>
               </div>
-              <div className="border border-gray-300 shadow-sm rounded-lg overflow-hidden resume-preview-container">
+              <div className="border border-gray-300 shadow-sm rounded-lg overflow-hidden cv-preview-container">
                 <HarvardCV data={cvData} />
               </div>
             </div>

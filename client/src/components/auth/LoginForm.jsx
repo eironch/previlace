@@ -38,9 +38,11 @@ export default function LoginForm() {
       const result = await login(formData);
       if (result.success) {
         closeAuthModal();
-        
+
         if (result.user?.role === "admin" || result.user?.role === "super_admin") {
           navigate("/admin");
+        } else if (result.user?.role === "instructor") {
+          navigate("/instructor");
         } else if (!result.user?.isProfileComplete) {
           navigate("/onboarding");
         } else {
