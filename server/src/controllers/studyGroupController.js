@@ -3,7 +3,7 @@ import StudyGroupMember from "../models/StudyGroupMember.js";
 import StudyGroupMessage from "../models/StudyGroupMessage.js";
 import StudyGroupSession from "../models/StudyGroupSession.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
-
+import socketService from "../services/socketService.js";
 
 const createStudyGroup = catchAsync(async (req, res, next) => {
   const {
@@ -175,6 +175,16 @@ const joinGroup = catchAsync(async (req, res, next) => {
     });
 
     await group.updateMemberCount();
+
+    socketService.io.to(`group_${groupId}`).emit("group:member_joined", {
+      groupId,
+      member: {
+        userId: req.user._id,
+        user: req.user,
+        role: "member",
+        joinedAt: membership.joinedAt,
+      },
+    });
   }
 
   res.status(201).json({
@@ -237,8 +247,9 @@ const leaveGroup = catchAsync(async (req, res, next) => {
     userName: `${req.user.firstName} ${req.user.lastName}`,
   });
 
-  await StudyGroupMessage.createSystemMessage(groupId, "member_left", {
-    userName: `${req.user.firstName} ${req.user.lastName}`,
+  socketService.io.to(`group_${groupId}`).emit("group:member_left", {
+    groupId,
+    userId: req.user._id,
   });
 
   res.json({
@@ -269,7 +280,10 @@ const updateGroup = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
-
+  socketService.io.to(`group_${groupId}`).emit("group:updated", {
+    groupId,
+    updates: updateData,
+  });
 
   res.json({
     success: true,
@@ -347,7 +361,12 @@ const manageMember = catchAsync(async (req, res, next) => {
 
   const targetUser = await targetMembership.populate("userId", "firstName lastName");
 
-
+  socketService.io.to(`group_${groupId}`).emit("group:member_updated", {
+    groupId,
+    memberId,
+    action,
+    role: result.role,
+  });
 
   res.json({
     success: true,
@@ -398,7 +417,10 @@ const sendMessage = catchAsync(async (req, res, next) => {
 
   await membership.recordMessage();
 
-  await membership.recordMessage();
+  socketService.io.to(`group_${groupId}`).emit("group:new_message", {
+    groupId,
+    message,
+  });
 
   res.status(201).json({
     success: true,
@@ -466,7 +488,10 @@ const deleteMessage = catchAsync(async (req, res, next) => {
 
   await message.deleteMessage(req.user._id);
 
-  await message.deleteMessage(req.user._id);
+  socketService.io.to(`group_${groupId}`).emit("group:message_deleted", {
+    groupId,
+    messageId,
+  });
 
   res.json({
     success: true,

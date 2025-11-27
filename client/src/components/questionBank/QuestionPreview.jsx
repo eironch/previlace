@@ -70,7 +70,7 @@ function QuestionPreview({ question, questionType }) {
                 className={`flex items-start gap-3 rounded-lg border p-3 ${
                   option.isCorrect 
                     ? "border-green-200 bg-green-50" 
-                    : "border-gray-300 bg-white"
+                    : "border-gray-200 bg-white"
                 }`}
               >
                 <div className="mt-0.5 flex items-center">
@@ -122,7 +122,7 @@ function QuestionPreview({ question, questionType }) {
         </div>
 
         {question.tags.length > 0 && (
-          <div className="mt-6 border-t border-gray-300 pt-4">
+          <div className="mt-6 border-t border-gray-200 pt-4">
             <div className="flex flex-wrap gap-2">
               {question.tags.map((tag) => (
                 <span

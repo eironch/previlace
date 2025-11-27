@@ -10,22 +10,22 @@ function RoleDashboard() {
 
   const studentCards = [
     {
-      title: "Dashboard",
-      description: "View progress and analytics",
+      title: "My Progress",
+      description: "Track your learning journey",
       icon: BarChart3,
       link: "/dashboard",
       color: "bg-blue-500",
     },
     {
       title: "Study Materials",
-      description: "Access learning resources",
+      description: "Access review content",
       icon: BookOpen,
       link: "/subjects",
       color: "bg-green-500",
     },
     {
       title: "Practice Exams",
-      description: "Take practice tests",
+      description: "Test your knowledge",
       icon: FileQuestion,
       link: "/exams",
       color: "bg-purple-500",
@@ -34,22 +34,22 @@ function RoleDashboard() {
 
   const adminCards = [
     {
-      title: "User Management",
-      description: "Manage student accounts",
+      title: "Students",
+      description: "Manage center students",
       icon: Users,
       link: "/admin/users",
       color: "bg-cyan-500",
     },
     {
-      title: "Question Bank",
-      description: "Manage question library",
+      title: "Questions",
+      description: "Create and manage questions",
       icon: FileQuestion,
       link: "/admin/questions",
       color: "bg-orange-500",
     },
     {
       title: "Analytics",
-      description: "View performance metrics",
+      description: "Center performance metrics",
       icon: BarChart3,
       link: "/admin/analytics",
       color: "bg-pink-500",
@@ -58,22 +58,22 @@ function RoleDashboard() {
 
   const superAdminCards = [
     {
-      title: "System Overview",
-      description: "View platform analytics",
+      title: "System Dashboard",
+      description: "Platform-wide overview",
       icon: LayoutDashboard,
       link: "/admin",
       color: "bg-gray-700",
     },
     {
-      title: "User Management",
-      description: "Manage all user accounts",
+      title: "All Users",
+      description: "Manage all platform users",
       icon: Users,
       link: "/admin/users",
       color: "bg-blue-600",
     },
     {
       title: "System Settings",
-      description: "Configure platform",
+      description: "Configure platform settings",
       icon: Settings,
       link: "/admin/settings",
       color: "bg-red-600",
@@ -87,8 +87,8 @@ function RoleDashboard() {
   }
 
   function getRoleTitle() {
-    if (isSuperAdmin()) return "Super Admin";
-    if (isAdmin()) return "Admin";
+    if (isSuperAdmin()) return "Super Administrator";
+    if (isAdmin()) return "Review Center Admin";
     return "Student";
   }
 
@@ -99,7 +99,7 @@ function RoleDashboard() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.firstName || user.email}</h1>
-          <p className="mt-2 text-gray-600">{getRoleTitle()}</p>
+          <p className="mt-2 text-gray-600">{getRoleTitle()} Dashboard</p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -109,7 +109,7 @@ function RoleDashboard() {
               <button
                 key={card.title}
                 onClick={() => navigate(card.link)}
-                className="rounded-lg border border-gray-300 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
+                className="rounded-lg border border-gray-200 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
               >
                 <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${card.color}`}>
                   <Icon className="h-6 w-6 text-white" />
@@ -122,8 +122,8 @@ function RoleDashboard() {
         </div>
 
         {user.reviewCenterId && (isAdmin() || isSuperAdmin()) && (
-          <div className="mt-8 rounded-lg border border-gray-300 bg-white p-6">
-            <h2 className="text-xl font-bold text-gray-900">Overview</h2>
+          <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
+            <h2 className="text-xl font-bold text-gray-900">Quick Stats</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <div>
                 <p className="text-sm text-gray-600">Total Students</p>
@@ -134,7 +134,7 @@ function RoleDashboard() {
                 <p className="mt-1 text-2xl font-bold text-gray-900">0</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Questions</p>
+                <p className="text-sm text-gray-600">Questions Created</p>
                 <p className="mt-1 text-2xl font-bold text-gray-900">0</p>
               </div>
             </div>

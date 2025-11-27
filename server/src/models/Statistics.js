@@ -33,7 +33,8 @@ const StatisticsSchema = new mongoose.Schema({
         default: Date.now
     }
 }, { 
-    timestamps: true
+    // Mongoose option to disable the automatic 'id' field for simpler single-document use
+    _id: false 
 });
 
 // Export the Mongoose model

@@ -45,7 +45,7 @@ function MistakeAnalysisPanel() {
           {commonMistakeType && (
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-900">Most Common Mistake Type</p>
-              <div className="rounded-lg bg-gray-200 px-4 py-3">
+              <div className="rounded-lg bg-gray-100 px-4 py-3">
                 <p className="font-semibold text-gray-900">{commonMistakeType.type}</p>
                 <p className="mt-1 text-sm text-gray-600">
                   {commonMistakeType.percentage}% of mistakes

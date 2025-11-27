@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 import StandardHeader from "@/components/ui/StandardHeader";
 import Button from "@/components/ui/Button";
-import useStudyPlanStore from "@/store/studyPlanStore";
+import useExamStore from "@/store/examStore";
 
 function StudyPlanPage() {
-  const { generateStudyPlan, activePlan: studyPlan, loading, error } = useStudyPlanStore();
+  const { generateStudyPlan, studyPlan, loading, error } = useExamStore();
   const [targetDate, setTargetDate] = useState("");
 
   function handleGenerate() {
@@ -59,10 +59,10 @@ function StudyPlanPage() {
     }
   }
 
-  if (!studyPlan && !loading) {
+  if (!studyPlan) {
     return (
       <div className="min-h-screen bg-white">
-        <StandardHeader title="Study Plan" />
+        <StandardHeader title="Study Plan" showBack={true} />
 
         <div className="mx-auto max-w-4xl px-4 py-8">
           <div className="mb-8 text-center">
@@ -133,14 +133,6 @@ function StudyPlanPage() {
     );
   }
 
-  if (loading && !studyPlan) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-white">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-black" />
-      </div>
-    );
-  }
-
   const daysRemaining = getDaysRemaining(studyPlan.targetExamDate);
   const currentWeek = Math.ceil(
     (new Date() - new Date(studyPlan.startDate)) / (1000 * 60 * 60 * 24 * 7)
@@ -148,11 +140,9 @@ function StudyPlanPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <StandardHeader title="Study Plan" showBack={true} />
+
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Study Plan</h1>
-          <p className="text-gray-600">Track your progress and stay on schedule</p>
-        </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
           <div className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">
@@ -216,14 +206,14 @@ function StudyPlanPage() {
               {studyPlan.weeklySchedule?.map((week) => (
                 <div
                   key={week.week}
-                  className="rounded-lg border border-gray-300 p-4"
+                  className="rounded-lg border border-gray-200 p-4"
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <h4 className="font-semibold text-black">
                       Week {week.week}
                     </h4>
                     <span
-                      className={`rounded px-2 py-1 text-xs font-medium ${week.week === currentWeek ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-800"}`}
+                      className={`rounded px-2 py-1 text-xs font-medium ${week.week === currentWeek ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}`}
                     >
                       {week.focus}
                     </span>
@@ -254,7 +244,7 @@ function StudyPlanPage() {
               {studyPlan.milestones?.map((milestone, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 rounded-lg border border-gray-300 p-3"
+                  className="flex items-start gap-3 rounded-lg border border-gray-200 p-3"
                 >
                   <div className="mt-1">
                     {milestone.completed ? (
@@ -274,12 +264,12 @@ function StudyPlanPage() {
                       <span className="rounded border px-2 py-1 text-xs">
                         {milestone.assessmentType}
                       </span>
-                      <span className="rounded bg-gray-200 px-2 py-1 text-xs">
+                      <span className="rounded bg-gray-100 px-2 py-1 text-xs">
                         Target: {milestone.targetReadinessScore}%
                       </span>
                       {milestone.actualScore && (
                         <span
-                          className={`rounded px-2 py-1 text-xs ${milestone.actualScore >= milestone.targetReadinessScore ? "bg-green-200 text-green-700" : "bg-red-200 text-red-700"}`}
+                          className={`rounded px-2 py-1 text-xs ${milestone.actualScore >= milestone.targetReadinessScore ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                         >
                           Actual: {milestone.actualScore}%
                         </span>

@@ -13,8 +13,8 @@ export default function NotificationDropdown({ onClose }) {
   };
 
   return (
-    <div className="absolute right-0 mt-2 w-80 origin-top-right rounded-lg border border-gray-300 bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-      <div className="flex items-center justify-between border-b border-gray-300 px-4 py-3">
+    <div className="absolute right-0 mt-2 w-80 origin-top-right rounded-lg border border-gray-200 bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
         <button
           onClick={markAllAsRead}
@@ -40,10 +40,10 @@ export default function NotificationDropdown({ onClose }) {
         )}
       </div>
 
-      <div className="border-t border-gray-300 bg-gray-50 p-2">
+      <div className="border-t border-gray-200 bg-gray-50 p-2">
         <button
           onClick={handleViewAll}
-          className="w-full rounded-md px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-200"
+          className="w-full rounded-md px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-100"
         >
           View all notifications
         </button>

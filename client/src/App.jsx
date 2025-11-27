@@ -14,18 +14,21 @@ import QuizResultsPage from "./pages/quiz/QuizResultsPage";
 import MockExamStartPage from "./pages/quiz/MockExamStartPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ProfileSettingsPage from "./pages/settings/ProfileSettingsPage";
+import StudyStreakPage from "./pages/StudyStreakPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ChallengePage from "./pages/ChallengePage";
 
 import ExamReadinessPage from "./pages/ExamReadinessPage";
 import StudyPlanPage from "./pages/StudyPlanPage";
-
+import PerformancePage from "./pages/PerformancePage";
+import QuestionBankPage from "./pages/admin/QuestionBankPage";
+import ReviewQueuePage from "./pages/admin/ReviewQueuePage";
+import UserManagementPage from "./pages/admin/UserManagementPage";
+import FileManagementPage from "./pages/admin/FileManagementPage";
 import InstructorDashboardPage from "./pages/InstructorDashboardPage";
 import MyTicketsPage from "./pages/student/MyTicketsPage";
 import TicketInboxPage from "./pages/instructor/TicketInboxPage";
-import InstructorClassesPage from "./pages/instructor/InstructorClassesPage";
-import InstructorAvailabilityPage from "./pages/instructor/InstructorAvailabilityPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import JobBoardPage from "./pages/career/JobBoardPage";
 import ResumePage from "./pages/career/ResumePage";
@@ -36,9 +39,6 @@ import AuthModal from "./components/auth/AuthModal";
 import { ScrollToTop } from "./components/ScrollToTop";
 import DevTools from "./components/ui/DevTools";
 import { useAppStore } from "./store/appStore";
-
-import DashboardLayout from "./components/layout/DashboardLayout";
-import NotFoundPage from "./pages/NotFoundPage";
 
 function ProtectedRoute({ children, requireAdmin = false, requireProfileComplete = true }) {
   const { user, isAuthenticated } = useAuthStore();
@@ -55,19 +55,7 @@ function ProtectedRoute({ children, requireAdmin = false, requireProfileComplete
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (!requireAdmin && (user?.role === "admin" || user?.role === "super_admin")) {
-    return <Navigate to="/admin" replace />;
-  }
-
   return children;
-}
-
-function DashboardRoute({ children, requireAdmin = false }) {
-  return (
-    <ProtectedRoute requireAdmin={requireAdmin}>
-      <DashboardLayout>{children}</DashboardLayout>
-    </ProtectedRoute>
-  );
 }
 
 function App() {
@@ -82,7 +70,7 @@ function App() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-black" />
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
           <p className="text-sm text-gray-600">Loading...</p>
         </div>
       </div>
@@ -118,162 +106,160 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <DashboardPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/subjects"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <SubjectsPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/subjects/:id"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <SubjectDetailPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/topics/:id"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <TopicDetailPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/quiz"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <QuizSetupPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/quiz-session"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <QuizSessionPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/results"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <QuizResultsPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/mock-exam"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <MockExamStartPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/analytics"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <AnalyticsPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/settings"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <ProfileSettingsPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
-
+        <Route
+          path="/dashboard/study-streak"
+          element={
+            <ProtectedRoute>
+              <StudyStreakPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/dashboard/achievements"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <AchievementsPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/leaderboard"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <LeaderboardPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/challenges"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <ChallengePage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
+
+
 
         <Route
           path="/dashboard/exam-readiness"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <ExamReadinessPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard/study-plan"
           element={
-            <DashboardRoute>
+            <ProtectedRoute>
               <StudyPlanPage />
-            </DashboardRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
-          path="/dashboard/jobs"
+          path="/dashboard/performance"
           element={
-            <DashboardRoute>
-              <JobBoardPage />
-            </DashboardRoute>
+            <ProtectedRoute>
+              <PerformancePage />
+            </ProtectedRoute>
           }
         />
 
         <Route
-          path="/dashboard/tickets"
-          element={
-            <DashboardRoute>
-              <MyTicketsPage />
-            </DashboardRoute>
-          }
-        />
-
-
-
-        <Route
-          path="/admin/*"
+          path="/admin"
           element={
             <ProtectedRoute requireAdmin>
               <AdminPage />
@@ -282,26 +268,118 @@ function App() {
         />
 
         <Route
-          path="/instructor/classes"
+          path="/instructor"
           element={
-            <DashboardRoute>
-              <InstructorClassesPage />
-            </DashboardRoute>
+            <ProtectedRoute>
+              <InstructorDashboardPage />
+            </ProtectedRoute>
           }
         />
 
         <Route
-          path="/instructor/availability"
+          path="/dashboard/tickets"
           element={
-            <DashboardRoute>
-              <InstructorAvailabilityPage />
-            </DashboardRoute>
+            <ProtectedRoute>
+              <MyTicketsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/inbox"
+          element={
+            <ProtectedRoute>
+              <TicketInboxPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/jobs"
+          element={
+            <ProtectedRoute>
+              <JobBoardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/resume"
+          element={
+            <ProtectedRoute>
+              <ResumePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/interview"
+          element={
+            <ProtectedRoute>
+              <InterviewPrepPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/question-bank"
+          element={
+            <ProtectedRoute requireAdmin>
+              <QuestionBankPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/review-queue"
+          element={
+            <ProtectedRoute requireAdmin>
+              <ReviewQueuePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute requireAdmin>
+              <UserManagementPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/files"
+          element={
+            <ProtectedRoute requireAdmin>
+              <FileManagementPage />
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="*"
-          element={<NotFoundPage />}
+          element={
+            <Navigate
+              to={
+                isAuthenticated
+                  ? user?.isProfileComplete
+                    ? "/dashboard"
+                    : "/onboarding"
+                  : "/"
+              }
+              replace
+            />
+          }
         />
       </Routes>
       {showAuthModal && <AuthModal />}

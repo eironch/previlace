@@ -69,29 +69,4 @@ export const quizService = {
     const { data } = await apiClient.get("/exam/stats/user");
     return data;
   },
-
-  async startPostTest(weekNumber) {
-    const { data } = await apiClient.post("/exam/post-test", { weekNumber });
-    return data;
-  },
-
-  async startAssessment(currentWeekNumber) {
-    const { data } = await apiClient.post("/exam/assessment", { currentWeekNumber });
-    return data;
-  },
-
-  async startPretest() {
-    const { data } = await apiClient.post("/exam/pretest");
-    return data;
-  },
-
-  async getPostTestStatus() {
-    const { data } = await apiClient.get("/exam/post-test-status");
-    return data;
-  },
-
-  async checkPretestAvailability() {
-    const { data } = await apiClient.get("/exam/pretest-availability");
-    return data;
-  },
 };

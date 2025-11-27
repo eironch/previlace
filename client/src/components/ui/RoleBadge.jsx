@@ -6,9 +6,9 @@ function RoleBadge({ role }) {
       case "admin":
         return "rounded-full bg-gray-700 px-3 py-1 text-xs font-semibold text-white";
       case "student":
-        return "rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-900";
+        return "rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-900";
       default:
-        return "rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-900";
+        return "rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-900";
     }
   };
 

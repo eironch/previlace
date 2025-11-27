@@ -21,13 +21,9 @@ const dailyActivitySchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    meetingLink: {
-      type: String,
-      trim: true,
-    },
     activityType: {
       type: String,
-      enum: ["lesson", "practice", "assessment", "review", "challenge", "class", "post_test", "mock_exam", "mock_pretest"],
+      enum: ["lesson", "practice", "assessment", "review", "challenge", "class"],
       required: true,
     },
     subjectId: {

@@ -5,36 +5,28 @@ const useAnalyticsStore = create((set, get) => ({
   categoryStats: [],
   progressData: [],
   weakAreas: [],
-  overallProgress: [],
-  subjectWeeklyProgress: {},
-  analyticsData: null,
+  readiness: {},
   isLoading: false,
   error: null,
 
   fetchAnalytics: async () => {
-    set({ isLoading: true, error: null });
+    const currentStats = get().categoryStats || [];
+    if (currentStats.length === 0) {
+      set({ isLoading: true, error: null });
+    } else {
+      set({ error: null });
+    }
 
     try {
-      // Add minimum delay to ensure animation is visible
-      const [data] = await Promise.all([
-        analyticsService.getStudentAnalytics(),
-        new Promise(resolve => setTimeout(resolve, 500))
-      ]);
-
+      const data = await analyticsService.getStudentAnalytics();
       set({
         categoryStats: data.categories || [],
         progressData: data.recentProgress || [],
         weakAreas: data.weakAreas || [],
-        analyticsData: data, // Store full data for PerformancePage
         readiness: {
-          overall: data.accuracy || 0,
-          details: {
-            totalQuestions: data.totalQuestions || 0,
-            readinessLevel: data.readiness || "Low"
-          }
+          overall: data.totalQuestions?.accuracy || 0,
+          details: data.totalQuestions || {}
         },
-        overallProgress: data.overallProgress || [],
-        subjectWeeklyProgress: data.subjectWeeklyProgress || {},
         isLoading: false,
       });
     } catch (error) {
@@ -48,9 +40,6 @@ const useAnalyticsStore = create((set, get) => ({
       progressData: [],
       weakAreas: [],
       readiness: {},
-      overallProgress: [],
-      subjectWeeklyProgress: {},
-      analyticsData: null,
       isLoading: false,
       error: null,
     }),

@@ -56,7 +56,7 @@ function AnalyticsDashboard() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
-      <div className="text-gray-500">Loading data...</div>
+        <div className="text-gray-500">Loading analytics...</div>
       </div>
     );
   }
@@ -73,7 +73,7 @@ function AnalyticsDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8">
       <div className="mx-auto max-w-7xl px-4">
         <h1 className="mb-8 text-3xl font-bold text-gray-900">
-          Analytics Dashboard
+          Performance Analytics
         </h1>
 
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -81,13 +81,13 @@ function AnalyticsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-500">
-                  Overall Accuracy
+                  OVERALL ACCURACY
                 </p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {overallAccuracy}%
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
                 <TrendingUp size={24} className="text-blue-600" />
               </div>
             </div>
@@ -97,13 +97,13 @@ function AnalyticsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-500">
-                  Exam Readiness
+                  EXAM READINESS
                 </p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {readiness.readinessScore || 0}%
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <Target size={24} className="text-green-600" />
               </div>
             </div>
@@ -112,12 +112,12 @@ function AnalyticsDashboard() {
           <div className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-500">Average Time</p>
+                <p className="text-sm font-semibold text-gray-500">AVG TIME</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {readiness.avgTimePerQuestion || 0}s
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
                 <Clock size={24} className="text-purple-600" />
               </div>
             </div>
@@ -126,12 +126,12 @@ function AnalyticsDashboard() {
           <div className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-500">Study Streak</p>
+                <p className="text-sm font-semibold text-gray-500">STREAK</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {readiness.currentStreak || 0} days
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
                 <Zap size={24} className="text-orange-600" />
               </div>
             </div>

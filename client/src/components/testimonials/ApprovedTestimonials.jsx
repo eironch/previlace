@@ -28,7 +28,7 @@ const StarRating = ({ rating, size = 'h-4 w-4', color = 'yellow' }) => {
 const TestimonialCardA = ({ testimonial }) => (
     <div 
         key={testimonial._id || testimonial.id} 
-        className="flex flex-col bg-white p-6 rounded-xl border border-gray-300 shadow-md transition-transform duration-200 hover:shadow-lg hover:border-black/5"
+        className="flex flex-col bg-white p-6 rounded-xl border border-gray-200 shadow-md transition-transform duration-200 hover:shadow-lg hover:border-black/5"
     >
         <div className="flex-grow">
             <StarRating rating={testimonial.rating} size="h-4 w-4" color="black" />
@@ -36,8 +36,8 @@ const TestimonialCardA = ({ testimonial }) => (
                 "{testimonial.content}"
             </p>
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-300 flex items-center">
-            <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
+        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center">
+            <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
                 <span className="text-sm font-semibold text-black">
                     {(testimonial.userName || 'U').charAt(0)}
                 </span>

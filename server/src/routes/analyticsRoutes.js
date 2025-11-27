@@ -12,7 +12,5 @@ router.get("/readiness", analyticsController.getExamReadiness);
 router.get("/progress", analyticsController.getProgressReport);
 router.get("/percentile", analyticsController.getPercentileRank);
 router.get("/dashboard", analyticsController.getStudentAnalytics);
-router.get("/weekly-progress", analyticsController.getWeeklyProgress);
-router.get("/subject-weekly-progress", analyticsController.getSubjectWeeklyProgress);
 
 export default router;

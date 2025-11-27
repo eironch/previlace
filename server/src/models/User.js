@@ -11,12 +11,6 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    studentId: {
-      type: String,
-      unique: true,
-      sparse: true,
-      trim: true,
-    },
     password: {
       type: String,
       required: function () {
@@ -57,18 +51,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["student", "instructor", "admin", "super_admin"],
       default: "student",
-    },
-    level: {
-      type: Number,
-      default: 1,
-    },
-    exp: {
-      type: Number,
-      default: 0,
-    },
-    nextLevelExp: {
-      type: Number,
-      default: 1000,
     },
     reviewCenterId: {
       type: mongoose.Schema.Types.ObjectId,

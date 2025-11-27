@@ -171,7 +171,7 @@ function ChatMessage({ message, isOwn, onDelete, onReply }) {
                     onReply();
                     setShowActions(false);
                   }}
-                  className="px-3 py-1 text-sm text-slate-700 hover:bg-slate-200"
+                  className="px-3 py-1 text-sm text-slate-700 hover:bg-slate-100"
                 >
                   Reply
                 </button>

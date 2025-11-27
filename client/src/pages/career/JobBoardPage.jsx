@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Briefcase, MapPin, Filter } from "lucide-react";
+import { Search, Briefcase, MapPin, Filter, ArrowLeft } from "lucide-react";
 import { jobService } from "../../services/jobService";
 import JobCard from "../../components/career/JobCard";
-import StandardHeader from "@/components/ui/StandardHeader";
 
 export default function JobBoardPage() {
   const navigate = useNavigate();
@@ -37,52 +36,76 @@ export default function JobBoardPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      <StandardHeader 
-        title="Career Center" 
-        description="Find your dream job and build your career"
-      >
-        <button
-          onClick={() => navigate("/dashboard/resume")}
-          className="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-gray-800 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-200"
-        >
-          <Briefcase className="h-4 w-4 mr-2" />
-          Build My Resume
-        </button>
-      </StandardHeader>
-
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-        {/* Search Bar */}
-        <div className="mb-8 mx-auto max-w-3xl">
-          <div className="flex gap-2 rounded-lg bg-white p-2 shadow-lg ring-1 ring-gray-200">
-            <div className="flex-1 flex items-center px-4">
-              <Search className="h-5 w-5 text-gray-400 mr-3" />
-              <input
-                type="text"
-                placeholder="Job title, keywords, or company"
-                className="w-full border-none bg-transparent focus:ring-0 text-gray-900 placeholder-gray-500"
-                value={filters.search}
-                onChange={handleSearchChange}
-              />
-            </div>
-            <div className="h-12 w-px bg-gray-200"></div>
-            <div className="flex-1 flex items-center px-4">
-              <MapPin className="h-5 w-5 text-gray-400 mr-3" />
-              <input
-                type="text"
-                placeholder="City or remote"
-                className="w-full border-none bg-transparent focus:ring-0 text-gray-900 placeholder-gray-500"
-              />
-            </div>
-            <button className="rounded-lg bg-black px-8 py-3 font-semibold text-white hover:bg-gray-800 transition-colors">
-              Search
-            </button>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+     <div className="bg-white border-b border-gray-200">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        
+        {/* 🚀 Top Navigation/Action Row (Upper Left & Upper Right) */}
+        <div className="flex justify-between items-center mb-6">
+          {/* Upper Left: Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Back</span>
+          </button>
+          
+          {/* Upper Right: Resume Builder Call to Action */}
+          <button
+            onClick={() => navigate("/dashboard/resume")} // Adjust the path as needed
+            className="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-grey-700 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            <Briefcase className="h-4 w-4 mr-2" />
+            Build My Resume
+          </button>
+        </div>
+        
+        <div className="text-center mb-6">
+          {/* Main Title and Description are now correctly centered below the action row */}
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            Find Your Dream Job
+          </h1>
+          <p className="mt-4 text-lg text-gray-600">
+            Browse hundreds of opportunities from top construction and engineering firms.
+          </p>
         </div>
 
-        {/* Job List */}
+          {/* Search Bar */}
+          <div className="mt-8 mx-auto max-w-3xl">
+            <div className="flex gap-2 rounded-lg bg-white p-2 shadow-lg ring-1 ring-gray-200">
+              <div className="flex-1 flex items-center px-4">
+                <Search className="h-5 w-5 text-gray-400 mr-3" />
+                <input
+                  type="text"
+                  placeholder="Job title, keywords, or company"
+                  className="w-full border-none bg-transparent focus:ring-0 text-gray-900 placeholder-gray-500"
+                  value={filters.search}
+                  onChange={handleSearchChange}
+                />
+              </div>
+              <div className="h-12 w-px bg-gray-200"></div>
+              <div className="flex-1 flex items-center px-4">
+                <MapPin className="h-5 w-5 text-gray-400 mr-3" />
+                <input
+                  type="text"
+                  placeholder="City or remote"
+                  className="w-full border-none bg-transparent focus:ring-0 text-gray-900 placeholder-gray-500"
+                />
+              </div>
+              <button className="rounded-lg bg-black px-8 py-3 font-semibold text-white hover:bg-gray-800 transition-colors">
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Job List */}
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-4">
-          {/* Filters Sidebar */}
+          {/* Filters Sidebar (Placeholder) */}
           <div className="hidden lg:block">
             <div className="sticky top-8 space-y-6">
               <div>
@@ -126,7 +149,7 @@ export default function JobBoardPage() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

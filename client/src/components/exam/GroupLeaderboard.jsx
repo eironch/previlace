@@ -75,7 +75,7 @@ export default function GroupLeaderboard({ groupId }) {
                   className="border-b border-slate-200 hover:bg-slate-50"
                 >
                   <td className="px-6 py-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-200 font-semibold text-blue-600">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600">
                       {idx + 1}
                     </div>
                   </td>
@@ -116,7 +116,7 @@ export default function GroupLeaderboard({ groupId }) {
                   </td>
 
                   <td className="px-6 py-4 text-center">
-                    <span className="inline-block rounded-full bg-blue-200 px-3 py-1 text-sm font-semibold text-blue-700">
+                    <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
                       {entry.points}
                     </span>
                   </td>

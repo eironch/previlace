@@ -1,6 +1,6 @@
 function Tabs({ tabs, activeTab, onTabChange, className = "" }) {
   return (
-    <div className={`border-b border-gray-300 ${className}`}>
+    <div className={`border-b border-gray-200 ${className}`}>
       <nav className="flex space-x-8">
         {tabs.map((tab) => (
           <button
@@ -15,7 +15,7 @@ function Tabs({ tabs, activeTab, onTabChange, className = "" }) {
             {tab.icon && <tab.icon className="w-4 h-4 inline mr-2" />}
             {tab.label}
             {tab.count !== undefined && (
-              <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-200 text-gray-600">
+              <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-100 text-gray-600">
                 {tab.count}
               </span>
             )}

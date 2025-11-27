@@ -32,16 +32,16 @@ function QuickActionsCard() {
   ];
 
   return (
-    <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <h3 className="mb-4 text-lg font-semibold text-gray-900">Quick Actions</h3>
       <div className="grid grid-cols-2 gap-3">
         {actions.map((action) => (
           <button
             key={action.path}
             onClick={() => navigate(action.path)}
-            className="flex flex-col items-start gap-2 rounded-lg border border-gray-300 p-4 text-left transition-all hover:border-black hover:shadow-sm"
+            className="flex flex-col items-start gap-2 rounded-lg border border-gray-200 p-4 text-left transition-all hover:border-black hover:shadow-sm"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
               <action.icon className="h-5 w-5 text-gray-900" />
             </div>
             <div>

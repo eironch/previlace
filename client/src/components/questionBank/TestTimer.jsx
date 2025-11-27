@@ -34,10 +34,10 @@ function TestTimer() {
     <div
       className={`flex items-center gap-2 rounded-lg px-3 py-2 ${
         isCriticalTime
-          ? "bg-red-200 text-red-700"
+          ? "bg-red-100 text-red-700"
           : isLowTime
-            ? "bg-yellow-200 text-yellow-700"
-            : "bg-gray-200 text-gray-700"
+            ? "bg-yellow-100 text-yellow-700"
+            : "bg-gray-100 text-gray-700"
       }`}
     >
       {isCriticalTime ? (

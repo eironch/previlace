@@ -37,7 +37,7 @@ export default function NotificationItem({ notification, onClose }) {
   return (
     <div
       onClick={handleClick}
-      className={`flex cursor-pointer items-start gap-3 border-b border-gray-300 p-4 transition-colors hover:bg-gray-50 ${
+      className={`flex cursor-pointer items-start gap-3 border-b border-gray-100 p-4 transition-colors hover:bg-gray-50 ${
         !notification.isRead ? "bg-blue-50/50" : ""
       }`}
     >

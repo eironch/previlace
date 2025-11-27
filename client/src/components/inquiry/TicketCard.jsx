@@ -6,13 +6,13 @@ export default function TicketCard({ ticket, onClick }) {
   const getStatusColor = (status) => {
     switch (status) {
       case "resolved":
-        return "bg-green-200 text-green-800";
+        return "bg-green-100 text-green-800";
       case "in_progress":
-        return "bg-blue-200 text-blue-800";
+        return "bg-blue-100 text-blue-800";
       case "expired":
-        return "bg-gray-200 text-gray-600";
+        return "bg-gray-100 text-gray-600";
       default:
-        return "bg-yellow-200 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800";
     }
   };
 
@@ -24,7 +24,7 @@ export default function TicketCard({ ticket, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="group cursor-pointer rounded-lg border border-gray-300 bg-white p-4 transition-all hover:border-black hover:shadow-md"
+      className="group cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-black hover:shadow-md"
     >
       <div className="mb-2 flex items-start justify-between">
         <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export default function TicketCard({ ticket, onClick }) {
         {ticket.question}
       </p>
 
-      <div className="flex items-center justify-between border-t border-gray-300 pt-3 text-xs text-gray-500">
+      <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-500">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />

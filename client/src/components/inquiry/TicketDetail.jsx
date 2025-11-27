@@ -56,11 +56,11 @@ export default function TicketDetail({ ticket, isInstructor }) {
   return (
     <div className="flex h-full flex-col bg-white">
       {/* Header */}
-      <div className="border-b border-gray-300 p-6">
+      <div className="border-b border-gray-200 p-6">
         <div className="mb-4 flex items-start justify-between">
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <span className="rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
                 {ticket.subject?.name}
               </span>
               <span className="text-xs text-gray-500">
@@ -114,7 +114,7 @@ export default function TicketDetail({ ticket, isInstructor }) {
               <div
                 key={index}
                 className={`flex gap-4 ${
-                  item.type === "note" ? "bg-yellow-50 p-4 rounded-lg border border-yellow-200" : ""
+                  item.type === "note" ? "bg-yellow-50 p-4 rounded-lg border border-yellow-100" : ""
                 }`}
               >
                 <div className="flex-shrink-0">
@@ -161,7 +161,7 @@ export default function TicketDetail({ ticket, isInstructor }) {
 
       {/* Input Area */}
       {ticket.status !== "resolved" && ticket.status !== "expired" && (
-        <div className="border-t border-gray-300 bg-gray-50 p-4">
+        <div className="border-t border-gray-200 bg-gray-50 p-4">
           {isInstructor && (
             <div className="mb-2 flex gap-4">
               <button
@@ -186,7 +186,7 @@ export default function TicketDetail({ ticket, isInstructor }) {
 
           <form onSubmit={activeTab === "reply" ? handleSendReply : handleSendNote}>
             <div className={`relative rounded-lg border bg-white shadow-sm ${
-              activeTab === "note" ? "border-yellow-300 ring-1 ring-yellow-200" : "border-gray-300 focus-within:border-black focus-within:ring-1 focus-within:ring-black"
+              activeTab === "note" ? "border-yellow-300 ring-1 ring-yellow-100" : "border-gray-300 focus-within:border-black focus-within:ring-1 focus-within:ring-black"
             }`}>
               <textarea
                 value={activeTab === "reply" ? reply : internalNote}
@@ -204,7 +204,7 @@ export default function TicketDetail({ ticket, isInstructor }) {
                 className="w-full resize-none border-none bg-transparent p-3 focus:ring-0"
                 required
               />
-              <div className="flex items-center justify-between border-t border-gray-300 bg-gray-50 px-3 py-2">
+              <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-3 py-2">
                 <div className="text-xs text-gray-500">
                   Markdown supported
                 </div>

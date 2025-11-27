@@ -1,12 +1,8 @@
 import QuizSession from "../models/QuizSession.js";
 import UserQuestionHistory from "../models/UserQuestionHistory.js";
 import ManualQuestion from "../models/ManualQuestion.js";
-import PostTestTracking from "../models/PostTestTracking.js";
-import StudyPlan from "../models/StudyPlan.js";
-import Subject from "../models/Subject.js";
-import Topic from "../models/Topic.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
-import enhancedQuestionSelectionService from "../services/enhancedQuestionSelectionService.js";
+import questionSelectionService from "../services/questionSelectionService.js";
 import performanceAnalysisService from "../services/performanceAnalysisService.js";
 import studyPlanService from "../services/studyPlanService.js";
 import adaptiveQuizService from "../services/adaptiveQuizService.js";
@@ -27,57 +23,6 @@ const startQuizSession = catchAsync(async (req, res, next) => {
     return next(new AppError("Invalid quiz mode", 400));
   }
 
-  // Check for existing active session
-  const existingSession = await QuizSession.findOne({
-    userId: req.user._id,
-    mode,
-    status: { $in: ["active", "paused"] },
-  }).populate("questions");
-
-  if (existingSession) {
-    // Resume existing session
-    const populatedQuestions = await ManualQuestion.find({
-      _id: { $in: existingSession.questions.map((q) => q._id) },
-    }).populate("topicId", "name");
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        session: {
-          _id: existingSession._id,
-          title: existingSession.title,
-          mode: existingSession.mode,
-          timeLimit: existingSession.config.timeLimit,
-          questionCount: existingSession.questions.length,
-          hasImmediateFeedback: existingSession.hasImmediateFeedback,
-          hasTimer: existingSession.hasTimer,
-          answers: existingSession.answers, // Include existing answers
-        },
-        questions: populatedQuestions.map((q) => ({
-          _id: q._id,
-          questionText: q.questionText,
-          questionMath: q.questionMath,
-          options: q.options,
-          difficulty: q.difficulty,
-          category: q.category,
-          subjectArea: q.subjectArea,
-          topicId: q.topicId?._id,
-          topicName: q.topicId?.name,
-          // Include correct answer and explanation for immediate feedback optimization
-          correctAnswer: existingSession.hasImmediateFeedback
-            ? q.options.find((opt) => opt.isCorrect)?.text
-            : undefined,
-          explanation: existingSession.hasImmediateFeedback
-            ? q.explanation
-            : undefined,
-          explanationMath: existingSession.hasImmediateFeedback
-            ? q.explanationMath
-            : undefined,
-        })),
-      },
-    });
-  }
-
   const userExamLevel = examLevel || req.user.examType || "Professional";
 
   const hasImmediateFeedback = ["practice"].includes(mode);
@@ -95,7 +40,7 @@ const startQuizSession = catchAsync(async (req, res, next) => {
     defaultQuestionTime: 90,
   };
 
-  const questions = await enhancedQuestionSelectionService.selectQuestionsForSession(req.user._id, config);
+  const questions = await questionSelectionService.selectQuestionsForSession(req.user._id, config);
 
   if (questions.length === 0) {
     return next(new AppError("No questions found matching criteria", 404));
@@ -129,7 +74,6 @@ const startQuizSession = catchAsync(async (req, res, next) => {
     questionCount: session.questions.length,
     hasImmediateFeedback,
     hasTimer,
-    answers: [],
     },
     questions: populatedQuestions.map((q) => ({
         _id: q._id,
@@ -141,16 +85,6 @@ const startQuizSession = catchAsync(async (req, res, next) => {
         subjectArea: q.subjectArea,
         topicId: q.topicId?._id,
         topicName: q.topicId?.name,
-        // Include correct answer and explanation for immediate feedback optimization
-        correctAnswer: hasImmediateFeedback
-          ? q.options.find((opt) => opt.isCorrect)?.text
-          : undefined,
-        explanation: hasImmediateFeedback
-          ? q.explanation
-          : undefined,
-        explanationMath: hasImmediateFeedback
-          ? q.explanationMath
-          : undefined,
       })),
     },
   });
@@ -218,15 +152,6 @@ const completeQuizSession = catchAsync(async (req, res, next) => {
   }
 
   await session.complete();
-
-  if (session.mode === "post-test" && session.weekNumber) {
-    await PostTestTracking.markPostTestCompleted(
-      req.user._id,
-      session.weekNumber,
-      session._id,
-      session.score.percentage
-    );
-  }
 
   const result = {
     sessionId: session._id,
@@ -437,7 +362,7 @@ const startMockExam = catchAsync(async (req, res, next) => {
     defaultQuestionTime: 60,
   };
 
-  const questions = await enhancedQuestionSelectionService.selectQuestionsForSession(
+  const questions = await questionSelectionService.selectQuestionsForSession(
     req.user._id,
     mockExamConfig
   );
@@ -735,428 +660,6 @@ const startTopicQuiz = catchAsync(async (req, res, next) => {
   });
 });
 
-const startPostTest = catchAsync(async (req, res, next) => {
-  const { weekNumber } = req.body;
-
-  if (!weekNumber) {
-    return next(new AppError("Week number is required", 400));
-  }
-
-  const studyPlan = await StudyPlan.getActiveStudyPlan();
-  if (!studyPlan) {
-    return next(new AppError("No active study plan found", 404));
-  }
-
-  const week = studyPlan.weeks.find((w) => w.weekNumber === weekNumber);
-  if (!week) {
-    return next(new AppError(`Week ${weekNumber} not found in study plan`, 404));
-  }
-
-  const hasCompleted = await PostTestTracking.hasCompletedPostTest(req.user._id, weekNumber);
-  if (hasCompleted) {
-    return next(new AppError("Post-test already completed for this week", 400));
-  }
-
-  const subjects = [];
-  if (week.saturdaySession?.subjectId) {
-    const subject = await Subject.findById(week.saturdaySession.subjectId);
-    if (subject) subjects.push(subject);
-  }
-  if (week.sundaySession?.subjectId) {
-    const subject = await Subject.findById(week.sundaySession.subjectId);
-    if (subject) subjects.push(subject);
-  }
-
-  if (subjects.length === 0) {
-    // Fallback: Try to find subjects from topics if session subjectId is missing
-    const topicIds = [
-      ...(week.saturdaySession?.topics || []),
-      ...(week.sundaySession?.topics || [])
-    ];
-
-    if (topicIds.length > 0) {
-      const topics = await Topic.find({ _id: { $in: topicIds } }).populate("subjectId");
-      const uniqueSubjects = new Map();
-      
-      topics.forEach(topic => {
-        if (topic.subjectId) {
-          uniqueSubjects.set(topic.subjectId._id.toString(), topic.subjectId);
-        }
-      });
-
-      subjects.push(...uniqueSubjects.values());
-    }
-  }
-
-  if (subjects.length === 0) {
-    return next(new AppError("No subjects found for this week", 404));
-  }
-
-  const userExamLevel = req.user.examType || "Professional";
-  const quizData = await adaptiveQuizService.createPostTest(
-    req.user._id,
-    weekNumber,
-    subjects,
-    userExamLevel,
-    30
-  );
-
-  const populatedQuestions = await ManualQuestion.find({
-    _id: { $in: quizData.questions.map((q) => q._id) },
-  }).populate("topicId", "name");
-
-  const session = await QuizSession.create({
-    userId: req.user._id,
-    mode: "post-test",
-    title: `Week ${weekNumber} Post-Test`,
-    weekNumber,
-    hasImmediateFeedback: false,
-    hasTimer: true,
-    config: {
-      weekNumber,
-      examLevel: userExamLevel,
-      questionCount: quizData.questions.length,
-      timeLimit: 2700,
-      defaultQuestionTime: 90,
-    },
-    questions: quizData.questions.map((q) => q._id),
-  });
-
-  res.status(201).json({
-    success: true,
-    data: {
-      session: {
-        _id: session._id,
-        title: session.title,
-        mode: session.mode,
-        weekNumber: session.weekNumber,
-        timeLimit: session.config.timeLimit,
-        questionCount: session.questions.length,
-        hasImmediateFeedback: false,
-        hasTimer: true,
-      },
-      questions: populatedQuestions.map((q) => ({
-        _id: q._id,
-        questionText: q.questionText,
-        questionMath: q.questionMath,
-        options: q.options,
-        difficulty: q.difficulty,
-        category: q.category,
-        subjectArea: q.subjectArea,
-        topicId: q.topicId?._id,
-        topicName: q.topicId?.name,
-      })),
-    },
-  });
-});
-
-const startAssessment = catchAsync(async (req, res, next) => {
-  const { currentWeekNumber } = req.body;
-
-  if (!currentWeekNumber) {
-    return next(new AppError("Current week number is required", 400));
-  }
-
-  const hasCompletedPostTest = await PostTestTracking.hasCompletedPostTest(
-    req.user._id,
-    currentWeekNumber
-  );
-
-  if (!hasCompletedPostTest) {
-    return next(
-      new AppError(
-        `You must complete the post-test for Week ${currentWeekNumber} before taking an assessment`,
-        400
-      )
-    );
-  }
-
-  const userExamLevel = req.user.examType || "Professional";
-  const quizData = await adaptiveQuizService.createAssessment(
-    req.user._id,
-    currentWeekNumber,
-    userExamLevel,
-    20
-  );
-
-  const populatedQuestions = await ManualQuestion.find({
-    _id: { $in: quizData.questions.map((q) => q._id) },
-  }).populate("topicId", "name");
-
-  const session = await QuizSession.create({
-    userId: req.user._id,
-    mode: "assessment",
-    title: `Week ${currentWeekNumber} Assessment`,
-    weekNumber: currentWeekNumber,
-    hasImmediateFeedback: true,
-    hasTimer: false,
-    config: {
-      weekNumber: currentWeekNumber,
-      examLevel: userExamLevel,
-      questionCount: quizData.questions.length,
-      timeLimit: 0,
-      defaultQuestionTime: 90,
-    },
-    questions: quizData.questions.map((q) => q._id),
-  });
-
-  res.status(201).json({
-    success: true,
-    data: {
-      session: {
-        _id: session._id,
-        title: session.title,
-        mode: session.mode,
-        weekNumber: session.weekNumber,
-        timeLimit: 0,
-        questionCount: session.questions.length,
-        hasImmediateFeedback: true,
-        hasTimer: false,
-      },
-      questions: populatedQuestions.map((q) => ({
-        _id: q._id,
-        questionText: q.questionText,
-        questionMath: q.questionMath,
-        options: q.options,
-        difficulty: q.difficulty,
-        category: q.category,
-        subjectArea: q.subjectArea,
-        topicId: q.topicId?._id,
-        topicName: q.topicId?.name,
-      })),
-    },
-  });
-});
-
-const startDailyPractice = catchAsync(async (req, res, next) => {
-  // Check for existing active session
-  const existingSession = await QuizSession.findOne({
-    userId: req.user._id,
-    mode: "daily-practice",
-    status: { $in: ["active", "paused"] },
-  }).populate("questions");
-
-  if (existingSession) {
-    // Resume existing session
-    const populatedQuestions = await ManualQuestion.find({
-      _id: { $in: existingSession.questions.map((q) => q._id) },
-    }).populate("topicId", "name");
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        session: {
-          _id: existingSession._id,
-          title: existingSession.title,
-          mode: existingSession.mode,
-          timeLimit: existingSession.config.timeLimit,
-          questionCount: existingSession.questions.length,
-          hasImmediateFeedback: existingSession.hasImmediateFeedback,
-          hasTimer: existingSession.hasTimer,
-          answers: existingSession.answers, // Include existing answers
-        },
-        questions: populatedQuestions.map((q) => ({
-          _id: q._id,
-          questionText: q.questionText,
-          questionMath: q.questionMath,
-          options: q.options,
-          difficulty: q.difficulty,
-          category: q.category,
-          subjectArea: q.subjectArea,
-          topicId: q.topicId?._id,
-          topicName: q.topicId?.name,
-          // Include correct answer and explanation for immediate feedback optimization
-          correctAnswer: existingSession.hasImmediateFeedback
-            ? q.options.find((opt) => opt.isCorrect)?.text
-            : undefined,
-          explanation: existingSession.hasImmediateFeedback
-            ? q.explanation
-            : undefined,
-          explanationMath: existingSession.hasImmediateFeedback
-            ? q.explanationMath
-            : undefined,
-        })),
-      },
-    });
-  }
-
-  const userExamLevel = req.user.examType || "Professional";
-  const questionCount = 10;
-
-  const config = {
-    examLevel: userExamLevel,
-    questionCount,
-    mode: "daily-practice",
-  };
-
-  const questions = await enhancedQuestionSelectionService.selectQuestionsForSession(
-    req.user._id,
-    config
-  );
-
-  if (questions.length === 0) {
-    return next(
-      new AppError(
-        "No questions available for daily practice. Please try again later.",
-        404
-      )
-    );
-  }
-
-  const populatedQuestions = await ManualQuestion.find({
-    _id: { $in: questions.map((q) => q._id) },
-  }).populate("topicId", "name");
-
-  const session = await QuizSession.create({
-    userId: req.user._id,
-    mode: "daily-practice",
-    title: "Daily Practice",
-    hasImmediateFeedback: true,
-    hasTimer: false,
-    config: {
-      examLevel: userExamLevel,
-      questionCount: populatedQuestions.length,
-      timeLimit: 0,
-      defaultQuestionTime: 90,
-    },
-    questions: questions.map((q) => q._id),
-  });
-
-  res.status(201).json({
-    success: true,
-    data: {
-      session: {
-        _id: session._id,
-        title: session.title,
-        mode: session.mode,
-        timeLimit: 0,
-        questionCount: session.questions.length,
-        hasImmediateFeedback: true,
-        hasTimer: false,
-        answers: [],
-      },
-      questions: populatedQuestions.map((q) => ({
-        _id: q._id,
-        questionText: q.questionText,
-        questionMath: q.questionMath,
-        options: q.options,
-        difficulty: q.difficulty,
-        category: q.category,
-        subjectArea: q.subjectArea,
-        topicId: q.topicId?._id,
-        topicName: q.topicId?.name,
-        // Include correct answer and explanation for immediate feedback optimization
-        correctAnswer: q.options.find((opt) => opt.isCorrect)?.text,
-        explanation: q.explanation,
-        explanationMath: q.explanationMath,
-      })),
-    },
-  });
-});
-
-const startPretest = catchAsync(async (req, res, next) => {
-  const studyPlan = await StudyPlan.getActiveStudyPlan();
-  if (!studyPlan) {
-    return next(new AppError("No active study plan found", 404));
-  }
-
-  const currentDate = new Date();
-  const week1Start = studyPlan.weeks[0]?.startDate;
-
-  if (week1Start && currentDate >= new Date(week1Start)) {
-    return next(new AppError("Week 0 pretest is no longer available", 400));
-  }
-
-  const userExamLevel = req.user.examType || "Professional";
-  const quizData = await adaptiveQuizService.createPretest(
-    req.user._id,
-    userExamLevel,
-    100
-  );
-
-  const populatedQuestions = await ManualQuestion.find({
-    _id: { $in: quizData.questions.map((q) => q._id) },
-  }).populate("topicId", "name");
-
-  const session = await QuizSession.create({
-    userId: req.user._id,
-    mode: "pretest",
-    title: "Week 0 Comprehensive Pretest",
-    weekNumber: 0,
-    isWeek0Pretest: true,
-    hasImmediateFeedback: false,
-    hasTimer: true,
-    config: {
-      examLevel: userExamLevel,
-      questionCount: quizData.questions.length,
-      timeLimit: 9000,
-      defaultQuestionTime: 90,
-    },
-    questions: quizData.questions.map((q) => q._id),
-  });
-
-  res.status(201).json({
-    success: true,
-    data: {
-      session: {
-        _id: session._id,
-        title: session.title,
-        mode: session.mode,
-        weekNumber: 0,
-        isWeek0Pretest: true,
-        timeLimit: session.config.timeLimit,
-        questionCount: session.questions.length,
-        hasImmediateFeedback: false,
-        hasTimer: true,
-      },
-      questions: populatedQuestions.map((q) => ({
-        _id: q._id,
-        questionText: q.questionText,
-        questionMath: q.questionMath,
-        options: q.options,
-        difficulty: q.difficulty,
-        category: q.category,
-        subjectArea: q.subjectArea,
-        topicId: q.topicId?._id,
-        topicName: q.topicId?.name,
-      })),
-    },
-  });
-});
-
-const getPostTestStatus = catchAsync(async (req, res, next) => {
-  const status = await PostTestTracking.getUserPostTestStatus(req.user._id);
-
-  res.json({
-    success: true,
-    data: { status },
-  });
-});
-
-const checkPretestAvailability = catchAsync(async (req, res, next) => {
-  const studyPlan = await StudyPlan.getActiveStudyPlan();
-  
-  if (!studyPlan) {
-    return res.json({
-      success: true,
-      data: { available: false, reason: "No active study plan" },
-    });
-  }
-
-  const currentDate = new Date();
-  const week1Start = studyPlan.weeks[0]?.startDate;
-  const available = !week1Start || currentDate < new Date(week1Start);
-
-  res.json({
-    success: true,
-    data: {
-      available,
-      reason: available ? null : "Week 1 has already started",
-      week1StartDate: week1Start,
-    },
-  });
-});
-
 export default {
   startQuizSession,
   submitAnswer,
@@ -1174,10 +677,4 @@ export default {
   generateStudyPlan,
   trackStudySession,
   exportQuizResultPdf,
-  startPostTest,
-  startAssessment,
-  startDailyPractice,
-  startPretest,
-  getPostTestStatus,
-  checkPretestAvailability,
 };

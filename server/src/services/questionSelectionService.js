@@ -46,30 +46,18 @@ class QuestionSelectionService {
   }
 
   async selectRandomQuestions(userId, query, questionCount) {
-    // Duolingo style: Mix in 30% review questions if available
-    const reviewCount = Math.floor(questionCount * 0.3);
-    const newCount = questionCount - reviewCount;
-
-    const reviewQuestions = await this.selectSpacedRepetitionQuestions(userId, query, reviewCount);
-    const reviewIds = reviewQuestions.map(q => q._id);
-
     const recentQuestions = await this.getRecentlyAnsweredQuestions(userId, 50);
-    const excludeIds = [...recentQuestions, ...reviewIds];
     
-    if (excludeIds.length > 0) {
-      query._id = { $nin: excludeIds };
+    if (recentQuestions.length > 0) {
+      query._id = { $nin: recentQuestions };
     }
 
-    const newQuestions = await ManualQuestion.aggregate([
+    const questions = await ManualQuestion.aggregate([
       { $match: query },
-      { $sample: { size: newCount * 2 } }
+      { $sample: { size: questionCount * 2 } }
     ]);
 
-    const selectedNew = newQuestions.slice(0, newCount);
-    
-    // Combine and shuffle
-    const combined = [...reviewQuestions, ...selectedNew];
-    return combined.sort(() => Math.random() - 0.5);
+    return questions.slice(0, questionCount);
   }
 
   async selectSpacedRepetitionQuestions(userId, query, questionCount) {

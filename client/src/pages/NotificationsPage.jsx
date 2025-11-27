@@ -26,7 +26,7 @@ export default function NotificationsPage() {
           )}
         </div>
 
-        <div className="rounded-lg border border-gray-300 bg-white shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-gray-500">
               <BellOff className="mb-4 h-12 w-12 opacity-20" />

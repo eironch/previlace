@@ -19,7 +19,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "vocabulary",
     name: "Vocabulary",
-    subjectArea: "Verbal Reasoning",
+    subjectArea: "Verbal Ability",
     description: "Word definitions, synonyms, antonyms, and usage",
     icon: BookOpen,
     examLevel: "Both",
@@ -33,7 +33,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "grammar",
     name: "Grammar",
-    subjectArea: "Verbal Reasoning",
+    subjectArea: "Verbal Ability",
     description: "Sentence structure, parts of speech, and language rules",
     icon: FileText,
     examLevel: "Both",
@@ -47,7 +47,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "reading-comprehension",
     name: "Reading Comprehension",
-    subjectArea: "Verbal Reasoning",
+    subjectArea: "Verbal Ability",
     description: "Understanding and analyzing written passages",
     icon: Book,
     examLevel: "Both",
@@ -61,7 +61,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "mathematics",
     name: "Mathematics",
-    subjectArea: "Numerical Reasoning",
+    subjectArea: "Numerical Ability",
     description: "Arithmetic, algebra, geometry, and problem solving",
     icon: Calculator,
     examLevel: "Both",
@@ -89,7 +89,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "clerical",
     name: "Clerical",
-    subjectArea: "Clerical Operations",
+    subjectArea: "Clerical Ability",
     description: "Data organization, filing, and administrative tasks",
     icon: Target,
     examLevel: "Subprofessional",
@@ -103,7 +103,7 @@ const QUESTION_CATEGORIES = [
   {
     id: "analytical-reasoning",
     name: "Analytical Reasoning",
-    subjectArea: "Analytical Reasoning",
+    subjectArea: "Logic",
     description: "Logical thinking, pattern recognition, and problem solving",
     icon: Brain,
     examLevel: "Professional",
@@ -202,10 +202,10 @@ function QuestionTypeSelection({ onSelectType, onBack }) {
                 <button
                   key={category.id}
                   onClick={() => onSelectType(category)}
-                  className="group rounded-lg border border-gray-300 p-6 text-left transition-colors hover:border-black"
+                  className="group rounded-lg border border-gray-200 p-6 text-left transition-colors hover:border-black"
                 >
                   <div className="mb-3 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 transition-colors group-hover:border-black">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 transition-colors group-hover:border-black">
                       <IconComponent className="h-6 w-6 text-black" />
                     </div>
                     <div>
@@ -221,10 +221,10 @@ function QuestionTypeSelection({ onSelectType, onBack }) {
                     {category.description}
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="rounded bg-gray-200 px-2 py-1 text-xs text-gray-600">
+                    <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
                       {category.examLevel}
                     </span>
-                    <span className="rounded bg-gray-200 px-2 py-1 text-xs text-gray-600">
+                    <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
                       {category.difficulty}
                     </span>
                   </div>

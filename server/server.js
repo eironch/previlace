@@ -46,11 +46,11 @@ import notificationRoutes from "./src/routes/notificationRoutes.js";
 import jobRoutes from "./src/routes/jobRoutes.js";
 import resumeRoutes from "./src/routes/resumeRoutes.js";
 import interviewRoutes from "./src/routes/interviewRoutes.js";
-import weekendClassRoutes from "./src/routes/weekendClassRoutes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
 import { createServer } from "http";
+import socketService from "./src/services/socketService.js";
 import { startTicketExpirationJob } from "./src/jobs/ticketExpirationJob.js";
 import { startReminderJobs } from "./src/jobs/reminderJob.js";
 
@@ -60,16 +60,14 @@ app.set("trust proxy", 1);
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "https://previlace.vercel.app", "https://www.previlace.vercel.app"],
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "https://previlace.vercel.app"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-Requested-With", "Accept", "Origin"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: ["set-cookie"],
     optionsSuccessStatus: 200,
   })
 );
-
-app.options("*", cors());
 
 app.use(
   helmet({
@@ -174,7 +172,6 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/interviews", interviewRoutes);
-app.use("/api/weekend-classes", weekendClassRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
@@ -192,7 +189,7 @@ async function startServer() {
     startReminderJobs();
 
     const httpServer = createServer(app);
-    // socketService.initialize(httpServer); // Removed Socket.IO
+    socketService.initialize(httpServer);
 
     httpServer.listen(PORT);
 

@@ -51,7 +51,7 @@ export default function CreateTicketModal({
           </h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
           >
             <X className="h-5 w-5" />
           </button>
@@ -60,7 +60,7 @@ export default function CreateTicketModal({
         <div className="p-4">
           {success ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="mb-4 rounded-full bg-green-200 p-3">
+              <div className="mb-4 rounded-full bg-green-100 p-3">
                 <Send className="h-8 w-8 text-green-600" />
               </div>
               <h4 className="mb-2 text-xl font-bold text-gray-900">
@@ -108,7 +108,7 @@ export default function CreateTicketModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
                 >
                   Cancel
                 </button>

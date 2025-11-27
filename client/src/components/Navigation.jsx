@@ -31,12 +31,12 @@ export default function Navigation() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-300 bg-white">
+    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
             <div className="flex cursor-pointer items-center" onClick={() => navigate("/")}>
-              <span className="text-xl font-bold text-gray-900">Previlace</span>
+              <h1 className="text-xl font-bold text-black">Previlace</h1>
             </div>
 
             <div className="ml-10 hidden md:flex md:space-x-1">
@@ -91,7 +91,7 @@ export default function Navigation() {
           <div className="fixed inset-0 bg-black/25" onClick={() => setIsMobileMenuOpen(false)} />
 
           <div className="relative flex w-full max-w-xs flex-col bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-300 px-4 pb-4 pt-5">
+            <div className="flex items-center justify-between border-b border-gray-200 px-4 pb-4 pt-5">
               <h2 className="text-xl font-bold text-gray-900">Menu</h2>
               <button onClick={() => setIsMobileMenuOpen(false)} className="rounded-full p-1 text-gray-400 hover:text-gray-600">
                 <X className="h-6 w-6" />
@@ -116,7 +116,7 @@ export default function Navigation() {
               ))}
             </nav>
 
-            <div className="border-t border-gray-300 p-4">
+            <div className="border-t border-gray-200 p-4">
               <div className="mb-3">
                 <p className="text-sm font-medium text-gray-900">
                   {user?.firstName} {user?.lastName}
@@ -125,7 +125,7 @@ export default function Navigation() {
               </div>
               <button
                 onClick={() => navigate("/dashboard/settings")}
-                className="mb-2 flex w-full items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="mb-2 flex w-full items-center rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 <Settings className="mr-2 h-4 w-4" />
                 Settings

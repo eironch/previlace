@@ -19,11 +19,7 @@ function QuestionBankManager() {
   async function refreshData() {
     setIsRefreshing(true);
     try {
-      await Promise.all([
-        fetchQuestions(), 
-        fetchQuestionCounts(),
-        new Promise(resolve => setTimeout(resolve, 500))
-      ]);
+      await Promise.all([fetchQuestions(), fetchQuestionCounts()]);
     } finally {
       setIsRefreshing(false);
     }
@@ -81,19 +77,19 @@ function QuestionBankManager() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={refreshData} 
+          <Button
+            variant="ghost"
+            onClick={refreshData}
             disabled={isRefreshing}
-            className="flex items-center gap-2 active:scale-95 transition-all duration-200"
+            className="flex items-center gap-2"
           >
-            <RefreshCw 
-              className="h-4 w-4" 
-              style={{ animation: isRefreshing ? "custom-spin 1s linear infinite" : "none" }}
-            />
+            {isRefreshing ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
             Refresh
           </Button>
-
           <Button onClick={handleCreateNew} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             Create Question

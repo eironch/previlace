@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 @import "katex/dist/katex.min.css";
 
@@ -107,18 +106,4 @@ body {
     padding: 20mm !important;
     /* Add padding for the printed page */
   }
-}
-
-@keyframes custom-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.spin-anim {
-  animation: custom-spin 1s linear infinite !important;
-  transform-origin: center;
 }

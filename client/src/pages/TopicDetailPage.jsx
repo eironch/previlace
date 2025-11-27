@@ -4,7 +4,7 @@ import { useTopicStore } from "@/store/topicStore";
 import { useAuthStore } from "@/store/authStore";
 import useExamStore from "@/store/examStore";
 import learningService from "@/services/learningService";
-import { ChevronLeft, BookOpen, Play, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, BookOpen, Play, CheckCircle, AlertCircle, LogOut } from "lucide-react";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 import FileUploadButton from "@/components/files/FileUploadButton";
 import FileList from "@/components/files/FileList";
@@ -13,7 +13,7 @@ function TopicDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { currentTopic, loading: topicLoading, fetchTopicById } = useTopicStore();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { startQuizSession, loading: quizLoading } = useExamStore();
   const [learningContent, setLearningContent] = useState(null);
   const [contentLoading, setContentLoading] = useState(true);
@@ -64,10 +64,14 @@ function TopicDetailPage() {
     }
   }
 
+  async function handleLogout() {
+    await logout();
+  }
+
   if (topicLoading || contentLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <header className="border-b border-gray-300 bg-white">
+        <header className="border-b border-gray-200 bg-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-4">
               <div className="flex items-center gap-4">
@@ -82,8 +86,8 @@ function TopicDetailPage() {
           </div>
         </header>
 
-        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
+        <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+          <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
             <div className="mb-4 flex items-center gap-4">
               <SkeletonLoader variant="circle" className="h-16 w-16" />
               <div className="flex-1">
@@ -100,7 +104,7 @@ function TopicDetailPage() {
 
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-lg border border-gray-300 bg-white p-6">
+              <div key={i} className="rounded-lg border border-gray-200 bg-white p-6">
                 <SkeletonLoader variant="title" className="mb-4 h-6" />
                 <SkeletonLoader className="mb-2" />
                 <SkeletonLoader className="mb-2 w-5/6" />
@@ -123,22 +127,38 @@ function TopicDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-300 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 transition-colors hover:text-black"
-          >
-            <ChevronLeft className="h-5 w-5" />
-            <span className="font-medium">Back</span>
-          </button>
+      <header className="border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-gray-600 transition-colors hover:text-black"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <h1 className="text-xl font-semibold text-black">{currentTopic.name}</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {user?.firstName} {user?.lastName}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
           <div className="mb-4 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-200">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
               <BookOpen className="h-8 w-8 text-gray-900" />
             </div>
             <div className="flex-1">
@@ -155,7 +175,7 @@ function TopicDetailPage() {
           </div>
 
           <div className="mb-6 flex items-center gap-4">
-            <span className="rounded-full bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-900">
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-900">
               {currentTopic.difficulty}
             </span>
             <span className="text-sm text-gray-600">
@@ -196,14 +216,14 @@ function TopicDetailPage() {
         </div>
 
         {contentError ? (
-          <div className="rounded-lg border border-gray-300 bg-white p-8 text-center">
+          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
             <AlertCircle className="mx-auto mb-2 h-8 w-8 text-gray-400" />
             <p className="text-gray-600">{contentError}</p>
           </div>
         ) : learningContent ? (
           <div className="space-y-8">
             {learningContent.content.introduction && (
-              <div className="rounded-lg border border-gray-300 bg-white p-6">
+              <div className="rounded-lg border border-gray-200 bg-white p-6">
                 <h3 className="mb-4 text-2xl font-bold text-gray-900">
                   Introduction
                 </h3>
@@ -221,7 +241,7 @@ function TopicDetailPage() {
                     .map((section, index) => (
                       <div
                         key={index}
-                        className="rounded-lg border border-gray-300 bg-white p-6"
+                        className="rounded-lg border border-gray-200 bg-white p-6"
                       >
                         <h4 className="mb-3 text-xl font-bold text-gray-900">
                           {section.title}
@@ -236,7 +256,7 @@ function TopicDetailPage() {
 
             {learningContent.content.keyPoints &&
               learningContent.content.keyPoints.length > 0 && (
-                <div className="rounded-lg border border-gray-300 bg-white p-6">
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <h4 className="mb-4 text-xl font-bold text-gray-900">
                     Key Points
                   </h4>
@@ -256,7 +276,7 @@ function TopicDetailPage() {
 
             {learningContent.content.examples &&
               learningContent.content.examples.length > 0 && (
-                <div className="rounded-lg border border-gray-300 bg-white p-6">
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <h4 className="mb-4 text-xl font-bold text-gray-900">
                     Examples
                   </h4>
@@ -278,7 +298,7 @@ function TopicDetailPage() {
 
             {learningContent.commonMistakes &&
               learningContent.commonMistakes.length > 0 && (
-                <div className="rounded-lg border border-gray-300 bg-white p-6">
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <h4 className="mb-4 text-xl font-bold text-gray-900">
                     Common Mistakes
                   </h4>
@@ -297,7 +317,7 @@ function TopicDetailPage() {
               )}
 
             {learningContent.tips && learningContent.tips.length > 0 && (
-              <div className="rounded-lg border border-gray-300 bg-white p-6">
+              <div className="rounded-lg border border-gray-200 bg-white p-6">
                 <h4 className="mb-4 text-xl font-bold text-gray-900">
                   Tips
                 </h4>
@@ -316,7 +336,7 @@ function TopicDetailPage() {
             )}
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-300 bg-white p-8 text-center">
+          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
             <BookOpen className="mx-auto mb-2 h-8 w-8 text-gray-400" />
             <p className="text-gray-600">
               No learning content available for this topic yet.
@@ -324,14 +344,21 @@ function TopicDetailPage() {
           </div>
         )}
         
-        <div className="mt-8 rounded-lg border border-gray-300 bg-white p-6">
+        {/* Resources Section */}
+        <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
           <div className="mb-4 flex items-center justify-between">
             <h4 className="text-xl font-bold text-gray-900">Resources</h4>
             {(user?.role === "admin" || user?.role === "instructor") && (
               <FileUploadButton 
                 relatedType="topic" 
                 relatedId={id} 
-                onUploadComplete={() => window.location.reload()} 
+                onUploadComplete={() => {
+                  // Trigger refresh of file list (using a key or context would be better, 
+                  // but for now we can force a re-render or just rely on the list updating itself if we lift state)
+                  // Since FileList fetches on mount/update, we can pass a trigger.
+                  // For simplicity in this file, we'll just let the user refresh or implement a simple trigger state.
+                  window.location.reload(); 
+                }} 
               />
             )}
           </div>

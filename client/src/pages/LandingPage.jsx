@@ -35,9 +35,6 @@ import {
   X,
   User,
   LayoutDashboard,
-  Calendar,
-  FileText,
-  Users,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -98,40 +95,40 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: Calendar,
-      title: "Structured 12-Week Plan",
+      icon: BookOpen,
+      title: "Comprehensive Question Bank",
       description:
-        "From Week 0 Pretest to Exam Day, follow a proven daily schedule that covers all exam domains systematically.",
+        "Access hundreds of Civil Service Exam questions organized by subject and difficulty.",
+    },
+    {
+      icon: Layers,
+      title: "Mock Exams & Practice Quizzes",
+      description:
+        "Simulate real exam conditions and measure your readiness with full-length mock exams.",
     },
     {
       icon: TrendingUp,
-      title: "Smart Analytics",
+      title: "Progress Tracking",
       description:
-        "Track your Exam Readiness Score in real-time and identify weak areas with precision data visualization.",
+        "View analytics on your scores, study time, and weak areas to improve effectively.",
     },
     {
       icon: Trophy,
-      title: "Gamified Learning",
+      title: "Achievements & Leaderboards",
       description:
-        "Stay motivated with XP, levels, daily streaks, and leaderboards. Learning feels like a game.",
+        "Earn badges, climb ranks, and compete with other learners for motivation.",
     },
     {
-      icon: CheckCircle,
-      title: "Adaptive Assessments",
+      icon: Repeat,
+      title: "Flashcards & Mistake Review",
       description:
-        "Weekly Post-Tests and Assessments that adapt to your performance to reinforce learning.",
+        "Reinforce memory with spaced repetition and reattempt questions you previously missed.",
     },
     {
-      icon: FileText,
-      title: "Realistic Mock Exams",
+      icon: Briefcase,
+      title: "Career Advancement Tools",
       description:
-        "Full-length, timed simulations that mimic the actual Civil Service Exam experience.",
-    },
-    {
-      icon: Users,
-      title: "Community & Challenges",
-      description:
-        "Join study groups, challenge peers to quizzes, and learn together in a supportive community.",
+        "Access smart tools that help you build a professional resume and discover job opportunities tailored to your qualifications and exam performance.",
     },
   ];
 
@@ -255,11 +252,12 @@ export default function LandingPage() {
           </div>
 
           <h1 className="mb-4 text-4xl font-semibold tracking-tight">
-            Your 12-Week Guided Journey to Civil Service Success
+            Prepare. Pass. Pursue Your Career.
           </h1>
 
           <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-600">
-            Stop guessing what to study. Previlace provides a structured, adaptive plan that takes you from Week 0 to Exam Ready with personalized analytics and gamified learning.
+            Previllace is your all-in-one platform for Civil Service Exam preparation and
+            government career development.
           </p>
 
           <div className="flex justify-center space-x-3">

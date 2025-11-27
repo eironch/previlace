@@ -39,7 +39,7 @@ export default function TicketForm({ subjectId, topicId, onClose }) {
           <h2 className="text-xl font-bold text-gray-900">Ask a Question</h2>
           <button
             onClick={onClose}
-            className="rounded-full p-1 text-gray-500 hover:bg-gray-200 hover:text-black"
+            className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-black"
           >
             <X className="h-5 w-5" />
           </button>
@@ -112,7 +112,7 @@ export default function TicketForm({ subjectId, topicId, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </button>

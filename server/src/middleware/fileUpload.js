@@ -5,19 +5,9 @@ import { v4 as uuidv4 } from "uuid";
 import { AppError } from "../utils/AppError.js";
 
 // Ensure upload directory exists
-// Ensure upload directory exists
-const uploadDir = process.env.VERCEL || process.env.NODE_ENV === "production" ? "/tmp" : "uploads";
-
+const uploadDir = "uploads";
 if (!fs.existsSync(uploadDir)) {
-  try {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  } catch (error) {
-    console.warn(`Failed to create upload directory at ${uploadDir}, using /tmp instead`);
-    // Fallback to /tmp if custom path fails
-    if (uploadDir !== "/tmp") {
-       // This might be redundant if we already set it to /tmp, but good for safety
-    }
-  }
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({

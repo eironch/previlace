@@ -87,8 +87,8 @@ function TestNavigation() {
                 index === currentQuestionIndex
                   ? "bg-blue-600 text-white"
                   : isQuestionAnswered(question._id)
-                    ? "bg-green-200 text-green-700 hover:bg-green-200"
-                    : "bg-gray-200 text-gray-600 hover:bg-gray-200"
+                    ? "bg-green-100 text-green-700 hover:bg-green-200"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               {index === currentQuestionIndex ? (

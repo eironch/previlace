@@ -39,7 +39,7 @@ export const useStudyStreakStore = create((set, get) => ({
           lastStudyDate: response.streak.lastActivityDate,
           streakMilestones: response.streak.milestones || [],
           studyDatesThisMonth: [], // Not returned by API currently
-          streakHistory: response.history || [], 
+          streakHistory: [], // Not returned by API currently
           todayCompleted: isToday(response.streak.lastActivityDate),
         });
         return { success: true };

@@ -1,82 +1,50 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import { ArrowLeft, LogOut } from "lucide-react";
 import Button from "@/components/ui/Button";
 
-function StandardHeader({ 
-  title, 
-  description,
-  showBack = false, 
-  backPath = "/dashboard", 
-  onBack,
-  onRefresh, 
-  refreshLabel = "Refresh",
-  isRefreshing = false,
-  startContent,
-  bottomContent,
-  children 
-}) {
+function StandardHeader({ title, showBack = false, backPath = "/dashboard" }) {
   const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+
+  async function handleLogout() {
+    await logout();
+  }
 
   function handleBack() {
-    if (onBack) {
-      onBack();
-    } else {
-      navigate(backPath);
-    }
+    navigate(backPath);
   }
 
   return (
-    <header className="border-b border-gray-300 bg-white">
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <header className="border-b border-gray-200 bg-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-4">
-            {startContent}
             {showBack && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={handleBack}
-                className="gap-2 pl-0 text-gray-600 hover:text-black"
+                className="flex items-center gap-2 text-black hover:text-gray-300"
               >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">Back</span>
-              </Button>
+                <ArrowLeft className="h-5 w-5" />
+              </button>
             )}
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-              {description && (
-                <p className="mt-1 text-sm text-gray-500">{description}</p>
-              )}
-            </div>
+            <h1 className="text-xl font-semibold text-black">{title}</h1>
           </div>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-            {onRefresh && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  console.log("StandardHeader: Refresh button clicked");
-                  if (onRefresh) onRefresh();
-                }}
-                disabled={isRefreshing}
-                className="flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95 transition-all duration-200"
-              >
-                <RefreshCw 
-                  className="h-4 w-4" 
-                  style={{ animation: isRefreshing ? "custom-spin 1s linear infinite" : "none" }}
-                />
-                <span className="inline">{refreshLabel}</span>
-              </Button>
-            )}
-            {children}
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-500">
+              {user?.firstName} {user?.lastName}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="flex items-center gap-2 border-black text-black hover:bg-black hover:text-black"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
           </div>
         </div>
-
-        {bottomContent && (
-          <div className="mt-4">
-            {bottomContent}
-          </div>
-        )}
       </div>
     </header>
   );

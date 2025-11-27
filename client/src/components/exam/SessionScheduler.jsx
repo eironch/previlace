@@ -59,7 +59,7 @@ export default function SessionScheduler({ groupId, onClose, onSuccess }) {
           </h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-600 hover:bg-slate-200"
+            className="rounded-lg p-1 text-slate-600 hover:bg-slate-100"
           >
             <X className="h-6 w-6" />
           </button>
@@ -194,7 +194,7 @@ export default function SessionScheduler({ groupId, onClose, onSuccess }) {
                 {formData.topics.map((topic, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-2 rounded-full bg-purple-200 px-3 py-1 text-sm text-purple-700"
+                    className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1 text-sm text-purple-700"
                   >
                     {topic}
                     <button

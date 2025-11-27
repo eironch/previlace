@@ -59,7 +59,7 @@ function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
                     className={`rounded-lg border p-3 ${
                       option.isCorrect
                         ? "border-green-500 bg-green-50"
-                        : "border-gray-300 bg-gray-50"
+                        : "border-gray-200 bg-gray-50"
                     }`}
                   >
                     <div className="flex items-start gap-2">
@@ -120,7 +120,7 @@ function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
               <button
                 onClick={() => setAction("approved")}
                 disabled={isSubmitting}
-                className="flex items-center gap-2 rounded-lg border-2 border-green-300 bg-green-50 p-4 text-left transition-colors hover:border-green-500 hover:bg-green-200 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg border-2 border-green-300 bg-green-50 p-4 text-left transition-colors hover:border-green-500 hover:bg-green-100 disabled:opacity-50"
               >
                 <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
                 <div>
@@ -132,7 +132,7 @@ function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
               <button
                 onClick={() => setAction("rejected")}
                 disabled={isSubmitting}
-                className="flex items-center gap-2 rounded-lg border-2 border-red-300 bg-red-50 p-4 text-left transition-colors hover:border-red-500 hover:bg-red-200 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg border-2 border-red-300 bg-red-50 p-4 text-left transition-colors hover:border-red-500 hover:bg-red-100 disabled:opacity-50"
               >
                 <XCircle className="h-5 w-5 flex-shrink-0 text-red-600" />
                 <div>
@@ -144,7 +144,7 @@ function ReviewActionModal({ question, onClose, onSubmit, isLoading }) {
               <button
                 onClick={() => setAction("requested_changes")}
                 disabled={isSubmitting}
-                className="flex items-center gap-2 rounded-lg border-2 border-yellow-300 bg-yellow-50 p-4 text-left transition-colors hover:border-yellow-500 hover:bg-yellow-200 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg border-2 border-yellow-300 bg-yellow-50 p-4 text-left transition-colors hover:border-yellow-500 hover:bg-yellow-100 disabled:opacity-50"
               >
                 <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-600" />
                 <div>

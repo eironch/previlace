@@ -19,7 +19,7 @@ function TestQuestion({ question }) {
   return (
     <div className="rounded-lg bg-white p-8 shadow-sm">
       {question.passageText && (
-        <div className="mb-8 rounded-lg border border-gray-300 bg-gray-50 p-6">
+        <div className="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-6">
           {question.passageTitle && (
             <h3 className="mb-4 text-lg font-semibold text-black">
               {question.passageTitle}
@@ -41,10 +41,10 @@ function TestQuestion({ question }) {
         {question.questionText}
         </h2>
         <div className="flex items-center gap-2">
-        <span className="rounded bg-gray-200 px-2 py-1 text-xs text-gray-600">
+        <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
         {question.difficulty}
         </span>
-        <span className="rounded bg-blue-200 px-2 py-1 text-xs text-blue-600">
+        <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-600">
         {question.category}
         </span>
         </div>
@@ -68,7 +68,7 @@ function TestQuestion({ question }) {
             className={`cursor-pointer rounded-lg border p-4 transition-all ${
               selectedOption === option.text
                 ? "border-blue-500 bg-blue-50"
-                : "border-gray-300 bg-white hover:border-gray-300"
+                : "border-gray-200 bg-white hover:border-gray-300"
             }`}
             onClick={() => handleOptionSelect(option.text)}
           >
@@ -105,7 +105,7 @@ function TestQuestion({ question }) {
         ))}
       </div>
 
-      <div className="mt-8 flex items-center justify-between border-t border-gray-300 pt-6">
+      <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
         <div className="text-sm text-gray-600">
           {isAnswered ? (
             <span className="flex items-center gap-1 text-green-600">

@@ -45,8 +45,8 @@ function QuizSetupPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <SkeletonLoader variant="title" className="mb-6" />
+        <div className="mx-auto max-w-2xl px-4 py-6">
+          <SkeletonLoader variant="title" className="mb-6" />
           <div className="space-y-4">
             <SkeletonLoader className="h-32" />
             <SkeletonLoader className="h-32" />
@@ -59,8 +59,8 @@ function QuizSetupPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="border-b border-gray-300 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+      <div className="border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-2xl px-4 py-4">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-black"
@@ -71,9 +71,9 @@ function QuizSetupPage() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-2xl px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Start Practice Quiz</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Start Practice Quiz</h1>
           <p className="mt-2 text-gray-600">Configure your quiz settings</p>
         </div>
 
@@ -88,7 +88,7 @@ function QuizSetupPage() {
                 className={`rounded-lg border-2 p-4 text-left transition-all ${
                   mode === "practice"
                     ? "border-black bg-gray-50"
-                    : "border-gray-300 hover:border-gray-300"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
                 <div className="mb-2 flex items-center justify-between">
@@ -117,7 +117,7 @@ function QuizSetupPage() {
                 className={`rounded-lg border-2 p-4 text-left transition-all ${
                   mode === "timed"
                     ? "border-black bg-gray-50"
-                    : "border-gray-300 hover:border-gray-300"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
                 <div className="mb-2 flex items-center justify-between">
@@ -143,7 +143,7 @@ function QuizSetupPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-300 bg-gray-50 p-4">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -195,7 +195,7 @@ function QuizSetupPage() {
                   className={`flex items-center justify-between rounded-lg border-2 p-3 text-left transition-all ${
                     difficulty === option.value
                       ? "border-black bg-gray-50"
-                      : "border-gray-300 hover:border-gray-300"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -222,26 +222,23 @@ function QuizSetupPage() {
             </div>
           )}
 
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="flex-1 rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 sm:flex-initial sm:px-8"
+              className="flex-1 rounded-lg border border-gray-200 py-3 font-semibold text-gray-700 hover:bg-gray-50 sm:flex-initial sm:px-8"
             >
               Cancel
             </button>
             <button
               onClick={handleStartQuiz}
               disabled={loading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50 sm:px-12"
+              className="flex-1 rounded-lg bg-black py-3 font-semibold text-white hover:bg-gray-800 disabled:opacity-50 sm:px-12"
             >
-              {loading && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              )}
               {loading ? "Starting..." : "Start Quiz"}
             </button>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

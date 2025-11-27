@@ -52,7 +52,7 @@ export default function FileList({ relatedType, relatedId, refreshTrigger }) {
   };
 
   if (loading) {
-    return <div className="h-20 animate-pulse rounded-lg bg-gray-200"></div>;
+    return <div className="h-20 animate-pulse rounded-lg bg-gray-100"></div>;
   }
 
   if ((files || []).length === 0) {
@@ -68,7 +68,7 @@ export default function FileList({ relatedType, relatedId, refreshTrigger }) {
       {(files || []).map((file) => (
         <div
           key={file._id}
-          className="flex items-center justify-between rounded-lg border border-gray-300 bg-white p-3 transition-colors hover:bg-gray-50"
+          className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:bg-gray-50"
         >
           <div className="flex items-center gap-3">
             {getFileIcon(file.fileType)}
@@ -85,7 +85,7 @@ export default function FileList({ relatedType, relatedId, refreshTrigger }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleDownload(file)}
-              className="rounded-full p-2 text-gray-500 hover:bg-gray-200 hover:text-black"
+              className="rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-black"
               title="Download"
             >
               <Download className="h-4 w-4" />

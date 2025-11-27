@@ -26,11 +26,7 @@ export const useStatsStore = create((set, get) => ({
 
         try {
             // Use the new service object method
-            // Add minimum delay to ensure animation is visible
-            const [fetchedStats] = await Promise.all([
-                statService.fetchStats(),
-                new Promise(resolve => setTimeout(resolve, 500))
-            ]);
+            const fetchedStats = await statService.fetchStats(); 
 
             set({
                 stats: fetchedStats,

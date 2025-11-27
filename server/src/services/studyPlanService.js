@@ -44,10 +44,6 @@ class StudyPlanService {
   }
 
   determineWeeklyFocus(currentWeek, totalWeeks, weakAreas) {
-    if (currentWeek === totalWeeks) {
-      return "Mock Exam Week";
-    }
-    
     const phase = currentWeek / totalWeeks;
     
     if (phase <= 0.3) {
@@ -70,7 +66,6 @@ class StudyPlanService {
         dailyTargets[day] = {
           studyTime: dailyStudyTime * 0.5,
           activities: ["Review", "Light Practice"],
-          primaryFocus: "Weekly Review", // Added primaryFocus for Sunday
           questionsTarget: 10
         };
       } else {
@@ -88,12 +83,6 @@ class StudyPlanService {
   }
 
   getDailyActivities(day, week, totalWeeks) {
-    if (week === totalWeeks) {
-      if (day === "sunday") return ["Full Mock Exam", "Performance Review"];
-      if (day === "saturday") return ["Light Review", "Mental Preparation"];
-      return ["Timed Practice", "Weakness Drilling"];
-    }
-
     const phase = week / totalWeeks;
     const baseActivities = [];
 
@@ -222,11 +211,9 @@ class StudyPlanService {
   }
 
   getCurrentWeek(startDate, currentDate) {
-    // Global Cohort Start Date: October 20, 2025
-    const COHORT_START_DATE = new Date("2025-10-20T00:00:00.000Z");
-    const diffTime = currentDate - COHORT_START_DATE;
+    const diffTime = currentDate - startDate;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(1, Math.ceil(diffDays / 7));
+    return Math.ceil(diffDays / 7);
   }
 
   calculateDaysUntilExam(targetDate) {

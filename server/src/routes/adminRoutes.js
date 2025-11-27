@@ -10,8 +10,7 @@ const router = express.Router();
 router.use(authenticate);
 router.use(requireAdmin);
 
-router.get("/stats", statsLimiter, adminController.getDashboardStats);
-router.get("/analytics", statsLimiter, adminController.getAnalyticsStats);
+router.get("/stats", statsLimiter, adminController.getAdminStats);
 router.get("/users/recent", statsLimiter, adminController.getRecentUsers);
 router.get("/users/:id", adminLimiter, adminController.getUserDetails);
 

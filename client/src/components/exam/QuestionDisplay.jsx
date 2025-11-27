@@ -25,7 +25,7 @@ function QuestionDisplay({ question, questionNumber, isAnswered }) {
 
         <button
           onClick={() => setShowInfoModal(true)}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900"
         >
           <Info className="h-4 w-4" />
         </button>
@@ -66,28 +66,28 @@ function QuestionDisplay({ question, questionNumber, isAnswered }) {
       >
         <div className="space-y-3">
           {question.topicName && (
-            <div className="rounded-lg border border-gray-300 bg-gray-50 p-3">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <p className="mb-1 text-xs font-semibold text-gray-600">Topic</p>
               <p className="text-sm font-medium text-gray-900">{question.topicName}</p>
             </div>
           )}
 
           {question.category && (
-            <div className="rounded-lg border border-gray-300 bg-gray-50 p-3">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <p className="mb-1 text-xs font-semibold text-gray-600">Category</p>
               <p className="text-sm font-medium text-gray-900">{question.category}</p>
             </div>
           )}
 
           {question.subjectArea && question.subjectArea !== question.category && (
-            <div className="rounded-lg border border-gray-300 bg-gray-50 p-3">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <p className="mb-1 text-xs font-semibold text-gray-600">Subject Area</p>
               <p className="text-sm font-medium text-gray-900">{question.subjectArea}</p>
             </div>
           )}
 
           {question.difficulty && (
-            <div className="rounded-lg border border-gray-300 bg-gray-50 p-3">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <p className="mb-1 text-xs font-semibold text-gray-600">Difficulty</p>
               <p className="text-sm font-medium text-gray-900 capitalize">{question.difficulty}</p>
             </div>

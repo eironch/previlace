@@ -356,48 +356,12 @@ const exportUsers = catchAsync(async (req, res) => {
   });
 });
 
-import crypto from "crypto";
-import emailService from "../services/emailService.js";
-
-const generateStudentId = async () => {
-  const year = new Date().getFullYear();
-  let unique = false;
-  let studentId = "";
-  
-  while (!unique) {
-    const random = Math.floor(1000 + Math.random() * 9000);
-    studentId = `${year}-${random}`;
-    const existing = await User.findOne({ studentId });
-    if (!existing) unique = true;
-  }
-  return studentId;
-};
-
-const generatePassword = () => {
-  return crypto.randomBytes(4).toString("hex"); // 8 characters
-};
-
 const createUser = catchAsync(async (req, res) => {
-  const { email, firstName, lastName, role = "student" } = req.body;
-
-  // Permission Check
-  if (role === "admin" && req.user.role !== "super_admin") {
-    throw new AppError("Only super admins can create admin accounts", 403);
-  }
-  if (role === "instructor" && req.user.role !== "super_admin" && req.user.role !== "admin") {
-    throw new AppError("Insufficient permissions to create instructor accounts", 403);
-  }
+  const { email, firstName, lastName, password, role = "student" } = req.body;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new AppError("Email already in use", 400);
-  }
-
-  const password = generatePassword();
-  let studentId = undefined;
-
-  if (role === "student") {
-    studentId = await generateStudentId();
   }
 
   const user = await User.create({
@@ -406,72 +370,35 @@ const createUser = catchAsync(async (req, res) => {
     lastName,
     password,
     role,
-    studentId,
     isEmailVerified: true,
-    isProfileComplete: false,
   });
-
-  // Send Email with Credentials (SKIP FOR ADMIN)
-  if (role !== "admin") {
-    const loginLink = process.env.CLIENT_URL || "http://localhost:5173";
-    const html = `
-      <h1>Welcome to Previlace Review Center!</h1>
-      <p>Hi ${firstName},</p>
-      <p>Your account has been created successfully.</p>
-      <p><strong>Login Credentials:</strong></p>
-      <ul>
-        <li><strong>Email:</strong> ${email}</li>
-        ${studentId ? `<li><strong>Student ID:</strong> ${studentId}</li>` : ""}
-        <li><strong>Password:</strong> ${password}</li>
-      </ul>
-      <p>Please log in and change your password immediately.</p>
-      <p><a href="${loginLink}">Log In Now</a></p>
-    `;
-
-    try {
-      await emailService.sendEmail({
-        to: email,
-        subject: "Your Previlace Account Credentials",
-        html,
-      });
-    } catch (error) {
-      console.error("Failed to send credentials email:", error);
-      // Don't fail the request, but maybe warn?
-    }
-  }
 
   res.status(201).json({
     success: true,
-    message: role === "admin" 
-      ? "Admin account created. Please copy the password." 
-      : "User account created and credentials sent via email",
+    message: "User account created successfully",
     data: {
       user: {
         id: user._id,
         email: user.email,
-        studentId: user.studentId,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        password: password, // Return password so it can be displayed
       },
     },
   });
 });
 
 const createInstructor = catchAsync(async (req, res) => {
-  const { email, firstName, lastName, subjects } = req.body;
+  const { email, firstName, lastName, password, subjects } = req.body;
 
-  if (req.user.role !== "super_admin" && req.user.role !== "admin") {
-    throw new AppError("Insufficient permissions to create instructor accounts", 403);
+  if (req.user.role !== "super_admin") {
+    throw new AppError("Only super admins can create instructor accounts", 403);
   }
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new AppError("Email already in use", 400);
   }
-
-  const password = generatePassword();
 
   const instructor = await User.create({
     email,
@@ -490,29 +417,9 @@ const createInstructor = catchAsync(async (req, res) => {
     });
   }
 
-  // Send Email
-  const loginLink = process.env.CLIENT_URL || "http://localhost:5173";
-  const html = `
-    <h1>Welcome to Previlace Review Center!</h1>
-    <p>Hi ${firstName},</p>
-    <p>Your Instructor account has been created.</p>
-    <p><strong>Login Credentials:</strong></p>
-    <ul>
-      <li><strong>Email:</strong> ${email}</li>
-      <li><strong>Password:</strong> ${password}</li>
-    </ul>
-    <p><a href="${loginLink}">Log In Now</a></p>
-  `;
-
-  await emailService.sendEmail({
-    to: email,
-    subject: "Your Instructor Account Credentials",
-    html,
-  });
-
   res.status(201).json({
     success: true,
-    message: "Instructor account created and credentials sent via email",
+    message: "Instructor account created successfully",
     data: {
       instructor: {
         id: instructor._id,

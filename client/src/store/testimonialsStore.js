@@ -16,11 +16,7 @@ export const useTestimonialsStore = create((set, get) => ({
     fetchTestimonials: async () => {
         set({ isLoading: true, error: null });
         try {
-            // Add minimum delay to ensure animation is visible
-            const [response] = await Promise.all([
-                testimonialService.fetchAllTestimonials({}),
-                new Promise(resolve => setTimeout(resolve, 500))
-            ]);
+            const response = await testimonialService.fetchAllTestimonials({});
 
             set({
                 testimonials: response.testimonials || [],
@@ -43,11 +39,7 @@ export const useTestimonialsStore = create((set, get) => ({
     fetchApprovedTestimonials: async () => {
         set({ isLoading: true, error: null });
         try {
-            // Add minimum delay to ensure animation is visible
-            const [response] = await Promise.all([
-                testimonialService.fetchApprovedTestimonials(),
-                new Promise(resolve => setTimeout(resolve, 500))
-            ]);
+            const response = await testimonialService.fetchApprovedTestimonials();
 
             set({
                 approvedTestimonials: response.testimonials || [],

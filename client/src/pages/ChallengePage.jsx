@@ -127,7 +127,7 @@ function ChallengePage() {
         </div>
 
         <div className="overflow-hidden rounded-lg bg-white shadow">
-          <div className="border-b border-gray-300">
+          <div className="border-b border-gray-200">
             <div className="flex">
               <button
                 onClick={() => setActiveTab("pending")}
@@ -163,7 +163,7 @@ function ChallengePage() {
                   pendingChallenges.map((challenge) => (
                     <div
                       key={challenge._id}
-                      className="flex items-center justify-between rounded-lg border border-gray-300 p-4"
+                      className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
                     >
                       <div className="flex items-center gap-4">
                         <img

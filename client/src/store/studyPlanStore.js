@@ -24,18 +24,6 @@ export const useStudyPlanStore = create((set, get) => ({
       // For now, let's just set error state.
     }
   },
-  
-  generateStudyPlan: async (targetDate) => {
-    set({ loading: true, error: null });
-    try {
-      const data = await studyPlanService.createStudyPlan({ targetExamDate: targetDate });
-      set({ activePlan: data.plan, loading: false });
-      return data.plan;
-    } catch (error) {
-      set({ error: error.message, loading: false });
-      throw error;
-    }
-  },
 
   clearError: () => set({ error: null }),
 }));

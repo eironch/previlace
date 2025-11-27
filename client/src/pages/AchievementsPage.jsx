@@ -45,13 +45,13 @@ function AchievementsPage() {
   function getRarityColor(rarity) {
     switch (rarity) {
       case "legendary":
-        return "border-purple-400 bg-gradient-to-br from-purple-50 to-purple-200 text-purple-800";
+        return "border-purple-400 bg-gradient-to-br from-purple-50 to-purple-100 text-purple-800";
       case "epic":
-        return "border-orange-400 bg-gradient-to-br from-orange-50 to-orange-200 text-orange-800";
+        return "border-orange-400 bg-gradient-to-br from-orange-50 to-orange-100 text-orange-800";
       case "rare":
-        return "border-blue-400 bg-gradient-to-br from-blue-50 to-blue-200 text-blue-800";
+        return "border-blue-400 bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800";
       default:
-        return "border-gray-300 bg-gradient-to-br from-gray-50 to-gray-200 text-gray-800";
+        return "border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800";
     }
   }
 
@@ -111,7 +111,7 @@ function AchievementsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-200">
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
           <CardContent className="p-6 text-center">
             <Trophy className="mx-auto mb-2 h-8 w-8 text-blue-600" />
             <div className="text-2xl font-bold text-blue-900">
@@ -121,7 +121,7 @@ function AchievementsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-200">
+        <Card className="border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
           <CardContent className="p-6 text-center">
             <Target className="mx-auto mb-2 h-8 w-8 text-yellow-600" />
             <div className="text-2xl font-bold text-yellow-900">
@@ -131,7 +131,7 @@ function AchievementsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-gray-300 bg-gradient-to-br from-gray-50 to-gray-200">
+        <Card className="border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100">
           <CardContent className="p-6 text-center">
             <Medal className="mx-auto mb-2 h-8 w-8 text-gray-600" />
             <div className="text-2xl font-bold text-gray-900">
@@ -141,7 +141,7 @@ function AchievementsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-200">
+        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
           <CardContent className="p-6 text-center">
             <Crown className="mx-auto mb-2 h-8 w-8 text-purple-600" />
             <div className="text-2xl font-bold text-purple-900">
@@ -240,7 +240,7 @@ function AchievementsPage() {
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="rounded-lg bg-yellow-200 p-3">
+                      <div className="rounded-lg bg-yellow-100 p-3">
                         <Icon className="h-8 w-8 text-yellow-600" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -293,11 +293,11 @@ function AchievementsPage() {
               return (
                 <Card
                   key={achievement._id}
-                  className="border-gray-300 opacity-60"
+                  className="border-gray-200 opacity-60"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="rounded-lg bg-gray-200 p-3">
+                      <div className="rounded-lg bg-gray-100 p-3">
                         <Icon className="h-8 w-8 text-gray-400" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -311,7 +311,7 @@ function AchievementsPage() {
                         <div className="flex items-center justify-between">
                           <Badge
                             variant="outline"
-                            className="bg-gray-200 text-gray-600 capitalize"
+                            className="bg-gray-100 text-gray-600 capitalize"
                           >
                             {achievement.rarityLevel}
                           </Badge>

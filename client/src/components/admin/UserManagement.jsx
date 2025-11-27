@@ -21,7 +21,6 @@ import useUserManagementStore from "../../store/userManagementStore";
 import UserDetailsModal from "./UserDetailsModal";
 import UserGeneratorModal from "./UserGeneratorModal";
 import { formatDistanceToNow } from "date-fns";
-import StandardHeader from "@/components/ui/StandardHeader";
 
 function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -102,21 +101,21 @@ function UserManagement() {
   function getUserStatusBadge(user) {
     if (user.isSuspended) {
       return (
-        <span className="rounded-full bg-red-200 px-2 py-1 text-xs font-medium text-red-800">
+        <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
           Suspended
         </span>
       );
     }
     if (user.lockUntil && new Date(user.lockUntil) > new Date()) {
       return (
-        <span className="rounded-full bg-orange-200 px-2 py-1 text-xs font-medium text-orange-800">
+        <span className="rounded-full bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800">
           Locked
         </span>
       );
     }
     if (!user.isEmailVerified) {
       return (
-        <span className="rounded-full bg-yellow-200 px-2 py-1 text-xs font-medium text-yellow-800">
+        <span className="rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
           Unverified
         </span>
       );
@@ -127,13 +126,13 @@ function UserManagement() {
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     ) {
       return (
-        <span className="rounded-full bg-green-200 px-2 py-1 text-xs font-medium text-green-800">
+        <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
           Active
         </span>
       );
     }
     return (
-      <span className="rounded-full bg-gray-200 px-2 py-1 text-xs font-medium text-gray-800">
+      <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
         Inactive
       </span>
     );
@@ -143,30 +142,16 @@ function UserManagement() {
     selectedUsers.length === users.length && users.length > 0;
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      <StandardHeader 
-        title="Users" 
-        description="Manage and monitor all system users"
-        onRefresh={fetchUsers}
-      >
-        <div className="flex gap-2">
-          <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
-            <Download className="h-4 w-4" />
-            Export
-          </button>
-          <button
-            onClick={() => setShowGeneratorModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-white transition-colors hover:bg-gray-800"
-          >
-            <UserPlus className="h-4 w-4" />
-            Add User
-          </button>
-        </div>
-      </StandardHeader>
-      <div className="flex-1 overflow-y-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+        <p className="mt-1 text-gray-600">
+          Manage and monitor all system users
+        </p>
+      </div>
 
       <div className="rounded-lg bg-white shadow">
-        <div className="border-b border-gray-300 p-4">
+        <div className="border-b border-gray-200 p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-1 flex-col gap-3 sm:flex-row">
               <div className="relative max-w-md flex-1">
@@ -211,6 +196,20 @@ function UserManagement() {
                 Clear Filters
               </button>
             </div>
+
+            <div className="flex gap-2">
+              <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
+                <Download className="h-4 w-4" />
+                Export
+              </button>
+              <button
+                onClick={() => setShowGeneratorModal(true)}
+                className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-white transition-colors hover:bg-gray-800"
+              >
+                <UserPlus className="h-4 w-4" />
+                Add User
+              </button>
+            </div>
           </div>
 
           {selectedUsers.length > 0 && (
@@ -250,7 +249,7 @@ function UserManagement() {
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="border-b border-gray-300 bg-gray-50">
+            <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left">
                   <input
@@ -363,8 +362,8 @@ function UserManagement() {
                     <td className="px-6 py-4">
                       <span
                         className={`rounded-full px-2 py-1 text-xs font-medium ${user.role === "admin"
-                          ? "bg-purple-200 text-purple-800"
-                          : "bg-blue-200 text-blue-800"
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-blue-100 text-blue-800"
                           }`}
                       >
                         {user.role}
@@ -464,7 +463,7 @@ function UserManagement() {
           </table>
         </div>
 
-        <div className="border-t border-gray-300 px-6 py-4">
+        <div className="border-t border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-700">
@@ -577,7 +576,6 @@ function UserManagement() {
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 }

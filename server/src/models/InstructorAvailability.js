@@ -8,7 +8,6 @@ const instructorAvailabilitySchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    // General weekly preference (fallback)
     weeklySlots: [
       {
         dayOfWeek: {
@@ -31,28 +30,18 @@ const instructorAvailabilitySchema = new mongoose.Schema(
         },
       },
     ],
-    // Specific availability for upcoming weekends
-    weekendAvailability: [
+    specificDates: [
       {
         date: {
           type: Date,
           required: true,
         },
+        startTime: String,
+        endTime: String,
         isAvailable: {
           type: Boolean,
           default: true,
         },
-        mode: {
-          type: String,
-          enum: ["Online", "Offline", "Both"],
-          default: "Online",
-        },
-        preferredSubjects: [
-          {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Subject",
-          },
-        ],
       },
     ],
     subjects: [

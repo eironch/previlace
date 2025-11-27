@@ -71,22 +71,22 @@ function ActivityPage() {
   if (showingSummary && summary) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-6">
-        <div className="rounded-lg border border-gray-300 bg-white p-6">
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
           <div className="mb-6 text-center">
             <h1 className="text-3xl font-bold text-gray-900">Activity Complete</h1>
             <p className="text-lg text-gray-600">Great work</p>
           </div>
 
           <div className="mb-6 grid grid-cols-3 gap-4">
-            <div className="rounded-lg bg-gray-200 p-4 text-center">
+            <div className="rounded-lg bg-gray-100 p-4 text-center">
               <p className="text-xs text-gray-600">Score</p>
               <p className="text-2xl font-bold text-gray-900">{summary.score}%</p>
             </div>
-            <div className="rounded-lg bg-gray-200 p-4 text-center">
+            <div className="rounded-lg bg-gray-100 p-4 text-center">
               <p className="text-xs text-gray-600">Correct</p>
               <p className="text-2xl font-bold text-gray-900">{summary.correctAnswers}/{summary.totalQuestions}</p>
             </div>
-            <div className="rounded-lg bg-gray-200 p-4 text-center">
+            <div className="rounded-lg bg-gray-100 p-4 text-center">
               <p className="text-xs text-gray-600">XP Earned</p>
               <p className="text-2xl font-bold text-gray-900">+{summary.xpEarned}</p>
             </div>
@@ -125,7 +125,7 @@ function ActivityPage() {
               <h3 className="mb-2 font-semibold text-gray-900">Recommendations</h3>
               <div className="space-y-2">
                 {summary.recommendations.map((rec, i) => (
-                  <div key={i} className="rounded-lg border border-gray-300 p-3">
+                  <div key={i} className="rounded-lg border border-gray-200 p-3">
                     <p className="text-sm font-medium text-gray-900">{rec.message}</p>
                     <ul className="mt-1 space-y-1">
                       {rec.actions.map((action, j) => (
@@ -180,7 +180,7 @@ function ActivityPage() {
 
       {question && (
         <div className="space-y-6">
-          <div className="rounded-lg border border-gray-300 bg-white p-6">
+          <div className="rounded-lg border border-gray-200 bg-white p-6">
             <p className="text-lg text-gray-900">{question.question}</p>
           </div>
 
@@ -193,7 +193,7 @@ function ActivityPage() {
                 className={`w-full rounded-lg border p-4 text-left transition-all ${
                   selectedAnswer === choice.text
                     ? "border-black bg-gray-50"
-                    : "border-gray-300 bg-white hover:border-black"
+                    : "border-gray-200 bg-white hover:border-black"
                 } ${feedback ? "cursor-not-allowed opacity-50" : ""}`}
               >
                 <p className="text-gray-900">{choice.text}</p>

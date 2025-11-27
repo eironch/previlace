@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { fileService } from "../../services/fileService";
 
-export default function FileUploadButton({ relatedType, relatedId, onUploadComplete, className = "" }) {
+export default function FileUploadButton({ relatedType, relatedId, onUploadComplete }) {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -37,7 +37,7 @@ export default function FileUploadButton({ relatedType, relatedId, onUploadCompl
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={isUploading}
-        className={`flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 ${className}`}
+        className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
       >
         {isUploading ? (
           <Loader2 className="h-4 w-4 animate-spin" />

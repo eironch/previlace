@@ -95,10 +95,10 @@ function StudyStreakDisplay() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="rounded-lg border border-gray-300 bg-white shadow-sm">
+        <Card className="rounded-lg border border-gray-200 bg-white shadow-sm">
           <CardContent className="p-6">
             <div className="mb-6 flex justify-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gray-200">
+              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gray-100">
                 <Flame
                   className={`h-12 w-12 ${currentStreak > 0 ? "text-gray-900" : "text-gray-400"}`}
                 />
@@ -115,7 +115,7 @@ function StudyStreakDisplay() {
             </div>
 
             <div className="mb-6 flex justify-center">
-              <Badge className="rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-900">
+              <Badge className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-900">
                 {getStreakTitle(currentStreak)}
               </Badge>
             </div>
@@ -131,8 +131,8 @@ function StudyStreakDisplay() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-lg border border-gray-300 bg-white shadow-sm">
-          <CardHeader className="border-b border-gray-300 p-6">
+        <Card className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <CardHeader className="border-b border-gray-200 p-6">
             <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
               <TrendingUp className="h-5 w-5 text-gray-900" />
               Statistics
@@ -187,7 +187,7 @@ function StudyStreakDisplay() {
               </p>
             </div>
 
-            <div className="border-t border-gray-300 pt-6">
+            <div className="border-t border-gray-200 pt-6">
               <div className="grid grid-cols-2 gap-6 text-center">
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
@@ -207,8 +207,8 @@ function StudyStreakDisplay() {
         </Card>
       </div>
 
-      <Card className="rounded-lg border border-gray-300 bg-white shadow-sm">
-        <CardHeader className="border-b border-gray-300 p-6">
+      <Card className="rounded-lg border border-gray-200 bg-white shadow-sm">
+        <CardHeader className="border-b border-gray-200 p-6">
           <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
             <Calendar className="h-5 w-5 text-gray-900" />
             This week
@@ -227,7 +227,7 @@ function StudyStreakDisplay() {
                       ? "bg-green-500 text-white"
                       : day.isToday
                         ? "border-2 border-black bg-white text-gray-900"
-                        : "bg-gray-200 text-gray-400"
+                        : "bg-gray-100 text-gray-400"
                   }`}
                 >
                   {day.isCompleted ? (

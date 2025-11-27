@@ -27,14 +27,14 @@ function QuizNavigation({ onQuestionSelect }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-lg border border-gray-300 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h3 className="font-semibold text-gray-900">Questions</h3>
         <p className="mt-1 text-sm text-gray-600">
           {Object.keys(answers).length} of {sessionQuestions.length} answered
         </p>
       </div>
 
-      <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-300 bg-white p-4">
+      <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white p-4">
         <div className="grid grid-cols-4 gap-2">
           {questionStatusMap.map(
             ({ index, questionId, isAnswered, isCurrent }) => (
@@ -62,7 +62,7 @@ function QuizNavigation({ onQuestionSelect }) {
           <span className="text-gray-600">Current</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-green-200" />
+          <div className="h-3 w-3 rounded-full bg-green-100" />
           <span className="text-gray-600">Answered</span>
         </div>
         <div className="flex items-center gap-2">
