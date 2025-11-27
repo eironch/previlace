@@ -12,11 +12,11 @@ export default function DashboardLayout({ children }) {
 
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 md:hidden">
+        <div className="flex items-center justify-between border-b border-gray-300 bg-white px-4 py-3 md:hidden">
           <span className="text-lg font-bold text-gray-900">Previlace</span>
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="rounded-md p-2 text-gray-600 hover:bg-gray-100"
+            className="rounded-md p-2 text-gray-600 hover:bg-gray-200"
           >
             <Menu className="h-6 w-6" />
           </button>

@@ -109,7 +109,7 @@ function RoleDashboard() {
               <button
                 key={card.title}
                 onClick={() => navigate(card.link)}
-                className="rounded-lg border border-gray-200 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
+                className="rounded-lg border border-gray-300 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
               >
                 <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${card.color}`}>
                   <Icon className="h-6 w-6 text-white" />
@@ -122,7 +122,7 @@ function RoleDashboard() {
         </div>
 
         {user.reviewCenterId && (isAdmin() || isSuperAdmin()) && (
-          <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
+          <div className="mt-8 rounded-lg border border-gray-300 bg-white p-6">
             <h2 className="text-xl font-bold text-gray-900">Overview</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <div>

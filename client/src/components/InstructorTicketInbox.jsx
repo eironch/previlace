@@ -72,14 +72,14 @@ export default function InstructorTicketInbox() {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-200 p-4">
+    <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+      <div className="border-b border-gray-300 p-4">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
             <MessageSquare className="h-5 w-5 text-blue-600" />
             Student Inquiries
           </h2>
-          <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+          <span className="rounded-full bg-blue-200 px-2 py-1 text-xs font-medium text-blue-700">
             {tickets.filter((t) => t.status === "open").length} Open
           </span>
         </div>
@@ -120,7 +120,7 @@ export default function InstructorTicketInbox() {
             <div key={ticket._id} className="p-4 hover:bg-gray-50">
               <div className="mb-2 flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-200 text-xs font-bold text-blue-700">
                     {ticket.studentId?.firstName?.[0] || "S"}
                     {ticket.studentId?.lastName?.[0] || "T"}
                   </div>
@@ -136,8 +136,8 @@ export default function InstructorTicketInbox() {
                 <span
                   className={`rounded px-2 py-1 text-xs font-medium ${
                     ticket.status === "resolved"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
+                      ? "bg-green-200 text-green-700"
+                      : "bg-yellow-200 text-yellow-700"
                   }`}
                 >
                   {ticket.status === "resolved" ? "Resolved" : "Open"}

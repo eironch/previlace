@@ -26,8 +26,8 @@ function BookmarkButton({ questionId, priority = "medium" }) {
       onClick={handleBookmarkToggle}
       className={`rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
         isBookmarked
-          ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          ? "bg-yellow-200 text-yellow-700 hover:bg-yellow-200"
+          : "bg-gray-200 text-gray-700 hover:bg-gray-200"
       }`}
     >
       {isBookmarked ? "Bookmarked" : "Bookmark"}

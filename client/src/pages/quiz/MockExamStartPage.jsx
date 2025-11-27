@@ -28,7 +28,7 @@ function MockExamStartPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-white">
-        <header className="border-b border-gray-200 bg-white">
+        <header className="border-b border-gray-300 bg-white">
           <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             <button
               onClick={() => navigate("/dashboard")}
@@ -42,7 +42,7 @@ function MockExamStartPage() {
         <div className="flex h-[calc(100vh-73px)] items-center justify-center">
           <div className="mx-4 max-w-md text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-200">
                 <Target className="h-8 w-8 text-red-600" />
               </div>
             </div>
@@ -67,7 +67,7 @@ function MockExamStartPage() {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200">
               <Target className="h-10 w-10 text-black" />
             </div>
           </div>
@@ -79,9 +79,9 @@ function MockExamStartPage() {
           </p>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-6">
+        <div className="space-y-3 rounded-lg border border-gray-300 bg-white p-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200">
               <BookOpen className="h-5 w-5 text-gray-900" />
             </div>
             <div className="flex-1">
@@ -91,7 +91,7 @@ function MockExamStartPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200">
               <Clock className="h-5 w-5 text-gray-900" />
             </div>
             <div className="flex-1">
@@ -101,7 +101,7 @@ function MockExamStartPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200">
               <Target className="h-5 w-5 text-gray-900" />
             </div>
             <div className="flex-1">

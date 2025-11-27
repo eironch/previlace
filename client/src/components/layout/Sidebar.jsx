@@ -33,8 +33,6 @@ export const adminNavItems = [
   { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
   { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
   { id: "users", icon: Users, title: "Users", path: "/admin/users" },
-  { id: "questions", icon: BookOpen, title: "Questions", path: "/admin/questions" },
-  { id: "classes", icon: Calendar, title: "Class Schedule", path: "/admin/classes" },
   { id: "resources", icon: FileText, title: "Resources", path: "/admin/resources" },
 ];
 
@@ -111,9 +109,9 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
               className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl"
             >
               <div className="flex h-full flex-col">
-                <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                <div className="flex items-center justify-between p-4 border-b border-gray-300">
                   <span className="text-xl font-bold text-gray-900">Previlace</span>
-                  <button onClick={() => setIsOpen(false)} className="p-1 rounded-md hover:bg-gray-100">
+                  <button onClick={() => setIsOpen(false)} className="p-1 rounded-md hover:bg-gray-200">
                     <ChevronLeft className="w-6 h-6 text-gray-500" />
                   </button>
                 </div>
@@ -143,7 +141,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
                 </nav>
 
 
-                <div className="p-4 border-t border-gray-100">
+                <div className="p-4 border-t border-gray-300">
                   <div className="flex items-center mb-4">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-white text-xs font-bold">
                       {user?.firstName?.[0]}{user?.lastName?.[0]}
@@ -190,7 +188,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
         {!isCollapsed && <span className="text-xl font-bold text-gray-900">Previlace</span>}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 ${isCollapsed ? "mx-auto" : ""}`}
+          className={`rounded-lg p-1.5 text-gray-500 hover:bg-gray-200 ${isCollapsed ? "mx-auto" : ""}`}
         >
           {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
         </button>
@@ -232,7 +230,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
         ))}
       </nav>
 
-      <div className="border-t border-gray-100 p-4">
+      <div className="border-t border-gray-300 p-4">
         {!isCollapsed ? (
           <>
             <div className="mb-4 flex items-center">

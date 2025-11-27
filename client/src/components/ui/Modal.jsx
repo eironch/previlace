@@ -1,6 +1,19 @@
+import { useEffect } from "react";
 import { X } from "lucide-react";
 
 function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md" }) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -10,7 +23,7 @@ function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md" }) {
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-200"
           >
             <X className="h-4 w-4" />
           </button>

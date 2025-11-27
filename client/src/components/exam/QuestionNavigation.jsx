@@ -17,7 +17,7 @@ function QuestionNavigation({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="rounded-lg border border-gray-300 bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-900">Questions</h3>
         <span className="text-xs text-gray-500">
@@ -39,8 +39,8 @@ function QuestionNavigation({
                 isCurrent
                   ? "bg-black text-white shadow-sm"
                   : isAnswered
-                    ? "border border-green-500 bg-green-50 text-green-800 hover:bg-green-100"
-                    : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                    ? "border border-green-500 bg-green-50 text-green-800 hover:bg-green-200"
+                    : "border border-gray-300 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
               }`}
             >
               {index + 1}
@@ -62,7 +62,7 @@ function QuestionNavigation({
           <span>Answered</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded border border-gray-200 bg-white" />
+          <div className="h-3 w-3 rounded border border-gray-300 bg-white" />
           <span>Unanswered</span>
         </div>
       </div>

@@ -38,6 +38,7 @@ import DevTools from "./components/ui/DevTools";
 import { useAppStore } from "./store/appStore";
 
 import DashboardLayout from "./components/layout/DashboardLayout";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function ProtectedRoute({ children, requireAdmin = false, requireProfileComplete = true }) {
   const { user, isAuthenticated } = useAuthStore();
@@ -52,6 +53,10 @@ function ProtectedRoute({ children, requireAdmin = false, requireProfileComplete
 
   if (requireAdmin && user?.role !== "admin" && user?.role !== "super_admin") {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  if (!requireAdmin && (user?.role === "admin" || user?.role === "super_admin")) {
+    return <Navigate to="/admin" replace />;
   }
 
   return children;
@@ -77,7 +82,7 @@ function App() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-black" />
           <p className="text-sm text-gray-600">Loading...</p>
         </div>
       </div>
@@ -296,18 +301,7 @@ function App() {
 
         <Route
           path="*"
-          element={
-            <Navigate
-              to={
-                isAuthenticated
-                  ? user?.isProfileComplete
-                    ? "/dashboard"
-                    : "/onboarding"
-                  : "/"
-              }
-              replace
-            />
-          }
+          element={<NotFoundPage />}
         />
       </Routes>
       {showAuthModal && <AuthModal />}

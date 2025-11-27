@@ -107,7 +107,7 @@ export default function QuestionManagementPage() {
         description="Manage question bank and review submitted questions."
         onRefresh={handleRefresh}
         bottomContent={
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-300">
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
               <button
                 onClick={() => setActiveTab("bank")}

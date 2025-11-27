@@ -58,7 +58,7 @@ function MathInput({
             "w-full px-3 py-2 border rounded-lg resize-vertical transition-colors",
             "focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent",
             validation.valid 
-              ? "border-gray-200" 
+              ? "border-gray-300" 
               : "border-red-200 bg-red-50",
             className
           )}
@@ -76,7 +76,7 @@ function MathInput({
       </div>
 
       {showPreview && latex && validation.valid && (
-        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="p-3 bg-gray-50 border border-gray-300 rounded-lg">
           <div className="text-xs text-gray-600 mb-2 font-medium">
             Preview:
           </div>

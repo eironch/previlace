@@ -211,23 +211,23 @@ function QuestionList({
 
   function getStatusColor(status) {
     const colors = {
-      draft: "bg-gray-100 text-gray-700",
-      review: "bg-yellow-100 text-yellow-700",
-      approved: "bg-green-100 text-green-700",
-      published: "bg-blue-100 text-blue-700",
-      rejected: "bg-red-100 text-red-700",
+      draft: "bg-gray-200 text-gray-700",
+      review: "bg-yellow-200 text-yellow-700",
+      approved: "bg-green-200 text-green-700",
+      published: "bg-blue-200 text-blue-700",
+      rejected: "bg-red-200 text-red-700",
     };
-    return colors[status] || "bg-gray-100 text-gray-700";
+    return colors[status] || "bg-gray-200 text-gray-700";
   }
 
   function getSourceColor(source) {
     const colors = {
-      manual: "bg-purple-100 text-purple-700",
-      ai_generated: "bg-cyan-100 text-cyan-700",
-      imported: "bg-orange-100 text-orange-700",
-      cloned: "bg-indigo-100 text-indigo-700",
+      manual: "bg-purple-200 text-purple-700",
+      ai_generated: "bg-cyan-200 text-cyan-700",
+      imported: "bg-orange-200 text-orange-700",
+      cloned: "bg-indigo-200 text-indigo-700",
     };
-    return colors[source] || "bg-gray-100 text-gray-700";
+    return colors[source] || "bg-gray-200 text-gray-700";
   }
 
   function getQuestionTypeIcon(type) {
@@ -388,7 +388,7 @@ function QuestionList({
       )}
 
       {selectedQuestions.length > 0 && (
-        <div className="sticky top-0 z-30 border-b border-gray-200 bg-white p-4 shadow-sm">
+        <div className="sticky top-0 z-30 border-b border-gray-300 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -426,7 +426,7 @@ function QuestionList({
         </div>
       ) : (
         <>
-          <div className="mb-4 flex items-center gap-2 border-b border-gray-200 pb-4">
+          <div className="mb-4 flex items-center gap-2 border-b border-gray-300 pb-4">
             <input
               type="checkbox"
               checked={selectedQuestions.length === questions.length && questions.length > 0}
@@ -446,7 +446,7 @@ function QuestionList({
                   className={`rounded-lg border p-6 transition-colors ${
                     isSelected
                       ? "border-black bg-gray-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      : "border-gray-300 hover:border-gray-300"
                   }`}
                 >
                   <div className="mb-4 flex items-start justify-between">
@@ -476,16 +476,16 @@ function QuestionList({
                       </div>
 
                       <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
-                        <span className="rounded bg-gray-100 px-2 py-1 text-xs">
+                        <span className="rounded bg-gray-200 px-2 py-1 text-xs">
                           {question.category}
                         </span>
-                        <span className="rounded bg-gray-100 px-2 py-1 text-xs">
+                        <span className="rounded bg-gray-200 px-2 py-1 text-xs">
                           {question.difficulty}
                         </span>
-                        <span className="rounded bg-gray-100 px-2 py-1 text-xs">
+                        <span className="rounded bg-gray-200 px-2 py-1 text-xs">
                           {question.examLevel}
                         </span>
-                        <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700">
+                        <span className="rounded bg-blue-200 px-2 py-1 text-xs text-blue-700">
                           {formatQuestionType(question.questionType)}
                         </span>
                         <span

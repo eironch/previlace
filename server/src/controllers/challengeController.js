@@ -1,6 +1,6 @@
 import Challenge from "../models/Challenge.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
-import socketService from "../services/socketService.js";
+
 
 const sendChallenge = catchAsync(async (req, res, next) => {
   const {
@@ -37,10 +37,8 @@ const sendChallenge = catchAsync(async (req, res, next) => {
   await challenge.populate("challengerId", "firstName lastName avatar");
   await challenge.populate("opponentId", "firstName lastName avatar");
 
-  socketService.io.to(opponentId).emit("challenge:received", {
-    challengeId: challenge._id,
-    challenger: challenge.challengerId,
-  });
+  await challenge.populate("challengerId", "firstName lastName avatar");
+  await challenge.populate("opponentId", "firstName lastName avatar");
 
   res.status(201).json({
     success: true,
@@ -78,11 +76,9 @@ const acceptChallenge = catchAsync(async (req, res, next) => {
   challenge.status = "in-progress";
   await challenge.save();
 
-  socketService.io
-    .to(challenge.challengerId.toString())
-    .emit("challenge:accepted", {
-      challengeId: challenge._id,
-    });
+  await challenge.accept();
+  challenge.status = "in-progress";
+  await challenge.save();
 
   res.json({
     success: true,
@@ -105,11 +101,7 @@ const declineChallenge = catchAsync(async (req, res, next) => {
 
   await challenge.decline();
 
-  socketService.io
-    .to(challenge.challengerId.toString())
-    .emit("challenge:declined", {
-      challengeId: challenge._id,
-    });
+  await challenge.decline();
 
   res.json({
     success: true,
@@ -149,15 +141,9 @@ const recordChallengeScore = catchAsync(async (req, res, next) => {
   }
 
   if (challenge.status === "completed") {
-    socketService.io.to(challenge.challengerId._id.toString()).emit("challenge:completed", {
-      challengeId: challenge._id,
-      winner: challenge.winner,
-    });
-
-    socketService.io.to(challenge.opponentId._id.toString()).emit("challenge:completed", {
-      challengeId: challenge._id,
-      winner: challenge.winner,
-    });
+  if (challenge.status === "completed") {
+    // Challenge completed logic (e.g. notifications) can be handled here without sockets
+  }
   }
 
   res.json({

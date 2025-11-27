@@ -37,10 +37,10 @@ function AnswerInput({ question, selectedAnswer, onAnswerSelect, disabled = fals
               disabled={disabled}
               className={`flex w-full items-start gap-3 rounded-lg border-2 p-4 text-left transition-all ${
                 disabled
-                  ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-60"
+                  ? "cursor-not-allowed border-gray-300 bg-gray-50 opacity-60"
                   : isSelected
                     ? "border-black bg-gray-50 shadow-sm"
-                    : "cursor-pointer border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                    : "cursor-pointer border-gray-300 bg-white hover:border-gray-300 hover:bg-gray-50"
               }`}
             >
               <div className="mt-0.5 flex-shrink-0">
@@ -57,7 +57,7 @@ function AnswerInput({ question, selectedAnswer, onAnswerSelect, disabled = fals
                     className={`flex h-6 w-6 items-center justify-center rounded text-xs font-semibold transition-colors ${
                       isSelected
                         ? "bg-black text-white"
-                        : "bg-gray-100 text-gray-600"
+                        : "bg-gray-200 text-gray-600"
                     }`}
                   >
                     {String.fromCharCode(65 + index)}

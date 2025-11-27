@@ -36,7 +36,7 @@ function ImmediateFeedback({ feedback, userAnswer }) {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+    <div className="rounded-lg border border-gray-300 bg-white p-4 shadow-sm sm:p-6">
       <div className="mb-4 flex items-start gap-3 sm:mb-6 sm:items-center">
         {isCorrect ? (
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-50 sm:h-12 sm:w-12">
@@ -82,7 +82,7 @@ function ImmediateFeedback({ feedback, userAnswer }) {
       )}
 
       {(explanation || explanationMath) && (
-        <div className="rounded-lg border border-gray-200 bg-white p-3 sm:p-4">
+        <div className="rounded-lg border border-gray-300 bg-white p-3 sm:p-4">
           <div className="mb-2 flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-yellow-600" />
             <p className="font-semibold text-gray-900">Explanation</p>

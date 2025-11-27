@@ -1,437 +1,128 @@
 import { useState } from "react";
 import { useAppStore } from "@/store/appStore";
 import { useAuthStore } from "@/store/authStore";
-import { User, GraduationCap, Calendar } from "lucide-react";
-
-// Helper function to generate an array of future years (e.g., 2025, 2026, 2027)
-const getCurrentYear = () => new Date().getFullYear();
-const getFutureYears = (count = 3) => {
-    const startYear = getCurrentYear();
-    return Array.from({ length: count }, (_, i) => startYear + i);
-};
-const FUTURE_YEARS = getFutureYears();
-
-// Helper function to calculate the date string (e.g., "2026-03-01" or "2026-08-01")
-const calculateTargetDate = (month, year) => {
-    if (!month || !year) return "";
-    const datePart = month === 'March' ? '03-01' : '08-01'; 
-    return `${year}-${datePart}`;
-};
-
-// CORE SUBJECTS
-const CORE_SUBJECTS = [
-    "Numerical Ability",
-    "Verbal Ability",
-    "General Information",
-    "Clerical Ability",
-    "Logic & Reasoning",
-    "Reading Comprehension",
-    "Grammar & Language",
-    "Philippine Constitution",
-];
-
+import { BookOpen, BarChart2, CheckCircle, ArrowRight, LayoutDashboard } from "lucide-react";
 
 export default function OnboardingPage() {
     const [step, setStep] = useState(0);
-    const [error, setError] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    
-    const [showPolicy, setShowPolicy] = useState(false); 
-    
-    const [form, setForm] = useState({
-        firstName: "",
-        lastName: "",
-        examType: "",
-        targetExamMonth: "", 
-        targetExamYear: "", 
-        targetExamDate: "", 
-        strongSubjects: [], 
-        agreeTerms: false,
-    });
-
     const { closeAuthModal } = useAppStore();
-    const { user, updateProfile } = useAuthStore();
-
-    function handleChange(key, value) {
-        let newForm = { ...form, [key]: value };
-
-        if (key === 'targetExamMonth' || key === 'targetExamYear') {
-            const month = key === 'targetExamMonth' ? value : form.targetExamMonth;
-            const year = key === 'targetExamYear' ? value : form.targetExamYear;
-            newForm.targetExamDate = calculateTargetDate(month, year);
-        }
-        
-        setForm(newForm);
-        // Clear error when changing relevant fields
-        if (["firstName", "lastName", "agreeTerms", "examType", "targetExamMonth", "targetExamYear"].includes(key)) {
-             setError(""); 
-        }
-    }
-
-    const currentYear = new Date().getFullYear();
-    const endYear = currentYear + 5; 
-    const FUTURE_YEARS = Array.from({ length: endYear - currentYear }, (_, i) => currentYear + 1 + i);
-
-    function toggleArray(key, value) {
-        const current = form[key];
-        const updated = current.includes(value)
-            ? current.filter((v) => v !== value)
-            : [...current, value];
-        setForm({ ...form, [key]: updated });
-        // Clear error when changing strong subjects
-        if (key === "strongSubjects") setError(""); 
-    }
-
-    function nextStep() {
-        if (step === 1) { // Validation for Identity & Legal
-            if (!form.firstName.trim() || !form.lastName.trim()) {
-                setError("Please provide your first and last name to continue.");
-                return;
-            }
-            if (!form.agreeTerms) {
-                setError("You must agree to the Terms & Privacy Policy to continue.");
-                return;
-            }
-            setError("");
-        }
-        
-        // Validation for Step 2 (Study Core: Exam, Planning, & Subjects)
-        if (step === 2) { 
-            if (!form.examType || !form.targetExamDate) {
-                setError("Please select your exam level and target exam month/year.");
-                return;
-            }
-            // Subject selection is optional, no validation here.
-            
-            // All checks passed, move to final step (Step 3)
-            setError("");
-            setStep(step + 1);
-            return;
-        }
-
-        if (step < steps.length - 1) setStep(step + 1);
-    }
-
-    function prevStep() {
-        if (step > 0) {
-            setStep(step - 1);
-        }
-    }
-
-    async function handleFinish() {
-        if (!form.agreeTerms) {
-            setError("You must agree to the terms to continue.");
-            return;
-        }
-
-        setIsSubmitting(true);
-        setError("");
-
-        // Calculate weakSubjects from unselected subjects
-        const weakSubjects = CORE_SUBJECTS.filter(subject => !form.strongSubjects.includes(subject));
-
-        try {
-            await updateProfile({
-                firstName: form.firstName.trim(),
-                lastName: form.lastName.trim(),
-                examType: form.examType,
-                targetExamDate: form.targetExamDate, 
-                strongSubjects: form.strongSubjects,
-                weakSubjects: weakSubjects, 
-                agreeTerms: form.agreeTerms,
-                isProfileComplete: true,
-            });
-            closeAuthModal();
-        } catch {
-            setError("Failed to save profile. Please try again.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    }
-    
-    // Placeholder content for Policy
-    const PolicyContent = () => (
-        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 max-h-60 overflow-y-auto text-xs text-gray-700 mt-4 transition-all duration-300">
-            <h4 className="font-bold mb-2 text-black">Previlace Terms of Service & Privacy Policy</h4>
-            <p className="mb-3 font-semibold">Terms of Service Summary:</p>
-            <ul className="list-disc ml-4 space-y-1 mb-3">
-                <li>**Use of Service**: The platform is for Civil Service Exam preparation only.</li>
-                <li>**Intellectual Property**: All quiz content, flashcards, and mock exams are copyrighted material of Previlace.</li>
-                <li>**Disclaimer**: We do not guarantee passing the exam. Our tools are aids for study.</li>
-            </ul>
-            <p className="mb-3 font-semibold">Privacy Policy Summary:</p>
-            <ul className="list-disc ml-4 space-y-1">
-                <li>**Data Collected**: Name, email, exam type, study preferences, and performance data.</li>
-                <li>**Purpose**: Data is used strictly for personalizing your study plan and improving platform services.</li>
-                <li>**Sharing**: We do not sell your personal data. Data may be shared in anonymized form for analytics.</li>
-            </ul>
-        </div>
-    );
-
-    // Helper function to determine button disabled status
-    const isStepButtonDisabled = () => {
-        if (step === 1) { // Essentials
-            return !form.firstName.trim() || !form.lastName.trim() || !form.agreeTerms;
-        }
-        if (step === 2) { // Study Core
-            // Only check for ExamType and TargetDate.
-            return !form.examType || !form.targetExamDate;
-        }
-        return false;
-    };
-    // ----------------------------------------------------
-
+    const { user } = useAuthStore();
 
     const steps = [
         {
-            icon: User,
+            icon: LayoutDashboard,
             title: "Welcome to Previlace",
-            subtitle: "Your pathway to Civil Service success",
-            content: (
-                <div className="text-center">
-                    <div className="mb-8 flex justify-center">
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-black text-white">
-                            <User size={32} />
-                        </div>
-                    </div>
-                    <h1 className="mb-4 text-3xl font-bold text-gray-900">Welcome to Previlace</h1>
-                    <p className="mb-8 text-lg text-gray-600">Let's personalize your study plan quickly.</p>
-                    <button 
-                        type="button" 
-                        onClick={nextStep} 
-                        className="rounded-lg bg-black px-8 py-3 text-white transition-opacity hover:opacity-90 cursor-pointer" // Added cursor-pointer
-                    >
-                        Get Started
-                    </button>
-                </div>
-            ),
+            subtitle: "Your AI-Enhanced Review Center",
+            description: "We've set up your personalized dashboard based on your enrollment details. Everything you need to pass the Civil Service Exam is right here.",
+            image: "dashboard_preview" // Placeholder for potential image
         },
         {
-            icon: User,
-            title: "Essentials",
-            subtitle: "Identity & legal",
-            content: (
-                <div className="space-y-6">
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">First Name</label>
-                        <input 
-                            type="text" 
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" 
-                            value={form.firstName} 
-                            onChange={(e) => handleChange("firstName", e.target.value)} 
-                            placeholder="Enter your first name" 
-                            autoComplete="given-name"
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">Last Name</label>
-                        <input 
-                            type="text" 
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black" 
-                            value={form.lastName} 
-                            onChange={(e) => handleChange("lastName", e.target.value)} 
-                            placeholder="Enter your last name" 
-                            autoComplete="family-name"
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
-                        <input 
-                            type="email" 
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 bg-gray-50 text-gray-500" 
-                            value={user?.email || 'Email provided via sign-up'} 
-                            disabled 
-                        />
-                    </div>
-                    
-                    {/* AGREEMENT CHECKBOX WITH POLICY LINK (UPDATED TEXT) */}
-                    <div>
-                        <label className="flex items-start gap-3 cursor-pointer"> {/* Added cursor-pointer to entire label for clickability */}
-                            <input 
-                                type="checkbox" 
-                                checked={form.agreeTerms} 
-                                onChange={(e) => handleChange("agreeTerms", e.target.checked)} 
-                                className="mt-1 rounded cursor-pointer" 
-                            />
-                            <div>
-                                <div className="font-medium text-gray-900">
-                                    {/* 💡 Updated text for agreement */}
-                                    I have read and agree to Previlace's 
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setShowPolicy(!showPolicy)} 
-                                        className="text-black underline font-semibold ml-1 hover:text-gray-700 cursor-pointer" // Added cursor-pointer
-                                    >
-                                        Terms of Service and Privacy Policy
-                                    </button>
-                                </div>
-                                <div className="text-sm text-gray-600">You must agree to continue.</div>
-                            </div>
-                        </label>
-                    </div>
-
-                    {/* POLICY CONTENT (Collapsible) */}
-                    {showPolicy && <PolicyContent />}
-                </div>
-            ),
+            icon: BookOpen,
+            title: "Smart Study Plan",
+            subtitle: "Tailored to Your Needs",
+            description: "Your study plan adapts to your strengths and weaknesses. Focus on what matters most and track your daily progress.",
         },
         {
-            icon: GraduationCap,
-            title: "Study Core",
-            subtitle: "Exam planning & subject assessment", 
-            content: (
-                <div className="space-y-6">
-                    {/* Exam Level Selection */}
-                    <div>
-                        <label className="mb-3 block text-sm font-medium text-gray-700">Exam Level</label>
-                        <div className="grid grid-cols-2 gap-4">
-                            {[{ value: "Professional", desc: "Second-level positions" }, { value: "Sub-Professional", desc: "First-level positions" }].map((type) => (
-                                <button 
-                                    type="button" 
-                                    key={type.value} 
-                                    className={`rounded-lg border-2 p-4 text-left transition-all focus:outline-none focus:ring-2 cursor-pointer ${form.examType === type.value ? "border-black bg-black text-white" : "border-gray-200 hover:border-gray-300 bg-white text-gray-900"}`} 
-                                    onClick={() => handleChange("examType", type.value)}
-                                > {/* Added cursor-pointer */}
-                                    <div className="font-medium">{type.value}</div>
-                                    <div className={`text-sm ${form.examType === type.value ? "text-gray-300" : "text-gray-500"}`}>{type.desc}</div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                  <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">Target Exam Date</label>
-                        <div className="grid grid-cols-2 gap-4">
-                        {/* Month Select (No change needed here) */}
-                        <select 
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
-                            value={form.targetExamMonth} 
-                            onChange={(e) => handleChange("targetExamMonth", e.target.value)}
-                        >
-                            <option value="" disabled>Select Month</option>
-                            <option value="March">March</option>
-                            <option value="August">August</option>
-                        </select>
-                        
-                        {/* Year Select (Uses the new FUTURE_YEARS array) */}
-                        <select 
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
-                            value={form.targetExamYear} 
-                            onChange={(e) => handleChange("targetExamYear", e.target.value)}
-                        >
-                            <option value="" disabled>Select Year</option>
-                            {FUTURE_YEARS.map(year => (
-                            <option key={year} value={year}>{year}</option>
-                            ))}
-                        </select>
-                        </div>
-                        
-                        {form.targetExamDate && (
-                            <p className="mt-2 text-xs text-gray-500">Target Date calculated: {form.targetExamDate}</p>
-                        )}
-                    </div>
-
-                    {/* Strong Subjects Selection (Optional) */}
-                    <div>
-                        <label className="mb-3 block text-sm font-medium text-gray-700">Strong Subjects (Optional)</label>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                            {CORE_SUBJECTS.map((subject) => (
-                                <label key={subject} className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 p-3 transition-colors hover:bg-gray-50">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={form.strongSubjects.includes(subject)} 
-                                        onChange={() => toggleArray("strongSubjects", subject)} 
-                                        className="rounded cursor-pointer" 
-                                    />
-                                    <span className="text-sm text-gray-700">{subject}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            ),
+            icon: BarChart2,
+            title: "Real-time Analytics",
+            subtitle: "Track Your Growth",
+            description: "Visualize your performance with detailed analytics. See exactly where you're improving and where you need more practice.",
         },
         {
-            icon: Calendar,
-            title: "Ready to Go!", 
-            subtitle: "Welcome aboard", 
-            content: (
-                <div className="space-y-6 text-center">
-                    <h2 className="text-2xl font-bold text-gray-900">Setup Complete!</h2>
-                    <p className="text-lg text-gray-600">We are thrilled to be part of your career journey. Your personalized study plan is now active.</p>
-                    {error && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
-                    
-                    {/* The final button initiates the submission and redirects */}
-                    <button 
-                        onClick={handleFinish} 
-                        disabled={isSubmitting} 
-                        className="w-full rounded-lg bg-black px-6 py-4 text-white transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer" // Added cursor-pointer
-                    >
-                        {isSubmitting ? "Setting up your profile..." : "Start Studying"}
-                    </button>
-                </div>
-            ),
-        },
+            icon: CheckCircle,
+            title: "Ready to Start?",
+            subtitle: "Let's Ace This Exam",
+            description: "Your account is fully configured. Jump into your dashboard and start your first review session now.",
+        }
     ];
 
     const currentStep = steps[step];
 
+    function nextStep() {
+        if (step < steps.length - 1) {
+            setStep(step + 1);
+        } else {
+            handleFinish();
+        }
+    }
+
+    function handleFinish() {
+        closeAuthModal();
+        // The user is already logged in, so closing the modal (if applicable) or redirecting is enough.
+        // If this page is a route, we might want to navigate.
+        // Assuming this component is rendered when isProfileComplete is false (or similar logic),
+        // but since we auto-complete profile in admin gen, this might just be a "first login" tour.
+        // For now, we'll just ensure we close any modal or redirect if needed.
+        window.location.href = "/dashboard"; 
+    }
+
     return (
-        <div className="min-h-screen bg-white">
-            <div className="mx-auto max-w-2xl px-4 py-8">
-                <div className="mb-8 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
-                            <currentStep.icon size={20} />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-900">{currentStep.title}</h1>
-                            <p className="text-sm text-gray-600">{currentStep.subtitle}</p>
-                        </div>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+                
+                {/* Left Side - Visual/Icon */}
+                <div className="w-full md:w-1/2 bg-black p-12 flex flex-col justify-between text-white relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full opacity-10">
+                        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <path d="M0 0 L100 0 L100 100 L0 100 Z" fill="url(#grid)" />
+                            <defs>
+                                <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
+                                </pattern>
+                            </defs>
+                        </svg>
                     </div>
-                    <div className="text-sm text-gray-500">
-                        {step + 1} of {steps.length}
+                    
+                    <div className="relative z-10">
+                        <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center mb-8 border border-white/20">
+                            <currentStep.icon className="h-8 w-8 text-white" />
+                        </div>
+                        <h2 className="text-3xl font-bold mb-4">{currentStep.title}</h2>
+                        <p className="text-gray-300 text-lg">{currentStep.subtitle}</p>
+                    </div>
+
+                    <div className="relative z-10 flex gap-2">
+                        {steps.map((_, idx) => (
+                            <div 
+                                key={idx}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${
+                                    idx === step ? "w-8 bg-white" : "w-2 bg-white/30"
+                                }`}
+                            />
+                        ))}
                     </div>
                 </div>
 
-                <div className="mb-8 h-2 w-full rounded-full bg-gray-100">
-                    <div
-                        className="h-2 rounded-full bg-black transition-all duration-300"
-                        style={{ width: `${((step + 1) / steps.length) * 100}%` }}
-                    />
-                </div>
+                {/* Right Side - Content & Navigation */}
+                <div className="w-full md:w-1/2 p-12 flex flex-col justify-center">
+                    <div className="flex-1 flex flex-col justify-center">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                            {step === 0 ? `Welcome, ${user?.firstName}!` : currentStep.title}
+                        </h3>
+                        <p className="text-gray-600 text-lg leading-relaxed">
+                            {currentStep.description}
+                        </p>
+                    </div>
 
-                <div className="rounded-xl bg-white p-6 shadow-sm">
-                    {currentStep.content}
-                    {/* Display general error at the bottom of the content card */}
-                    {error && step < steps.length -1 && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 mt-6">{error}</div>}
-                </div>
-
-                {/* Navigation buttons are only shown between the introduction and the final screen */}
-                {step > 0 && step < steps.length - 1 && (
-                    <div className={`mt-8 flex ${step > 1 ? 'justify-between' : 'justify-end'}`}>
-                        {/* Show back button only if we are past the welcome screen (step 0) and the essentials step (step 1) */}
-                        {step > 1 && (
-                            <button
-                                type="button"
-                                onClick={prevStep}
-                                className="rounded-lg border border-gray-300 px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50 cursor-pointer" // Added cursor-pointer
-                            >
-                                Back
-                            </button>
-                        )}
+                    <div className="mt-8 flex items-center justify-between">
                         <button
-                            type="button"
-                            onClick={nextStep}
-                            disabled={isStepButtonDisabled()}
-                            className={`rounded-lg bg-black px-6 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer ${step === 1 ? 'w-full' : ''}`} // Added cursor-pointer
+                            onClick={() => setStep(Math.max(0, step - 1))}
+                            className={`text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors ${
+                                step === 0 ? "invisible" : ""
+                            }`}
                         >
-                            {/* Button text now changes based on the new final step */}
-                            {step === steps.length - 2 ? "Complete Setup" : "Continue"}
+                            Back
+                        </button>
+
+                        <button
+                            onClick={nextStep}
+                            className="group flex items-center gap-2 bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
+                        >
+                            {step === steps.length - 1 ? "Go to Dashboard" : "Next"}
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </button>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

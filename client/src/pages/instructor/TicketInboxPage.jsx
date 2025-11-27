@@ -80,12 +80,12 @@ export default function TicketInboxPage() {
 
         <div className="grid h-[calc(100vh-200px)] gap-6 lg:grid-cols-3">
           {/* Ticket List */}
-          <div className="flex flex-col rounded-lg border border-gray-200 bg-white shadow-sm lg:col-span-1">
-            <div className="border-b border-gray-200 p-4">
+          <div className="flex flex-col rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-1">
+            <div className="border-b border-gray-300 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-gray-900">Inbox</span>
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                  <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
                     {tickets.length}
                   </span>
                 </div>
@@ -111,7 +111,7 @@ export default function TicketInboxPage() {
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="h-32 animate-pulse rounded-lg bg-gray-100"
+                      className="h-32 animate-pulse rounded-lg bg-gray-200"
                     />
                   ))}
                 </div>
@@ -156,7 +156,7 @@ export default function TicketInboxPage() {
           </div>
 
           {/* Ticket Detail */}
-          <div className="hidden overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm lg:col-span-2 lg:block">
+          <div className="hidden overflow-hidden rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-2 lg:block">
             {selectedTicket ? (
               <TicketDetail ticket={selectedTicket} isInstructor={true} />
             ) : (

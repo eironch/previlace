@@ -21,7 +21,7 @@ export default function ClassManagementPage() {
         description="Manage weekend classes, subjects, and topics."
         onRefresh={handleRefresh}
         bottomContent={
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-300">
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setActiveTab('schedule')}

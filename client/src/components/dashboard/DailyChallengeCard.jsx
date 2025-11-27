@@ -88,7 +88,7 @@ function DailyChallengeCard() {
 
   if (postTestLoading || dashboardLoading || !activePlan) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="rounded-lg border border-gray-300 bg-white p-6">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 animate-pulse rounded-lg bg-gray-200" />
           <div className="flex-1">
@@ -102,9 +102,9 @@ function DailyChallengeCard() {
 
   if (isWeekend) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="rounded-lg border border-gray-300 bg-white p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200">
             <Target className="h-6 w-6 text-gray-600" />
           </div>
           <div>
@@ -113,7 +113,7 @@ function DailyChallengeCard() {
           </div>
         </div>
         {weekendClass ? (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="rounded-lg border border-gray-300 bg-gray-50 p-4">
             <h4 className="font-bold text-gray-900">{weekendClass.topic}</h4>
             <p className="mb-3 text-sm text-gray-600">{weekendClass.description}</p>
             <div className="mb-3 flex items-center gap-2 text-sm text-gray-500">
@@ -142,9 +142,9 @@ function DailyChallengeCard() {
 
   if (!currentWeek) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="rounded-lg border border-gray-300 bg-white p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200">
             <Target className="h-6 w-6 text-gray-900" />
           </div>
           <div>
@@ -163,7 +163,7 @@ function DailyChallengeCard() {
   const isPostTestCompleted = !!currentWeekPostTest;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-black">
@@ -183,7 +183,7 @@ function DailyChallengeCard() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1">
+          <div className="flex items-center gap-2 rounded-full bg-gray-200 px-3 py-1">
             <Trophy className="h-4 w-4 text-gray-900" />
             <span className="text-sm font-semibold text-gray-900">
               +{isPostTestCompleted ? "15" : "30"} XP

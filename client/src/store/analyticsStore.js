@@ -12,15 +12,15 @@ const useAnalyticsStore = create((set, get) => ({
   error: null,
 
   fetchAnalytics: async () => {
-    const currentStats = get().categoryStats || [];
-    if (currentStats.length === 0) {
-      set({ isLoading: true, error: null });
-    } else {
-      set({ error: null });
-    }
+    set({ isLoading: true, error: null });
 
     try {
-      const data = await analyticsService.getStudentAnalytics();
+      // Add minimum delay to ensure animation is visible
+      const [data] = await Promise.all([
+        analyticsService.getStudentAnalytics(),
+        new Promise(resolve => setTimeout(resolve, 500))
+      ]);
+
       set({
         categoryStats: data.categories || [],
         progressData: data.recentProgress || [],

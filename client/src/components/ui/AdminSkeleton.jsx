@@ -4,7 +4,7 @@ export default function AdminSkeleton() {
   return (
     <div className="animate-pulse space-y-6">
       {/* Header Skeleton */}
-      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between border-b border-gray-300 bg-white px-4 py-4 sm:px-6 lg:px-8">
         <div className="space-y-2">
           <div className="h-6 w-48 rounded bg-gray-200"></div>
           <div className="h-4 w-64 rounded bg-gray-200"></div>

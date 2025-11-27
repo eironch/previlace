@@ -102,14 +102,14 @@ const SubjectManager = forwardRef((props, ref) => {
         <h2 className="text-xl font-bold text-gray-900">Subjects & Topics</h2>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
         {subjects.map(subject => (
-          <div key={subject._id} className="border-b border-gray-100 last:border-b-0">
+          <div key={subject._id} className="border-b border-gray-300 last:border-b-0">
             <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => toggleSubject(subject._id)}>
                 {expandedSubject === subject._id ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 rounded-lg">
+                  <div className="p-2 bg-gray-200 rounded-lg">
                     <BookOpen className="w-5 h-5 text-gray-600" />
                   </div>
                   <div>
@@ -121,7 +121,7 @@ const SubjectManager = forwardRef((props, ref) => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => { setSelectedSubjectId(subject._id); setEditingTopic(null); setTopicForm({ name: '', code: '', description: '', difficulty: 'Intermediate' }); setShowTopicModal(true); }}
-                  className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg"
+                  className="p-2 text-gray-400 hover:text-black hover:bg-gray-200 rounded-lg"
                   title="Add Topic"
                 >
                   <Plus className="w-4 h-4" />
@@ -138,7 +138,7 @@ const SubjectManager = forwardRef((props, ref) => {
             {expandedSubject === subject._id && (
               <div className="bg-gray-50 px-4 pb-4 pt-2 space-y-2">
                 {topics[subject._id]?.map(topic => (
-                  <div key={topic._id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 ml-8">
+                  <div key={topic._id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-300 ml-8">
                     <div>
                       <h4 className="font-medium text-sm text-gray-900">{topic.name}</h4>
                       <p className="text-xs text-gray-500">{topic.code} • {topic.difficulty}</p>

@@ -50,8 +50,8 @@ export default function StatsDisplay() {
             
             {/* 4. Error message is displayed conditionally ABOVE the stats when a fallback is used */}
             {hasErrorAndUsingFallback && (
-                // Original styling restored: bg-red-100, text-red-700, rounded-lg
-                <div className="flex flex-col items-center justify-center p-8 bg-red-100 text-red-700 rounded-lg mb-8">
+                // Original styling restored: bg-red-200, text-red-700, rounded-lg
+                <div className="flex flex-col items-center justify-center p-8 bg-red-200 text-red-700 rounded-lg mb-8">
                     <div className="flex items-center mb-3">
                         <AlertCircle className="h-5 w-5 mr-2" aria-hidden="true" /> Failed to load statistics.
                     </div>

@@ -392,7 +392,7 @@ const QuestionCreationForm = forwardRef(({ questionType = {}, onBack, onSuccess,
                     className={`flex w-full items-start gap-3 rounded-lg border-2 p-3 text-left transition-all cursor-pointer sm:p-4 ${
                       option.isCorrect
                         ? "border-black bg-white hover:border-black hover:bg-gray-50"
-                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                        : "border-gray-300 bg-white hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
                     {option.isCorrect ? (
@@ -407,7 +407,7 @@ const QuestionCreationForm = forwardRef(({ questionType = {}, onBack, onSuccess,
                           className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
                             option.isCorrect
                               ? "bg-black text-white"
-                              : "bg-gray-100 text-gray-600"
+                              : "bg-gray-200 text-gray-600"
                           }`}
                         >
                           {String.fromCharCode(65 + index)}
@@ -535,7 +535,7 @@ const QuestionCreationForm = forwardRef(({ questionType = {}, onBack, onSuccess,
                   {formData.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700"
+                      className="flex items-center gap-1 rounded-full bg-gray-200 px-3 py-1 text-sm text-gray-700"
                     >
                       {tag}
                       <button

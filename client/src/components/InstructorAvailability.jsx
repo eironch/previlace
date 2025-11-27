@@ -105,7 +105,7 @@ const InstructorAvailability = () => {
   if (loading) return <div className="p-8 text-center">Loading availability...</div>;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <CalendarIcon className="w-6 h-6 text-black" />
@@ -136,7 +136,7 @@ const InstructorAvailability = () => {
                 relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all cursor-pointer group
                 ${isAvailable 
                   ? 'border-black bg-gray-50' 
-                  : 'border-gray-200 bg-white hover:border-gray-300'}
+                  : 'border-gray-300 bg-white hover:border-gray-300'}
               `}
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">

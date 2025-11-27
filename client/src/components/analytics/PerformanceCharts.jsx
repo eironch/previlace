@@ -27,7 +27,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg border border-gray-100 bg-white p-3 shadow-lg">
+      <div className="rounded-lg border border-gray-300 bg-white p-3 shadow-lg">
         <p className="font-semibold text-gray-900">{label}</p>
         {payload.map((entry, index) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>
@@ -51,10 +51,10 @@ export const CategoryPerformanceChart = ({ data }) => {
 
   if (data.length >= 3) {
     return (
-      <div className="h-64 w-full">
+      <div className="h-full w-full">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
-            <PolarGrid stroke="#e5e7eb" />
+            <PolarGrid stroke="#D1D5DB" />
             <PolarAngleAxis dataKey="category" tick={{ fill: '#4b5563', fontSize: 12 }} />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
             <Radar
@@ -72,7 +72,7 @@ export const CategoryPerformanceChart = ({ data }) => {
   }
 
   return (
-    <div className="h-48 w-full">
+    <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ left: 40 }}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -94,7 +94,7 @@ export const WeakAreasChart = ({ data }) => {
   if (!data || data.length === 0) return <div className="text-center p-4 text-gray-500">No weak areas identified yet</div>;
 
   return (
-    <div className="h-48 w-full">
+    <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           layout="vertical"
@@ -116,7 +116,7 @@ export const ProgressChart = ({ data }) => {
   if (!data || data.length === 0) return <div className="text-center p-4 text-gray-500">No progress data available</div>;
 
   return (
-    <div className="h-48 w-full">
+    <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
@@ -149,16 +149,12 @@ export const WeeklyProgressChart = ({ data }) => {
     return <div className="text-center p-4 text-gray-500">Complete Week 0 pretest to track your progress</div>;
   }
 
-  const improvement = data.length >= 2 ? data[data.length - 1].score - data[0].score : 0;
+
   
   return (
-    <div>
-      <div className="mb-4">
-        <p className="text-sm text-gray-600">
-          {getFunProgressSummary(improvement)}
-        </p>
-      </div>
-      <div className="h-48 w-full">
+    <div className="flex flex-col h-full">
+
+      <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
@@ -190,16 +186,12 @@ export const SubjectProgressChart = ({ data, subjectName }) => {
     );
   }
 
-  const improvement = data.length >= 2 ? data[data.length - 1].score - data[0].score : 0;
-  const avgScore = data.reduce((sum, item) => sum + item.score, 0) / data.length;
+
   
   return (
-    <div>
-      <div className="mb-4">
-        <p className="text-sm font-semibold text-gray-900">{subjectName}</p>
-        <p className="text-xs text-gray-600 mt-1">{getFunSubjectSummary(improvement, avgScore, subjectName)}</p>
-      </div>
-      <div className="h-48 w-full">
+    <div className="flex flex-col h-full">
+
+      <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
@@ -258,7 +250,7 @@ export const ReadinessGauge = ({ score }) => {
   }
 
   return (
-    <div className="h-48 w-full flex flex-col items-center justify-center relative">
+    <div className="h-full w-full flex flex-col items-center justify-center relative">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie

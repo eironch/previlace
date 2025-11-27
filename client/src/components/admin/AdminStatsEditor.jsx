@@ -92,12 +92,23 @@ export default function AdminStatsEditor() {
             <h2 className="text-2xl font-bold text-gray-900">Landing Page Metrics</h2>
 
             {/* --- Summary / Refresh Controls --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 rounded-lg border border-gray-300">
                 <h3 className="text-lg font-semibold text-black mb-2 md:mb-0">Current Live Values</h3>
+                <button 
+                    onClick={() => fetchStats()} 
+                    disabled={isStatsLoading}
+                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-all duration-200 active:scale-95"
+                >
+                    <RefreshCw 
+                        className="h-4 w-4" 
+                        style={{ animation: isStatsLoading ? "custom-spin 1s linear infinite" : "none" }}
+                    />
+                    Refresh Data
+                </button>
             </div>
 
             {/* --- Stats Summary Panel --- */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
                 {isStatsLoading && stats.length === 0 ? (
                     <div className="flex items-center text-gray-500 py-4">
                         <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading current stats...
@@ -115,7 +126,7 @@ export default function AdminStatsEditor() {
             </div>
             
             {/* --- Inline Editing Form (Moved from Modal) --- */}
-            <form onSubmit={handleSubmit} className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 bg-white rounded-lg border border-gray-300 shadow-sm space-y-4">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">Update Metrics</h3>
                 
                 <div className="space-y-4">
@@ -144,7 +155,7 @@ export default function AdminStatsEditor() {
 
                 {/* Status Message Area */}
                 {statusMessage.type && (
-                    <div className={`p-3 rounded-lg flex items-center ${statusMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <div className={`p-3 rounded-lg flex items-center ${statusMessage.type === 'success' ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
                         {statusMessage.type === 'success' ? <CheckCircle className="h-5 w-5 mr-2" /> : <AlertCircle className="h-5 w-5 mr-2" />}
                         <span className="text-sm font-medium">{statusMessage.text}</span>
                     </div>

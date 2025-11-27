@@ -109,7 +109,7 @@ const EducationForm = ({ data, addItem, deleteItem }) => {
         <BookOpen className="w-5 h-5 mr-2"/> Education History
       </h3>
 
-      <div className="bg-gray-50 p-4 border border-gray-200 rounded-lg space-y-3">
+      <div className="bg-gray-50 p-4 border border-gray-300 rounded-lg space-y-3">
         <input
           placeholder="Degree/Qualification (e.g., B.S. Civil Engineering)"
           value={newItem.degree}
@@ -146,7 +146,7 @@ const EducationForm = ({ data, addItem, deleteItem }) => {
 
       <div className="space-y-2 max-h-60 overflow-y-auto">
         {data.education.map((item) => (
-          <div key={item.id} className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div key={item.id} className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-300 shadow-sm">
             <div>
               <p className="font-medium text-sm text-gray-900">{item.degree}</p>
               <p className="text-xs text-gray-500">{item.institution} ({item.year})</p>
@@ -180,7 +180,7 @@ const ExperienceForm = ({ data, addItem, deleteItem }) => {
         <Briefcase className="w-5 h-5 mr-2"/> Work Experience
       </h3>
 
-      <div className="bg-gray-50 p-4 border border-gray-200 rounded-lg space-y-3">
+      <div className="bg-gray-50 p-4 border border-gray-300 rounded-lg space-y-3">
         <input
           placeholder="Job Title (e.g., Project Engineer)"
           value={newItem.title}
@@ -216,7 +216,7 @@ const ExperienceForm = ({ data, addItem, deleteItem }) => {
 
       <div className="space-y-2 max-h-60 overflow-y-auto">
         {data.experience.map((item) => (
-          <div key={item.id} className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div key={item.id} className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-300 shadow-sm">
             <div>
               <p className="font-medium text-sm text-gray-900">{item.title}</p>
               <p className="text-xs text-gray-500">{item.company} ({item.duration})</p>
@@ -275,7 +275,7 @@ const SkillsForm = ({ data, setSkills }) => {
         {data.skills.map((skill) => (
           <span
             key={skill}
-            className="inline-flex items-center bg-gray-100 text-gray-900 text-sm font-medium px-3 py-1 rounded-full cursor-pointer hover:bg-gray-200 transition duration-150 border border-gray-200"
+            className="inline-flex items-center bg-gray-200 text-gray-900 text-sm font-medium px-3 py-1 rounded-full cursor-pointer hover:bg-gray-200 transition duration-150 border border-gray-300"
             onClick={() => handleDelete(skill)}
             title="Click to remove"
           >
@@ -421,11 +421,11 @@ const HarvardCV = ({ data }) => {
 const MobileCVPreviewModal = ({ data, onClose }) => { 
     return (
         <div className="fixed inset-0 z-[60] bg-white lg:hidden overflow-y-auto p-4 sm:p-8">
-            <div className="sticky top-0 bg-white z-50 pt-2 pb-4 flex justify-between items-center border-b border-gray-200">
+            <div className="sticky top-0 bg-white z-50 pt-2 pb-4 flex justify-between items-center border-b border-gray-300">
                 <h2 className="text-xl font-bold text-gray-900">Resume Preview</h2>
                 <button 
                     onClick={onClose} 
-                    className="p-2 bg-gray-100 text-gray-900 rounded-full hover:bg-gray-200 transition"
+                    className="p-2 bg-gray-200 text-gray-900 rounded-full hover:bg-gray-200 transition"
                     aria-label="Close Preview"
                 >
                     <X className="w-5 h-5" />
@@ -589,8 +589,8 @@ const ResumePage = () => {
       case 4: return <SkillsForm {...formProps} />;
       case 5:
         return (
-          <div className="text-center p-8 bg-gray-50 rounded-xl border border-gray-200">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+          <div className="text-center p-8 bg-gray-50 rounded-xl border border-gray-300">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-200 mb-4">
                 <Briefcase className="w-8 h-8 text-green-600" />
             </div>
             <h3 className="text-2xl font-bold text-gray-900">Ready to Export!</h3>
@@ -637,9 +637,9 @@ const ResumePage = () => {
             
             {/* Left Column: Form */}
             <div className="w-full lg:w-5/12 xl:w-1/3 mb-8 lg:mb-0">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden sticky top-8">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden sticky top-8">
                     {/* Progress Bar */}
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-300">
                         <div className="flex justify-between mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <span>Progress</span>
                             <span>{Math.round(((step + 1) / STEPS.length) * 100)}%</span>
@@ -663,14 +663,14 @@ const ResumePage = () => {
                         )}
                     </div>
 
-                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-300 flex justify-between items-center">
                         <button
                             onClick={handleBack}
                             disabled={step === 0}
                             className={`flex items-center text-sm font-medium px-4 py-2 rounded-lg transition ${
                                 step === 0 
                                 ? 'text-gray-300 cursor-not-allowed' 
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
                             }`}
                         >
                             <ChevronLeft className="w-4 h-4 mr-1" /> Back
@@ -681,7 +681,7 @@ const ResumePage = () => {
                             disabled={atLastStep || !proceedAllowed} 
                             className={`flex items-center justify-center px-6 py-2 rounded-lg text-sm font-bold transition shadow-sm ${
                                 atLastStep || !proceedAllowed 
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                 : 'bg-black text-white hover:bg-gray-800'
                             }`}
                         >
@@ -703,7 +703,7 @@ const ResumePage = () => {
                             <Printer className="w-4 h-4 mr-1"/> Print
                         </button>
                     </div>
-                    <div className="border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+                    <div className="border border-gray-300 shadow-sm rounded-lg overflow-hidden">
                         <HarvardCV data={cvData} />
                     </div>
                 </div>

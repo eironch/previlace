@@ -167,8 +167,11 @@ function QuizSessionPage() {
     return !pendingAnswer || isConfirmingAnswer || isSubmitting;
   }
 
+  const [submitError, setSubmitError] = useState(null);
+
   async function handleSubmitQuiz() {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await completeSession();
       navigate("/dashboard/results");
@@ -176,11 +179,13 @@ function QuizSessionPage() {
       if (import.meta.env.DEV) {
         console.error("Failed to submit quiz:", error);
       }
+      setSubmitError(error.message || "Failed to submit quiz. Please try again.");
       setIsSubmitting(false);
     }
   }
 
   async function handleAutoSubmit() {
+    setSubmitError(null);
     try {
       await completeSession();
       navigate("/dashboard/results");
@@ -188,13 +193,14 @@ function QuizSessionPage() {
       if (import.meta.env.DEV) {
         console.error("Auto-submit failed:", error);
       }
+      setSubmitError(error.message || "Failed to auto-submit quiz. Please try again.");
     }
   }
 
   if (!currentSession || loading) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
+        <div className="sticky top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
           <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-4">
               <SkeletonLoader variant="circle" className="h-10 w-10" />
@@ -207,7 +213,7 @@ function QuizSessionPage() {
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="grid gap-6 lg:grid-cols-4">
             <div className="lg:col-span-1">
-              <div className="rounded-lg border border-gray-200 bg-white p-4">
+              <div className="rounded-lg border border-gray-300 bg-white p-4">
                 <SkeletonLoader className="mb-3 h-5 w-32" />
                 <div className="grid grid-cols-5 gap-2">
                   {Array.from({ length: 10 }).map((_, i) => (
@@ -217,12 +223,12 @@ function QuizSessionPage() {
               </div>
             </div>
             <div className="space-y-6 lg:col-span-3">
-              <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <div className="rounded-lg border border-gray-300 bg-white p-6">
                 <SkeletonLoader variant="title" className="mb-4" />
                 <SkeletonLoader className="mb-2" />
                 <SkeletonLoader className="w-3/4" />
               </div>
-              <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <div className="rounded-lg border border-gray-300 bg-white p-6">
                 <div className="space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <SkeletonLoader key={i} className="h-14" />
@@ -238,13 +244,13 @@ function QuizSessionPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
+      <div className="sticky top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={handleExitQuiz}
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50"
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50"
                 title="Exit Quiz"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -303,7 +309,7 @@ function QuizSessionPage() {
                 disabled={false}
               />
 
-              <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
+              <div className="mt-4 rounded-lg border border-gray-300 bg-white p-4">
                 <h3 className="mb-3 text-sm font-semibold text-gray-900">Session Info</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center justify-between">
@@ -321,7 +327,7 @@ function QuizSessionPage() {
                   {currentQuestion?.difficulty && (
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Difficulty</span>
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 capitalize">
+                      <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700 capitalize">
                         {currentQuestion.difficulty}
                       </span>
                     </div>
@@ -332,7 +338,7 @@ function QuizSessionPage() {
           </div>
 
           <div className="order-1 space-y-6 lg:order-2 lg:col-span-3">
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
               <QuestionDisplay
                 question={currentQuestion}
                 questionNumber={currentQuestionIndex + 1}
@@ -341,7 +347,7 @@ function QuizSessionPage() {
             </div>
 
             {!showingFeedback && (
-              <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
                 <AnswerInput
                   question={currentQuestion}
                   selectedAnswer={pendingAnswer}
@@ -358,11 +364,18 @@ function QuizSessionPage() {
               />
             )}
 
+            {submitError && (
+              <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200 flex items-center gap-2">
+                <Flag className="h-4 w-4" />
+                {submitError}
+              </div>
+            )}
+
             <div className="flex items-center justify-between gap-4">
               <button
                 onClick={previousQuestion}
                 disabled={currentQuestionIndex === 0 && !showingFeedback}
-                className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span>Previous</span>

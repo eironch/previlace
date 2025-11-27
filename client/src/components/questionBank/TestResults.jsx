@@ -139,7 +139,7 @@ function TestResults({ onBackToConfig }) {
                     {analytics.strongAreas.map((area) => (
                       <span
                         key={area}
-                        className="rounded bg-green-100 px-2 py-1 text-sm text-green-700"
+                        className="rounded bg-green-200 px-2 py-1 text-sm text-green-700"
                       >
                         {area}
                       </span>
@@ -157,7 +157,7 @@ function TestResults({ onBackToConfig }) {
                     {analytics.weakAreas.map((area) => (
                       <span
                         key={area}
-                        className="rounded bg-red-100 px-2 py-1 text-sm text-red-700"
+                        className="rounded bg-red-200 px-2 py-1 text-sm text-red-700"
                       >
                         {area}
                       </span>
@@ -181,14 +181,14 @@ function TestResults({ onBackToConfig }) {
               return (
                 <div
                   key={answer.questionId}
-                  className="border-b border-gray-200 pb-4"
+                  className="border-b border-gray-300 pb-4"
                 >
                   <div
                     className="flex cursor-pointer items-center justify-between py-2"
                     onClick={() => toggleQuestionExpansion(answer.questionId)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
                         {index + 1}
                       </div>
 
@@ -218,7 +218,7 @@ function TestResults({ onBackToConfig }) {
                   {isExpanded && answer.question && (
                     <div className="mt-4 ml-11 space-y-4">
                       {answer.question.passageText && (
-                        <div className="rounded border border-gray-200 bg-gray-50 p-4">
+                        <div className="rounded border border-gray-300 bg-gray-50 p-4">
                           {answer.question.passageTitle && (
                             <h4 className="mb-2 font-medium text-black">
                               {answer.question.passageTitle}
@@ -263,7 +263,7 @@ function TestResults({ onBackToConfig }) {
                                 ? "border-green-200 bg-green-50"
                                 : answer.userAnswer === option.text
                                   ? "border-red-200 bg-red-50"
-                                  : "border-gray-200 bg-white"
+                                  : "border-gray-300 bg-white"
                             }`}
                           >
                             <div className="flex items-start gap-2">

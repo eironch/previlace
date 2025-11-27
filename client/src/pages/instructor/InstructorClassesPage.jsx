@@ -39,12 +39,12 @@ export default function InstructorClassesPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {classes.length > 0 ? (
             classes.map(cls => (
-              <div key={cls._id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+              <div key={cls._id} className="bg-white rounded-lg border border-gray-300 shadow-sm p-6 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-4">
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${cls.mode === 'Online' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
+                  <span className={`px-2 py-1 rounded text-xs font-semibold ${cls.mode === 'Online' ? 'bg-green-200 text-green-800' : 'bg-orange-200 text-orange-800'}`}>
                     {cls.mode}
                   </span>
-                  <span className={`px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-800`}>
+                  <span className={`px-2 py-1 rounded text-xs font-semibold bg-gray-200 text-gray-800`}>
                     {cls.status}
                   </span>
                 </div>
@@ -78,7 +78,7 @@ export default function InstructorClassesPage() {
               </div>
             ))
           ) : (
-            <div className="col-span-full text-center py-12 bg-white rounded-lg border border-gray-200 border-dashed">
+            <div className="col-span-full text-center py-12 bg-white rounded-lg border border-gray-300 border-dashed">
               <p className="text-gray-500">No classes scheduled yet.</p>
             </div>
           )}

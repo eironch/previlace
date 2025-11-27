@@ -53,12 +53,12 @@ function LeaderboardPage() {
 
   function getRankColor(rank) {
     if (rank === 1)
-      return "border-yellow-200 bg-gradient-to-r from-yellow-50 to-yellow-100";
+      return "border-yellow-200 bg-gradient-to-r from-yellow-50 to-yellow-200";
     if (rank === 2)
-      return "border-gray-300 bg-gradient-to-r from-gray-50 to-gray-100";
+      return "border-gray-300 bg-gradient-to-r from-gray-50 to-gray-200";
     if (rank === 3)
-      return "border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100";
-    return "border-gray-200 bg-white";
+      return "border-orange-200 bg-gradient-to-r from-orange-50 to-orange-200";
+    return "border-gray-300 bg-white";
   }
 
   function formatScore(score, category) {
@@ -151,7 +151,7 @@ function LeaderboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-200">
                     <span className="text-sm font-bold text-blue-700">
                       #{userRank.rank}
                     </span>
@@ -164,7 +164,7 @@ function LeaderboardPage() {
                   </div>
                 </div>
               </div>
-              <Badge variant="outline" className="bg-blue-100 text-blue-800">
+              <Badge variant="outline" className="bg-blue-200 text-blue-800">
                 Top {Math.round((userRank.rank / userRank.totalUsers) * 100)}%
               </Badge>
             </div>
@@ -191,7 +191,7 @@ function LeaderboardPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       {getRankIcon(entry.rank) || (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
                           <span className="text-sm font-bold text-gray-600">
                             #{entry.rank}
                           </span>
@@ -206,7 +206,7 @@ function LeaderboardPage() {
                           alt={entry.userId.displayName}
                         />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-200">
                           <span className="text-sm font-semibold text-blue-700">
                             {getAvatarFallback(entry.userId.displayName)}
                           </span>

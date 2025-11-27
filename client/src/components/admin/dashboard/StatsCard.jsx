@@ -1,4 +1,4 @@
-import { TrendingUp } from "lucide-react";
+import React from 'react';
 
 export default function StatsCard({ title, value, icon: Icon, change }) {
   function formatChange(changeValue) {
@@ -14,7 +14,7 @@ export default function StatsCard({ title, value, icon: Icon, change }) {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>

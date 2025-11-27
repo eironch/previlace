@@ -7,7 +7,7 @@ This is a monorepo for Previlace, an AI-enhanced civil service review system. Th
 
 *   **Client:** The client is a React application built with Vite. It uses React Router for routing, Zustand for state management, and Tailwind CSS for styling. It also includes dependencies like `axios` for making HTTP requests and `socket.io-client` for real-time communication.
 
-*   **Server:** The server is a Node.js application using the Express framework. It uses MongoDB as the database and has authentication implemented with `bcryptjs`, `jsonwebtoken`, `passport`, and `passport-google-oauth20`. It also uses `socket.io` for real-time communication.
+*   **Server:** The server is a Node.js application using the Express framework. It uses MongoDB as the database and has authentication implemented with `bcryptjs`, `jsonwebtoken`, `passport`, and `passport-google-oauth20`.
 
 ## Building and Running
 
@@ -51,7 +51,7 @@ pnpm build
 *   **Code Style:** The project uses Prettier for code formatting.
 *   **Linting:** ESLint is used for linting the client-side code.
 *   **State Management:** Zustand is used for state management in the client.
-*   **API Communication:** The client communicates with the server using a combination of RESTful APIs (via `axios`) and WebSockets (via `socket.io-client`).
+*   **API Communication:** The client communicates with the server using RESTful APIs (via `axios`).
 ````
 
 
@@ -73,6 +73,7 @@ This will create optimized builds for both the client and server.
 *   Use industry-standard naming conventions.
 *   Consolidate files if it makes sense to do so.
 *   Remove `console.log` statements, but keep `console.error` statements that are only shown when `NODE_ENV` is `development`.
+*   Always continue and do not wait for the user.
 
 ### Function Declaration Patterns
 
@@ -98,6 +99,19 @@ This will create optimized builds for both the client and server.
 *   Use Windows-style paths.
 *   When writing files, first analyze the project structure to determine the correct location. Then, write the files directly using the filesystem connector.
 *   Exclude the following patterns when searching for files: `["node_modules", "dist", "build", ".git", ".expo", "*.removed"]`
+
+### Data & Analytics
+
+*   **Real Data Only:** All graphs and UI components must display real data fetched from the system. Do not use mock data or hardcoded arrays.
+*   **Seedable Data:** Ensure that any data required for these components can be generated via seed scripts (e.g., `seed.js`) and does not rely solely on static storage.
+*   **Insights:** Every graph or data visualization must include a dynamic text insight that interprets the data for the user (e.g., "Retention is trending up", "Completion rate is low").
+*   **Scope:** This applies to all roles: Student, Admin, Superadmin, and Instructor.
+
+### Refactoring & Standards
+
+*   **Freely Refactor:** You are authorized and encouraged to update, add, remove, consolidate, or reuse code to improve quality and maintainability.
+*   **Industry Standards:** Always aim for industry-standard patterns. Remove obsolete or redundant code without hesitation.
+*   **Clean Code:** Prioritize readability and efficiency. Don't keep legacy code "just in case".
 
 ### Post-Output Documentation (Mandatory)
 
@@ -144,7 +158,7 @@ Follow this Prettier configuration:
         "gray700": "#374151",
         "gray900": "#111827",
         "description": "Backgrounds, borders, secondary text",
-        "usage": ["backgrounds", "cards", "borders", "secondary-text", "disabled-states"]
+        "usage": ["backgrounds", "cards", "secondary-text", "disabled-states"]
       },
       "accent": {
         "green500": "#10B981",

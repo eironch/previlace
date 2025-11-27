@@ -61,7 +61,7 @@ function MockExamSetup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-200">
       <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8 text-center">
           <BookOpen className="mx-auto h-12 w-12 text-blue-600 mb-4" />
@@ -76,7 +76,7 @@ function MockExamSetup() {
               className={`cursor-pointer rounded-xl border-2 p-6 transition-all ${
                 selectedLevel === level
                   ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
+                  : "border-gray-300 bg-white hover:border-gray-300"
               }`}
               onClick={() => setSelectedLevel(level)}
             >

@@ -94,7 +94,7 @@ function WeeklyQuizCard() {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Weekly Review</h3>
         {currentWeek && (
@@ -113,10 +113,10 @@ function WeeklyQuizCard() {
           <button
             onClick={handleStartPretest}
             disabled={quizLoading}
-            className="flex w-full items-center justify-between rounded-lg border border-gray-200 p-4 transition-all hover:border-black hover:shadow-md disabled:opacity-50"
+            className="flex w-full items-center justify-between rounded-lg border border-gray-300 p-4 transition-all hover:border-black hover:shadow-md disabled:opacity-50"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200">
                 <TrendingUp className="h-5 w-5 text-gray-900" />
               </div>
               <div className="text-left">
@@ -133,10 +133,10 @@ function WeeklyQuizCard() {
             <button
               onClick={handleStartPostTest}
               disabled={quizLoading || postTestCompleted}
-              className="flex w-full items-center justify-between rounded-lg border border-gray-200 p-4 transition-all hover:border-black hover:shadow-md disabled:opacity-50"
+              className="flex w-full items-center justify-between rounded-lg border border-gray-300 p-4 transition-all hover:border-black hover:shadow-md disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${postTestCompleted ? "bg-green-50" : "bg-gray-100"}`}>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${postTestCompleted ? "bg-green-50" : "bg-gray-200"}`}>
                   {postTestCompleted ? (
                     <CheckCircle className="h-5 w-5 text-green-600" />
                   ) : (
@@ -156,10 +156,10 @@ function WeeklyQuizCard() {
             <button
               onClick={handleStartAssessment}
               disabled={quizLoading}
-              className="flex w-full items-center justify-between rounded-lg border border-gray-200 p-4 transition-all hover:border-black hover:shadow-md disabled:opacity-50"
+              className="flex w-full items-center justify-between rounded-lg border border-gray-300 p-4 transition-all hover:border-black hover:shadow-md disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200">
                   <TrendingUp className="h-5 w-5 text-gray-900" />
                 </div>
                 <div className="text-left">

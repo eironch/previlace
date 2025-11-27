@@ -114,7 +114,7 @@ function SubjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200 bg-white">
+      <header className="border-b border-gray-300 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <button
             onClick={() => navigate(-1)}
@@ -129,7 +129,7 @@ function SubjectDetailPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
           <div className="mb-4 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-200">
               <BookOpen className="h-8 w-8 text-gray-900" />
             </div>
             <div className="flex-1">
@@ -206,7 +206,7 @@ function SubjectDetailPage() {
               className="group overflow-hidden rounded-lg border border-gray-300 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
             >
               <div className="mb-4 flex items-center justify-between">
-                <div className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-900 transition-colors group-hover:bg-black group-hover:text-white">
+                <div className="rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-900 transition-colors group-hover:bg-black group-hover:text-white">
                   {topic.difficulty}
                 </div>
                 {topic.progress && topic.progress.isCompleted && (

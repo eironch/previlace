@@ -49,7 +49,7 @@ function JourneyPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="rounded-lg border border-gray-200 bg-white px-4 py-2">
+          <div className="rounded-lg border border-gray-300 bg-white px-4 py-2">
             <p className="text-xs text-gray-600">Daily Goal</p>
             <p className="text-lg font-semibold text-gray-900">{journey?.dailyGoal || 30} min</p>
           </div>
@@ -71,7 +71,7 @@ function JourneyPage() {
                       ? "border-green-600 bg-green-50"
                       : activity.isUnlocked
                         ? "border-black bg-white hover:border-black hover:shadow-lg"
-                        : "border-gray-200 bg-gray-50 opacity-50"
+                        : "border-gray-300 bg-gray-50 opacity-50"
                   }`}
                 >
                   <div className="flex items-center justify-between">

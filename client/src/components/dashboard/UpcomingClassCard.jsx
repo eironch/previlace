@@ -28,7 +28,7 @@ function UpcomingClassCard() {
   return (
     <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200">
           <Calendar className="h-6 w-6 text-black" />
         </div>
         <div>

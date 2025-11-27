@@ -4,6 +4,7 @@ import ManualQuestion from "../models/ManualQuestion.js";
 import PostTestTracking from "../models/PostTestTracking.js";
 import StudyPlan from "../models/StudyPlan.js";
 import Subject from "../models/Subject.js";
+import Topic from "../models/Topic.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
 import enhancedQuestionSelectionService from "../services/enhancedQuestionSelectionService.js";
 import performanceAnalysisService from "../services/performanceAnalysisService.js";
@@ -764,6 +765,27 @@ const startPostTest = catchAsync(async (req, res, next) => {
   if (week.sundaySession?.subjectId) {
     const subject = await Subject.findById(week.sundaySession.subjectId);
     if (subject) subjects.push(subject);
+  }
+
+  if (subjects.length === 0) {
+    // Fallback: Try to find subjects from topics if session subjectId is missing
+    const topicIds = [
+      ...(week.saturdaySession?.topics || []),
+      ...(week.sundaySession?.topics || [])
+    ];
+
+    if (topicIds.length > 0) {
+      const topics = await Topic.find({ _id: { $in: topicIds } }).populate("subjectId");
+      const uniqueSubjects = new Map();
+      
+      topics.forEach(topic => {
+        if (topic.subjectId) {
+          uniqueSubjects.set(topic.subjectId._id.toString(), topic.subjectId);
+        }
+      });
+
+      subjects.push(...uniqueSubjects.values());
+    }
   }
 
   if (subjects.length === 0) {

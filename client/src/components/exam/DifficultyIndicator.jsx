@@ -8,19 +8,19 @@ function DifficultyIndicator() {
 
   const difficultyConfig = {
     beginner: {
-      color: "bg-green-100 text-green-700",
+      color: "bg-green-200 text-green-700",
       bgColor: "bg-green-50",
       label: "Beginner",
       description: "Building fundamentals",
     },
     intermediate: {
-      color: "bg-blue-100 text-blue-700",
+      color: "bg-blue-200 text-blue-700",
       bgColor: "bg-blue-50",
       label: "Intermediate",
       description: "Strengthening skills",
     },
     advanced: {
-      color: "bg-purple-100 text-purple-700",
+      color: "bg-purple-200 text-purple-700",
       bgColor: "bg-purple-50",
       label: "Advanced",
       description: "Mastering concepts",

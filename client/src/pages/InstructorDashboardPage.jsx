@@ -41,7 +41,7 @@ const InstructorDashboardPage = () => {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Upcoming Classes Card */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold text-gray-900">Upcoming Classes</h2>
               <Link to="/instructor/classes" className="text-sm font-medium text-black hover:underline">View All</Link>
@@ -52,7 +52,7 @@ const InstructorDashboardPage = () => {
             ) : upcomingClasses.length > 0 ? (
               <div className="space-y-4">
                 {upcomingClasses.map(cls => (
-                  <div key={cls._id} className="flex items-start gap-4 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                  <div key={cls._id} className="flex items-start gap-4 p-3 rounded-lg bg-gray-50 border border-gray-300">
                     <div className="flex-shrink-0 w-12 h-12 bg-black text-white rounded-lg flex flex-col items-center justify-center">
                       <span className="text-xs font-bold uppercase">{format(new Date(cls.date), 'MMM')}</span>
                       <span className="text-lg font-bold">{format(new Date(cls.date), 'd')}</span>
@@ -76,14 +76,14 @@ const InstructorDashboardPage = () => {
           </div>
 
           {/* Quick Actions / Stats */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-4">
-              <Link to="/instructor/availability" className="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors border border-gray-100">
+              <Link to="/instructor/availability" className="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors border border-gray-300">
                 <Calendar className="w-6 h-6 text-gray-900 mb-2" />
                 <span className="text-sm font-medium text-gray-900">Update Availability</span>
               </Link>
-              <Link to="/dashboard/inbox" className="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors border border-gray-100">
+              <Link to="/dashboard/inbox" className="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors border border-gray-300">
                 <div className="relative">
                   {/* Badge could go here */}
                 </div>

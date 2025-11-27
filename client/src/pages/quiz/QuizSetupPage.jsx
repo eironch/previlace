@@ -59,7 +59,7 @@ function QuizSetupPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="border-b border-gray-200 bg-white">
+      <div className="border-b border-gray-300 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <button
             onClick={() => navigate(-1)}
@@ -88,7 +88,7 @@ function QuizSetupPage() {
                 className={`rounded-lg border-2 p-4 text-left transition-all ${
                   mode === "practice"
                     ? "border-black bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    : "border-gray-300 hover:border-gray-300"
                 }`}
               >
                 <div className="mb-2 flex items-center justify-between">
@@ -117,7 +117,7 @@ function QuizSetupPage() {
                 className={`rounded-lg border-2 p-4 text-left transition-all ${
                   mode === "timed"
                     ? "border-black bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    : "border-gray-300 hover:border-gray-300"
                 }`}
               >
                 <div className="mb-2 flex items-center justify-between">
@@ -143,7 +143,7 @@ function QuizSetupPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="rounded-lg border border-gray-300 bg-gray-50 p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -195,7 +195,7 @@ function QuizSetupPage() {
                   className={`flex items-center justify-between rounded-lg border-2 p-3 text-left transition-all ${
                     difficulty === option.value
                       ? "border-black bg-gray-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      : "border-gray-300 hover:border-gray-300"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -225,7 +225,7 @@ function QuizSetupPage() {
           <div className="flex gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="flex-1 rounded-lg border border-gray-200 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 sm:flex-initial sm:px-8"
+              className="flex-1 rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 sm:flex-initial sm:px-8"
             >
               Cancel
             </button>

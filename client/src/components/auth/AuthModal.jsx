@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAppStore } from "@/store/appStore";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
@@ -5,6 +6,13 @@ import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 
 export default function AuthModal() {
 	const { currentAuthForm, closeAuthModal } = useAppStore();
+
+	useEffect(() => {
+		document.body.style.overflow = "hidden";
+		return () => {
+			document.body.style.overflow = "unset";
+		};
+	}, []);
 
 	const renderForm = () => {
 		switch (currentAuthForm) {

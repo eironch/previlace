@@ -2,9 +2,12 @@ import React, { useState, useEffect } from "react";
 import StandardHeader from "@/components/ui/StandardHeader";
 import PerformanceAnalytics from "@/components/admin/analytics/PerformanceAnalytics";
 import LearningPatterns from "@/components/admin/analytics/LearningPatterns";
+import UserRetention from "@/components/admin/analytics/UserRetention";
+import QuizAnalytics from "@/components/admin/analytics/QuizAnalytics";
+import CategoryPerformanceChart from "@/components/admin/analytics/CategoryPerformanceChart";
 import AdminSkeleton from "@/components/ui/AdminSkeleton";
 import useAdminCacheStore from "@/store/adminCacheStore";
-import { AlertCircle } from "lucide-react";
+import ChartCard from "@/components/ui/ChartCard";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -36,7 +39,7 @@ export default function AdminAnalyticsPage() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/stats`, { 
+      const response = await fetch(`${API_BASE_URL}/api/admin/analytics`, { 
         credentials: "include" 
       });
 
@@ -64,20 +67,27 @@ export default function AdminAnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col h-full bg-gray-50">
       <StandardHeader 
         title="Analytics Overview" 
         description="Monitor system performance and learning patterns"
         onRefresh={() => fetchStats()}
       />
       
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="flex-1 overflow-y-auto w-full px-4 py-8 sm:px-6 lg:px-8">
         {isLoading && !stats ? (
           <AdminSkeleton />
         ) : (
-          <div className="grid gap-6">
+          <div className="space-y-6">
             <PerformanceAnalytics stats={stats} />
-            <LearningPatterns stats={stats} />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <LearningPatterns stats={stats} />
+                <UserRetention data={stats?.userRetention} />
+            </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <QuizAnalytics data={stats?.quizStats} />
+                <CategoryPerformanceChart data={stats?.categoryStats} />
+            </div>
           </div>
         )}
       </div>

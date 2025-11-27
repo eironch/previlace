@@ -32,8 +32,8 @@ export default function MyTicketsPage() {
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="grid h-[calc(100vh-200px)] gap-6 lg:grid-cols-3">
           {/* Ticket List */}
-          <div className="flex flex-col rounded-lg border border-gray-200 bg-white shadow-sm lg:col-span-1">
-            <div className="border-b border-gray-200 p-4">
+          <div className="flex flex-col rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-1">
+            <div className="border-b border-gray-300 p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-gray-900">Tickets</h2>
                 <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ export default function MyTicketsPage() {
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="h-32 animate-pulse rounded-lg bg-gray-100"
+                      className="h-32 animate-pulse rounded-lg bg-gray-200"
                     />
                   ))}
                 </div>
@@ -90,7 +90,7 @@ export default function MyTicketsPage() {
           </div>
 
           {/* Ticket Detail */}
-          <div className="hidden overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm lg:col-span-2 lg:block">
+          <div className="hidden overflow-hidden rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-2 lg:block">
             {selectedTicket ? (
               <TicketDetail ticket={selectedTicket} isInstructor={false} />
             ) : (

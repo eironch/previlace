@@ -30,7 +30,7 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-black focus:outline-none"
+        className="relative rounded-full p-2 text-gray-500 hover:bg-gray-200 hover:text-black focus:outline-none"
       >
         <Bell className="h-6 w-6" />
         {unreadCount > 0 && (

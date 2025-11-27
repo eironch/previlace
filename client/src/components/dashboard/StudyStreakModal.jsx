@@ -69,7 +69,7 @@ export default function StudyStreakModal({ isOpen, onClose }) {
       <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-black"
+          className="absolute right-4 top-4 rounded-full p-2 text-gray-500 hover:bg-gray-200 hover:text-black"
         >
           <X className="h-6 w-6" />
         </button>
@@ -92,10 +92,10 @@ export default function StudyStreakModal({ isOpen, onClose }) {
         ) : (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card className="rounded-lg border border-gray-200 bg-white shadow-sm">
+              <Card className="rounded-lg border border-gray-300 bg-white shadow-sm">
                 <CardContent className="p-6">
                   <div className="mb-6 flex justify-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gray-100">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gray-200">
                       <Flame
                         className={`h-12 w-12 ${currentStreak > 0 ? "text-gray-900" : "text-gray-400"}`}
                       />
@@ -112,7 +112,7 @@ export default function StudyStreakModal({ isOpen, onClose }) {
                   </div>
 
                   <div className="mb-6 flex justify-center">
-                    <Badge className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-900">
+                    <Badge className="rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-900">
                       {getStreakTitle(currentStreak)}
                     </Badge>
                   </div>
@@ -128,8 +128,8 @@ export default function StudyStreakModal({ isOpen, onClose }) {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                <CardHeader className="border-b border-gray-200 p-6">
+              <Card className="rounded-lg border border-gray-300 bg-white shadow-sm">
+                <CardHeader className="border-b border-gray-300 p-6">
                   <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
                     <TrendingUp className="h-5 w-5 text-gray-900" />
                     Statistics
@@ -184,7 +184,7 @@ export default function StudyStreakModal({ isOpen, onClose }) {
                     </p>
                   </div>
 
-                  <div className="border-t border-gray-200 pt-6">
+                  <div className="border-t border-gray-300 pt-6">
                     <div className="grid grid-cols-2 gap-6 text-center">
                       <div>
                         <div className="text-2xl font-bold text-gray-900">
@@ -204,8 +204,8 @@ export default function StudyStreakModal({ isOpen, onClose }) {
               </Card>
             </div>
 
-            <Card className="rounded-lg border border-gray-200 bg-white shadow-sm">
-              <CardHeader className="border-b border-gray-200 p-6">
+            <Card className="rounded-lg border border-gray-300 bg-white shadow-sm">
+              <CardHeader className="border-b border-gray-300 p-6">
                 <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
                   <Calendar className="h-5 w-5 text-gray-900" />
                   This week
@@ -224,7 +224,7 @@ export default function StudyStreakModal({ isOpen, onClose }) {
                             ? "bg-green-500 text-white"
                             : day.isToday
                               ? "border-2 border-black bg-white text-gray-900"
-                              : "bg-gray-100 text-gray-400"
+                              : "bg-gray-200 text-gray-400"
                         }`}
                       >
                         {day.isCompleted ? (

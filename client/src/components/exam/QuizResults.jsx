@@ -89,7 +89,7 @@ function QuizResults() {
   const incorrectAnswers = answers.filter(answer => !answer.isCorrect);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-200">
       <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8 text-center">
           <Trophy className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
@@ -111,7 +111,7 @@ function QuizResults() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
+          <div className="rounded-lg border border-gray-300 bg-white p-6 text-center">
             <div className="flex items-center justify-center mb-2">
               <Clock className="h-8 w-8 text-blue-600" />
             </div>
@@ -124,7 +124,7 @@ function QuizResults() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
+          <div className="rounded-lg border border-gray-300 bg-white p-6 text-center">
             <div className="flex items-center justify-center mb-2">
               <TrendingUp className="h-8 w-8 text-purple-600" />
             </div>
@@ -215,8 +215,8 @@ function QuizResults() {
                       selectedQuestionIndex === index
                         ? "bg-blue-600 text-white"
                         : answers[index].isCorrect
-                        ? "bg-green-100 text-green-800 hover:bg-green-200"
-                        : "bg-red-100 text-red-800 hover:bg-red-100"
+                        ? "bg-green-200 text-green-800 hover:bg-green-200"
+                        : "bg-red-200 text-red-800 hover:bg-red-200"
                     }`}
                   >
                     {index + 1}
@@ -282,7 +282,7 @@ function QuestionReviewCard({ question, questionNumber }) {
         </div>
         
         <span className={`text-xs px-2 py-1 rounded ${
-          isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+          isCorrect ? "bg-green-200 text-green-700" : "bg-red-200 text-red-700"
         }`}>
           {isCorrect ? "Correct" : "Incorrect"}
         </span>
@@ -308,7 +308,7 @@ function QuestionReviewCard({ question, questionNumber }) {
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-600">Your Answer:</span>
           <span className={`px-2 py-1 rounded text-sm ${
-            isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            isCorrect ? "bg-green-200 text-green-700" : "bg-red-200 text-red-700"
           }`}>
             {question.userAnswer}
           </span>
@@ -317,7 +317,7 @@ function QuestionReviewCard({ question, questionNumber }) {
         {!isCorrect && question.correctAnswer && (
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-600">Correct Answer:</span>
-            <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-700">
+            <span className="px-2 py-1 rounded text-sm bg-green-200 text-green-700">
               {question.correctAnswer}
             </span>
           </div>

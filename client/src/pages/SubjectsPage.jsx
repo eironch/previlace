@@ -55,7 +55,7 @@ function SubjectsPage() {
                 className="group overflow-hidden rounded-lg border border-gray-300 bg-white p-6 text-left transition-all hover:border-black hover:shadow-lg"
               >
                 <div className="mb-4 flex items-center justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 transition-colors group-hover:bg-black">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200 transition-colors group-hover:bg-black">
                     <BookOpen className="h-6 w-6 text-gray-900 transition-colors group-hover:text-white" />
                   </div>
                   {subject.progress && (
@@ -91,7 +91,7 @@ function SubjectsPage() {
 
                 {subject.progress && subject.progress.completedTopics > 0 && (
                   <div className="mt-4">
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
                       <div
                         className="h-full bg-black transition-all"
                         style={{

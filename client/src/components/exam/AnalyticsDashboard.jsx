@@ -87,7 +87,7 @@ function AnalyticsDashboard() {
                   {overallAccuracy}%
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-200">
                 <TrendingUp size={24} className="text-blue-600" />
               </div>
             </div>
@@ -103,7 +103,7 @@ function AnalyticsDashboard() {
                   {readiness.readinessScore || 0}%
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-200">
                 <Target size={24} className="text-green-600" />
               </div>
             </div>
@@ -117,7 +117,7 @@ function AnalyticsDashboard() {
                   {readiness.avgTimePerQuestion || 0}s
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-200">
                 <Clock size={24} className="text-purple-600" />
               </div>
             </div>
@@ -131,7 +131,7 @@ function AnalyticsDashboard() {
                   {readiness.currentStreak || 0} days
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-200">
                 <Zap size={24} className="text-orange-600" />
               </div>
             </div>

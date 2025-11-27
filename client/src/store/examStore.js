@@ -561,6 +561,7 @@ const useExamStore = create(
             console.error("Session completion error:", error);
           }
           set({ loading: false, sessionActive: false, error: error.message });
+          throw error;
         }
       },
 

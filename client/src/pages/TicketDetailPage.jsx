@@ -44,7 +44,7 @@ function TicketDetailPage() {
   if (!currentTicket) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-6">
-        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
+        <div className="rounded-lg border border-gray-300 bg-white p-12 text-center">
           <p className="text-gray-600">Ticket not found</p>
         </div>
       </div>

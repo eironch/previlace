@@ -33,7 +33,7 @@ export default function StudyGroupBrowser() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 p-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900">
@@ -170,13 +170,13 @@ function GroupCard({ group, onJoin }) {
         {group.studyGoals.slice(0, 2).map((goal, i) => (
           <span
             key={i}
-            className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700"
+            className="inline-block rounded-full bg-blue-200 px-2 py-1 text-xs text-blue-700"
           >
             {goal}
           </span>
         ))}
         {group.studyGoals.length > 2 && (
-          <span className="inline-block rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
+          <span className="inline-block rounded-full bg-slate-200 px-2 py-1 text-xs text-slate-600">
             +{group.studyGoals.length - 2} more
           </span>
         )}

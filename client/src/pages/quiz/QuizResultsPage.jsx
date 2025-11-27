@@ -82,10 +82,10 @@ function QuizResultsPage() {
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Score Summary Card */}
-        <div className="mb-8 overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-200">
+        <div className="mb-8 overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-300">
           <div className="p-8 text-center">
             <div className="mb-6 flex justify-center">
-              <div className="relative flex h-32 w-32 items-center justify-center rounded-full border-4 border-gray-100 bg-white">
+              <div className="relative flex h-32 w-32 items-center justify-center rounded-full border-4 border-gray-300 bg-white">
                 <div className="text-center">
                   <span className={`block text-3xl font-bold ${getScoreColor(score.percentage)}`}>
                     {score.percentage}%
@@ -94,7 +94,7 @@ function QuizResultsPage() {
                 </div>
                 <svg className="absolute inset-0 h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
                   <circle
-                    className="text-gray-100"
+                    className="text-gray-200"
                     strokeWidth="4"
                     stroke="currentColor"
                     fill="transparent"
@@ -141,7 +141,7 @@ function QuizResultsPage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 divide-x divide-gray-100 border-t border-gray-100 bg-gray-50 sm:grid-cols-4">
+          <div className="grid grid-cols-2 divide-x divide-gray-100 border-t border-gray-300 bg-gray-50 sm:grid-cols-4">
             <div className="p-6 text-center">
               <div className="mb-2 flex justify-center text-green-600">
                 <CheckCircle2 className="h-6 w-6" />
@@ -177,14 +177,14 @@ function QuizResultsPage() {
         {(analytics?.strongAreas?.length > 0 || analytics?.weakAreas?.length > 0) && (
           <div className="mb-8 grid gap-6 md:grid-cols-2">
             {analytics.strongAreas?.length > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="rounded-xl border border-gray-300 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
                   <Award className="h-5 w-5 text-green-600" />
                   <h3 className="font-bold text-gray-900">Strong Areas</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {analytics.strongAreas.map((area, i) => (
-                    <span key={i} className="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-100">
+                    <span key={i} className="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-200">
                       {area}
                     </span>
                   ))}
@@ -193,14 +193,14 @@ function QuizResultsPage() {
             )}
             
             {analytics.weakAreas?.length > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="rounded-xl border border-gray-300 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-yellow-600" />
                   <h3 className="font-bold text-gray-900">Areas to Improve</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {analytics.weakAreas.map((area, i) => (
-                    <span key={i} className="rounded-full bg-yellow-50 px-3 py-1 text-sm font-medium text-yellow-700 border border-yellow-100">
+                    <span key={i} className="rounded-full bg-yellow-50 px-3 py-1 text-sm font-medium text-yellow-700 border border-yellow-200">
                       {area}
                     </span>
                   ))}
@@ -211,8 +211,8 @@ function QuizResultsPage() {
         )}
 
         {/* Detailed Review */}
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-200 px-6 py-4">
+        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-300 px-6 py-4">
             <h3 className="text-lg font-bold text-gray-900">Detailed Review</h3>
           </div>
           <div className="divide-y divide-gray-100">

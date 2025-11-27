@@ -40,7 +40,7 @@ export default function ChallengeLeaderboard() {
                 className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
                   period === p
                     ? "bg-blue-600 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    : "bg-slate-200 text-slate-700 hover:bg-slate-200"
                 }`}
               >
                 {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -92,7 +92,7 @@ export default function ChallengeLeaderboard() {
                   className="border-b border-slate-200 hover:bg-slate-50"
                 >
                   <td className="px-6 py-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-blue-200 font-semibold text-blue-700">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-200 to-blue-200 font-semibold text-blue-700">
                       {idx + 1}
                     </div>
                   </td>
@@ -122,7 +122,7 @@ export default function ChallengeLeaderboard() {
                   </td>
 
                   <td className="px-6 py-4 text-center">
-                    <span className="inline-block rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
+                    <span className="inline-block rounded-full bg-green-200 px-3 py-1 text-sm font-semibold text-green-700">
                       {entry.winRate}%
                     </span>
                   </td>

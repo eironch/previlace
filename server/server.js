@@ -51,7 +51,6 @@ import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
 import { createServer } from "http";
-import socketService from "./src/services/socketService.js";
 import { startTicketExpirationJob } from "./src/jobs/ticketExpirationJob.js";
 import { startReminderJobs } from "./src/jobs/reminderJob.js";
 
@@ -193,7 +192,7 @@ async function startServer() {
     startReminderJobs();
 
     const httpServer = createServer(app);
-    socketService.initialize(httpServer);
+    // socketService.initialize(httpServer); // Removed Socket.IO
 
     httpServer.listen(PORT);
 

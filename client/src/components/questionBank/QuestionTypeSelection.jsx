@@ -202,10 +202,10 @@ function QuestionTypeSelection({ onSelectType, onBack }) {
                 <button
                   key={category.id}
                   onClick={() => onSelectType(category)}
-                  className="group rounded-lg border border-gray-200 p-6 text-left transition-colors hover:border-black"
+                  className="group rounded-lg border border-gray-300 p-6 text-left transition-colors hover:border-black"
                 >
                   <div className="mb-3 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 transition-colors group-hover:border-black">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 transition-colors group-hover:border-black">
                       <IconComponent className="h-6 w-6 text-black" />
                     </div>
                     <div>
@@ -221,10 +221,10 @@ function QuestionTypeSelection({ onSelectType, onBack }) {
                     {category.description}
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                    <span className="rounded bg-gray-200 px-2 py-1 text-xs text-gray-600">
                       {category.examLevel}
                     </span>
-                    <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                    <span className="rounded bg-gray-200 px-2 py-1 text-xs text-gray-600">
                       {category.difficulty}
                     </span>
                   </div>

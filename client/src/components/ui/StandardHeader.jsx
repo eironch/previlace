@@ -26,7 +26,7 @@ function StandardHeader({
   }
 
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-gray-300 bg-white">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
@@ -54,17 +54,23 @@ function StandardHeader({
             {onRefresh && (
               <Button
                 variant="outline"
-                onClick={onRefresh}
+                onClick={() => {
+                  console.log("StandardHeader: Refresh button clicked");
+                  if (onRefresh) onRefresh();
+                }}
                 disabled={isRefreshing}
-                className="flex items-center justify-center gap-2 w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95 transition-all duration-200"
               >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                <RefreshCw 
+                  className="h-4 w-4" 
+                  style={{ animation: isRefreshing ? "custom-spin 1s linear infinite" : "none" }}
+                />
                 <span className="inline">{refreshLabel}</span>
               </Button>
             )}
             {children}
           </div>
-          </div>
+        </div>
 
         {bottomContent && (
           <div className="mt-4">

@@ -54,7 +54,7 @@ function QuizTimer() {
   function getBackgroundColor() {
     if (isCritical) return "bg-red-50 border-red-200";
     if (isWarning) return "bg-yellow-50 border-yellow-200";
-    return "bg-gray-50 border-gray-200";
+    return "bg-gray-50 border-gray-300";
   }
 
   return (

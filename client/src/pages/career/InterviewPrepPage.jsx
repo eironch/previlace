@@ -75,7 +75,7 @@ export default function InterviewPrepPage() {
             <h2 className="text-xl font-bold text-gray-900">
               Question {currentQuestionIndex + 1} of {activeInterview.questions.length}
             </h2>
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+            <span className="rounded-full bg-blue-200 px-3 py-1 text-sm font-medium text-blue-800">
               {activeInterview.type.toUpperCase()}
             </span>
           </div>
@@ -97,7 +97,7 @@ export default function InterviewPrepPage() {
           <div className="flex justify-end gap-4">
             <button
               onClick={() => setActiveInterview(null)}
-              className="rounded-lg px-6 py-2 text-gray-600 hover:bg-gray-100"
+              className="rounded-lg px-6 py-2 text-gray-600 hover:bg-gray-200"
             >
               Cancel
             </button>
@@ -128,9 +128,9 @@ export default function InterviewPrepPage() {
             <button
               key={mode.type}
               onClick={() => startNewSession(mode.type)}
-              className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm transition-all hover:border-black hover:shadow-md"
+              className="flex flex-col items-center rounded-xl border border-gray-300 bg-white p-8 text-center shadow-sm transition-all hover:border-black hover:shadow-md"
             >
-              <div className="mb-4 rounded-full bg-gray-100 p-4">
+              <div className="mb-4 rounded-full bg-gray-200 p-4">
                 <Mic className="h-8 w-8 text-gray-900" />
               </div>
               <h3 className="mb-2 text-xl font-bold text-gray-900">{mode.title}</h3>
@@ -144,10 +144,10 @@ export default function InterviewPrepPage() {
           {history.map((session) => (
             <div
               key={session._id}
-              className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-6"
+              className="flex items-center justify-between rounded-lg border border-gray-300 bg-white p-6"
             >
               <div className="flex items-center gap-4">
-                <div className="rounded-full bg-green-100 p-2">
+                <div className="rounded-full bg-green-200 p-2">
                   <CheckCircle className="h-6 w-6 text-green-600" />
                 </div>
                 <div>

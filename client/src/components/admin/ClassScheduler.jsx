@@ -267,7 +267,7 @@ const ClassScheduler = forwardRef((props, ref) => {
       {/* Upcoming Weekends List */}
       <div className="space-y-8">
         {upcomingWeekends.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
+          <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-12 text-center">
             <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No Classes Scheduled</h3>
             <p className="text-gray-500 mb-6">Get started by scheduling your first weekend class session.</p>
@@ -287,9 +287,9 @@ const ClassScheduler = forwardRef((props, ref) => {
                 Weekend of {format(weekend.saturday, 'MMMM d')} - {format(weekend.sunday, 'MMMM d, yyyy')}
               </h3>
               
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <div className="grid grid-cols-2 border-b border-gray-200 bg-gray-50">
-                  <div className={`p-3 text-center border-r border-gray-200 ${isSameDay(weekend.saturday, new Date()) ? 'bg-blue-50' : ''}`}>
+              <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
+                <div className="grid grid-cols-2 border-b border-gray-300 bg-gray-50">
+                  <div className={`p-3 text-center border-r border-gray-300 ${isSameDay(weekend.saturday, new Date()) ? 'bg-blue-50' : ''}`}>
                     <p className="text-xs font-semibold text-gray-500 uppercase">Saturday</p>
                     <p className={`text-sm font-bold ${isSameDay(weekend.saturday, new Date()) ? 'text-blue-600' : 'text-gray-900'}`}>{format(weekend.saturday, 'MMM d')}</p>
                   </div>
@@ -301,7 +301,7 @@ const ClassScheduler = forwardRef((props, ref) => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 min-h-[150px]">
                   {/* Saturday Column */}
-                  <div className="border-b md:border-b-0 md:border-r border-gray-200 p-3 space-y-3 bg-white">
+                  <div className="border-b md:border-b-0 md:border-r border-gray-300 p-3 space-y-3 bg-white">
                     {getClassesForDay(weekend.saturday).length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-gray-400 py-4">
                         <p className="text-xs">No classes scheduled</p>
@@ -338,7 +338,7 @@ const ClassScheduler = forwardRef((props, ref) => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <div className="px-6 py-4 border-b border-gray-300 flex justify-between items-center">
               <h3 className="text-lg font-bold text-gray-900">{editingClasses ? 'Edit Session' : 'Schedule New Session'}</h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
@@ -453,14 +453,14 @@ const ClassScheduler = forwardRef((props, ref) => {
                 )}
               </div>
 
-              <hr className="border-gray-200" />
+              <hr className="border-gray-300" />
 
               {/* Topics Management */}
               <div className="space-y-4">
                 <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Topics</h4>
                 
                 {/* Add Topic Form */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-300 space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <select
@@ -479,7 +479,7 @@ const ClassScheduler = forwardRef((props, ref) => {
                         value={currentTopic.topic}
                         onChange={handleTopicChange}
                         disabled={!currentTopic.subject}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-black focus:outline-none disabled:bg-gray-100"
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-black focus:outline-none disabled:bg-gray-200"
                       >
                         <option value="">Select Topic</option>
                         {topics.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
@@ -502,7 +502,7 @@ const ClassScheduler = forwardRef((props, ref) => {
                     <p className="text-sm text-gray-500 text-center py-2">No topics added yet.</p>
                   ) : (
                     sessionTopics.map((topic, index) => (
-                      <div key={index} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-200">
+                      <div key={index} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-300">
                         <div>
                           <p className="text-sm font-bold text-gray-900">Lesson {index + 1}: {topic.topicName}</p>
                           <p className="text-xs text-gray-500">{topic.subjectName}</p>
@@ -520,12 +520,12 @@ const ClassScheduler = forwardRef((props, ref) => {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+              <div className="flex justify-between items-center pt-4 border-t border-gray-300">
                 {editingClasses ? (
                   <button
                     type="button"
                     onClick={handleDeleteSession}
-                    className="px-4 py-2 text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 rounded-lg border border-transparent hover:border-red-400 transition-colors"
+                    className="px-4 py-2 text-sm font-medium bg-red-200 text-red-800 hover:bg-red-200 rounded-lg border border-transparent hover:border-red-400 transition-colors"
                   >
                     Delete Entire Session
                   </button>
@@ -568,9 +568,9 @@ function DaySessionCard({ classes, onEdit }) {
   const mode = sortedClasses[0]?.mode; // Assuming same mode
 
   return (
-    <div className="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md transition-all group relative border-l-4 border-l-black h-full flex flex-col">
+    <div className="bg-white border border-gray-300 rounded-md p-4 shadow-sm hover:shadow-md transition-all group relative border-l-4 border-l-black h-full flex flex-col">
       <div className="flex justify-between items-start mb-3">
-        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${mode === 'Online' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${mode === 'Online' ? 'bg-green-200 text-green-700' : 'bg-orange-200 text-orange-700'}`}>
           {mode}
         </span>
         
@@ -602,7 +602,7 @@ function DaySessionCard({ classes, onEdit }) {
         ))}
       </div>
       
-      <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-600">
+      <div className="mt-4 pt-3 border-t border-gray-300 flex items-center gap-2 text-xs text-gray-600">
         <User className="w-3.5 h-3.5 text-gray-400" />
         <span className="font-medium">{instructor?.firstName || 'Unknown'} {instructor?.lastName || ''}</span>
       </div>

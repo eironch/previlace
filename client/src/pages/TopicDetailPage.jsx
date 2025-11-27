@@ -100,7 +100,7 @@ function TopicDetailPage() {
 
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-lg border border-gray-200 bg-white p-6">
+              <div key={i} className="rounded-lg border border-gray-300 bg-white p-6">
                 <SkeletonLoader variant="title" className="mb-4 h-6" />
                 <SkeletonLoader className="mb-2" />
                 <SkeletonLoader className="mb-2 w-5/6" />
@@ -123,7 +123,7 @@ function TopicDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200 bg-white">
+      <header className="border-b border-gray-300 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <button
             onClick={() => navigate(-1)}
@@ -138,7 +138,7 @@ function TopicDetailPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
           <div className="mb-4 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-200">
               <BookOpen className="h-8 w-8 text-gray-900" />
             </div>
             <div className="flex-1">
@@ -155,7 +155,7 @@ function TopicDetailPage() {
           </div>
 
           <div className="mb-6 flex items-center gap-4">
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-900">
+            <span className="rounded-full bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-900">
               {currentTopic.difficulty}
             </span>
             <span className="text-sm text-gray-600">
@@ -256,7 +256,7 @@ function TopicDetailPage() {
 
             {learningContent.content.examples &&
               learningContent.content.examples.length > 0 && (
-                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                <div className="rounded-lg border border-gray-300 bg-white p-6">
                   <h4 className="mb-4 text-xl font-bold text-gray-900">
                     Examples
                   </h4>
@@ -278,7 +278,7 @@ function TopicDetailPage() {
 
             {learningContent.commonMistakes &&
               learningContent.commonMistakes.length > 0 && (
-                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                <div className="rounded-lg border border-gray-300 bg-white p-6">
                   <h4 className="mb-4 text-xl font-bold text-gray-900">
                     Common Mistakes
                   </h4>
@@ -297,7 +297,7 @@ function TopicDetailPage() {
               )}
 
             {learningContent.tips && learningContent.tips.length > 0 && (
-              <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <div className="rounded-lg border border-gray-300 bg-white p-6">
                 <h4 className="mb-4 text-xl font-bold text-gray-900">
                   Tips
                 </h4>
@@ -324,7 +324,7 @@ function TopicDetailPage() {
           </div>
         )}
         
-        <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mt-8 rounded-lg border border-gray-300 bg-white p-6">
           <div className="mb-4 flex items-center justify-between">
             <h4 className="text-xl font-bold text-gray-900">Resources</h4>
             {(user?.role === "admin" || user?.role === "instructor") && (

@@ -136,7 +136,7 @@ function StudyPlanPage() {
   if (loading && !studyPlan) {
     return (
       <div className="flex h-screen items-center justify-center bg-white">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-black" />
       </div>
     );
   }
@@ -216,14 +216,14 @@ function StudyPlanPage() {
               {studyPlan.weeklySchedule?.map((week) => (
                 <div
                   key={week.week}
-                  className="rounded-lg border border-gray-200 p-4"
+                  className="rounded-lg border border-gray-300 p-4"
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <h4 className="font-semibold text-black">
                       Week {week.week}
                     </h4>
                     <span
-                      className={`rounded px-2 py-1 text-xs font-medium ${week.week === currentWeek ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}`}
+                      className={`rounded px-2 py-1 text-xs font-medium ${week.week === currentWeek ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-800"}`}
                     >
                       {week.focus}
                     </span>
@@ -254,7 +254,7 @@ function StudyPlanPage() {
               {studyPlan.milestones?.map((milestone, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 rounded-lg border border-gray-200 p-3"
+                  className="flex items-start gap-3 rounded-lg border border-gray-300 p-3"
                 >
                   <div className="mt-1">
                     {milestone.completed ? (
@@ -274,12 +274,12 @@ function StudyPlanPage() {
                       <span className="rounded border px-2 py-1 text-xs">
                         {milestone.assessmentType}
                       </span>
-                      <span className="rounded bg-gray-100 px-2 py-1 text-xs">
+                      <span className="rounded bg-gray-200 px-2 py-1 text-xs">
                         Target: {milestone.targetReadinessScore}%
                       </span>
                       {milestone.actualScore && (
                         <span
-                          className={`rounded px-2 py-1 text-xs ${milestone.actualScore >= milestone.targetReadinessScore ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                          className={`rounded px-2 py-1 text-xs ${milestone.actualScore >= milestone.targetReadinessScore ? "bg-green-200 text-green-700" : "bg-red-200 text-red-700"}`}
                         >
                           Actual: {milestone.actualScore}%
                         </span>

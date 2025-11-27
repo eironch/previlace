@@ -16,9 +16,9 @@ function WeeklyProgressCard() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="rounded-lg border border-gray-300 bg-white p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200">
             <Calendar className="h-6 w-6 text-gray-900" />
           </div>
           <div>
@@ -28,7 +28,7 @@ function WeeklyProgressCard() {
         </div>
         <button
           onClick={fetchWeeklyProgress}
-          className="mt-4 w-full rounded-lg border border-gray-200 px-6 py-3 font-semibold text-gray-900 transition-colors hover:bg-gray-50"
+          className="mt-4 w-full rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-900 transition-colors hover:bg-gray-50"
         >
           Try Again
         </button>
@@ -38,8 +38,8 @@ function WeeklyProgressCard() {
 
   if (progress.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+      <div className="rounded-lg border border-gray-300 bg-white p-6 text-center">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200">
           <Calendar className="h-6 w-6 text-gray-900" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900">No Activities Yet</h3>
@@ -61,7 +61,7 @@ function WeeklyProgressCard() {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-lg border border-gray-100 bg-white p-3 shadow-lg">
+        <div className="rounded-lg border border-gray-300 bg-white p-3 shadow-lg">
           <p className="font-semibold text-gray-900">{label}</p>
           <p className="text-sm text-gray-600">Score: {payload[0].value}%</p>
         </div>
@@ -71,10 +71,10 @@ function WeeklyProgressCard() {
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200">
             <Calendar className="h-6 w-6 text-gray-900" />
           </div>
           <div>
@@ -82,7 +82,7 @@ function WeeklyProgressCard() {
             <p className="text-sm text-gray-500">Performance Overview</p>
           </div>
         </div>
-        <div className="rounded-full bg-gray-100 px-3 py-1">
+        <div className="rounded-full bg-gray-200 px-3 py-1">
           <span className="text-sm font-semibold text-gray-900">
             {completedCount}/{totalCount} Completed
           </span>
@@ -120,7 +120,7 @@ function WeeklyProgressCard() {
           const isLocked = day.status === "locked";
 
           return (
-            <div key={index} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50">
+            <div key={index} className="flex items-center justify-between rounded-lg border border-gray-300 p-3 transition-colors hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 {isCompleted ? (
                   <CheckCircle className="h-5 w-5 text-green-600" />

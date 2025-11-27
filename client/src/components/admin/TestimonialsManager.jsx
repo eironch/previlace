@@ -90,8 +90,8 @@ export default function TestimonialsManager({ landingPage = false }) {
         };
 
         return (
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 transition-all duration-200 hover:shadow-md hover:border-gray-300">
-                <div className="flex justify-between items-start mb-4 border-b border-gray-100 pb-3">
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-300 transition-all duration-200 hover:shadow-md hover:border-gray-300">
+                <div className="flex justify-between items-start mb-4 border-b border-gray-300 pb-3">
                     <div className="flex items-center space-x-3">
                         <User className="h-6 w-6 text-gray-700" />
                         <div>
@@ -124,12 +124,12 @@ export default function TestimonialsManager({ landingPage = false }) {
                 )}
 
                 {!landingPage && (
-                    <div className="flex space-x-3 pt-3 border-t border-gray-100">
+                    <div className="flex space-x-3 pt-3 border-t border-gray-300">
                         {isPending && (
                             <Button 
                                 onClick={() => handleAction(testimonial._id, 'approve')} 
                                 disabled={isActionDisabled || approvedCount >= MAX_APPROVED_TESTIMONIALS} // ⭐ Disable if at limit
-                                className="flex items-center border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                className="flex items-center border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                             >
                                 <Heart className="h-4 w-4 mr-2 text-red-500" /> 
                                 {actionLoading === 'approve' ? 'Favoriting...' : 'Favorite for Display'}
@@ -140,7 +140,7 @@ export default function TestimonialsManager({ landingPage = false }) {
                             <Button 
                                 onClick={() => handleAction(testimonial._id, 'revert')} 
                                 disabled={isActionDisabled} 
-                                className="flex items-center border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                className="flex items-center border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                             >
                                 <Clock className="h-4 w-4 mr-2" /> Revert to Pending
                             </Button>
@@ -179,11 +179,22 @@ export default function TestimonialsManager({ landingPage = false }) {
         <div className="space-y-6">
             {!landingPage && (
                 <>
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-4">
                         Testimonials Management ({filteredTestimonials.length})
-                        <span className="ml-4 text-base font-medium text-gray-600">
+                        <span className="text-base font-medium text-gray-600">
                             (Display Limit: {approvedCount}/{MAX_APPROVED_TESTIMONIALS})
                         </span>
+                        <button 
+                            onClick={() => fetchTestimonials()} 
+                            disabled={isLoading}
+                            className="ml-auto flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-all duration-200 active:scale-95"
+                        >
+                            <RefreshCw 
+                                className="h-4 w-4" 
+                                style={{ animation: isLoading ? "custom-spin 1s linear infinite" : "none" }}
+                            />
+                            Refresh
+                        </button>
                     </h2>
 
                     {/* Filter dropdown */}
