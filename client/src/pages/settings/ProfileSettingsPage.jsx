@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     User,
+    GraduationCap,
     Lock,
     Bell,
     Shield,
@@ -22,7 +23,7 @@ import SkeletonLoader from "@/components/ui/SkeletonLoader";
 export default function ProfileSettingsPage() {
     const navigate = useNavigate();
     const { user, setUser } = useAuthStore();
-    const [activeTab, setActiveTab] = useState("profile");
+    const [activeTab, setActiveTab] = useState("personal");
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
@@ -30,9 +31,45 @@ export default function ProfileSettingsPage() {
     // Form States
     const [profileForm, setProfileForm] = useState({
         firstName: "",
-        lastName: user.lastName || "",
-        email: user.email || "",
-        examType: user.examType || "",
+        middleName: "",
+        lastName: user?.lastName || "",
+        email: user?.email || "",
+        phone: user?.phone || "",
+        telNo: "",
+        facebook: "",
+        address: user?.address || "",
+        dateOfBirth: user?.dateOfBirth || "",
+        placeOfBirth: user?.placeOfBirth || "",
+        civilStatus: user?.civilStatus || "",
+        childrenCount: "",
+        nationality: user?.nationality || "",
+        emergencyContactName: user?.emergencyContact?.name || "",
+        emergencyContactNumber: user?.emergencyContact?.number || "",
+
+        // Course Info
+        courseEnrollingTo: "",
+        courseDate: "",
+        scheduledDays: "",
+        scheduledTime: "",
+
+        // Education
+        school: user?.school || "",
+        dateAttended: "",
+        degree: user?.degree || "",
+        education: user?.education || "",
+        languageSpoken: "",
+
+        // Professional
+        jobPosition: user?.jobPosition || "",
+        company: user?.company || "",
+        dateEmployment: "",
+        examTaken: "",
+        dateTaken: "",
+
+        // Marketing
+        source: "",
+
+        examType: user?.examType || "",
     });
 
     const [passwordForm, setPasswordForm] = useState({
@@ -48,12 +85,66 @@ export default function ProfileSettingsPage() {
 
     useEffect(() => {
         if (user) {
-            setProfileForm({
+            // Initial load from User object
+            setProfileForm(prev => ({
+                ...prev,
                 firstName: user.firstName || "",
                 lastName: user.lastName || "",
                 email: user.email || "",
                 examType: user.examType || "",
-            });
+            }));
+
+            // Always attempt to fetch Registration Data
+            apiClient.get("/users/my-registration")
+                .then(res => {
+                    const reg = res.data.data;
+                    if (reg) {
+                        setProfileForm(prev => ({
+                            ...prev,
+                            firstName: reg.personalInfo?.firstName || user.firstName || "",
+                            middleName: reg.personalInfo?.middleName || "",
+                            lastName: reg.personalInfo?.lastName || user.lastName || "",
+                            email: reg.personalInfo?.email || user.email || "",
+                            phone: reg.personalInfo?.mobile || user.phone || "",
+                            telNo: reg.personalInfo?.telNo || "",
+                            facebook: reg.personalInfo?.facebook || "",
+                            address: reg.personalInfo?.address || user.address || "",
+                            dateOfBirth: reg.personalInfo?.dateOfBirth || user.dateOfBirth || "",
+                            placeOfBirth: reg.personalInfo?.placeOfBirth || user.placeOfBirth || "",
+                            civilStatus: reg.personalInfo?.civilStatus || user.civilStatus || "",
+                            childrenCount: reg.personalInfo?.childrenCount || "",
+                            nationality: reg.personalInfo?.nationality || user.nationality || "",
+                            emergencyContactName: reg.personalInfo?.emergencyContact?.name || user.emergencyContact?.name || "",
+                            emergencyContactNumber: reg.personalInfo?.emergencyContact?.number || user.emergencyContact?.number || "",
+
+                            // Course Info
+                            courseEnrollingTo: reg.courseInfo?.courseEnrollingTo || "",
+                            courseDate: reg.courseInfo?.date || "",
+                            scheduledDays: reg.courseInfo?.scheduledDays || "",
+                            scheduledTime: reg.courseInfo?.time || "",
+
+                            // Education
+                            school: reg.education?.school || user.school || "",
+                            dateAttended: reg.education?.dateAttended || "",
+                            degree: reg.education?.degree || user.degree || "",
+                            education: reg.education?.highestAttainment || user.education || "",
+                            languageSpoken: reg.education?.languageSpoken || "",
+
+                            // Professional
+                            jobPosition: reg.professional?.position || user.jobPosition || "",
+                            company: reg.professional?.company || user.company || "",
+                            dateEmployment: reg.professional?.dateEmployment || "",
+                            examTaken: reg.professional?.examTaken || "",
+                            dateTaken: reg.professional?.dateTaken || "",
+
+                            // Marketing
+                            source: reg.marketing?.source || "",
+                        }));
+                    }
+                })
+                .catch(err => {
+                    console.log("No registration data found or failed to fetch:", err.message);
+                });
 
             if (user.role === "instructor") {
                 apiClient.get("/subjects/instructor/my-subjects")
@@ -73,8 +164,6 @@ export default function ProfileSettingsPage() {
             if (user.role === 'student') {
                 updates.examType = profileForm.examType;
             }
-            // Add other allowed updates here
-
             const response = await apiClient.patch("/users/profile", updates);
 
             if (response.data.success) {
@@ -115,7 +204,8 @@ export default function ProfileSettingsPage() {
     if (!user) return <SkeletonLoader />;
 
     const tabs = [
-        { id: "profile", label: "Profile Settings", icon: User },
+        { id: "personal", label: "Personal Info", icon: User },
+        { id: "academic", label: "Academic & Work", icon: GraduationCap },
         { id: "security", label: "Security", icon: Lock },
         { id: "notifications", label: "Notifications", icon: Bell },
     ];
@@ -177,73 +267,224 @@ export default function ProfileSettingsPage() {
                             </div>
                         )}
 
-                        {activeTab === "profile" && (
+                        {activeTab === "personal" && (
                             <div className="space-y-6">
                                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:p-8">
                                     <div className="flex items-center justify-between mb-6">
                                         <div>
                                             <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
-                                            <p className="text-gray-500 text-sm mt-1">Update your personal details and public profile.</p>
+                                            <p className="text-gray-500 text-sm mt-1">Update your personal details and contact info.</p>
                                         </div>
                                         <span className="px-3 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-600 uppercase tracking-wide">
                                             {user.role} Account
                                         </span>
                                     </div>
 
-                                    <form onSubmit={handleProfileUpdate} className="space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={profileForm.firstName}
-                                                    disabled
-                                                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={profileForm.lastName}
-                                                    disabled
-                                                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed"
-                                                />
-                                            </div>
-                                        </div>
-
+                                    <form onSubmit={handleProfileUpdate} className="space-y-8">
+                                        {/* Personal Details */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                                            <div className="relative">
-                                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                                <input
-                                                    type="email"
-                                                    value={profileForm.email}
-                                                    disabled
-                                                    className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-12 pr-4 py-3 text-gray-500 cursor-not-allowed"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {user.role === "instructor" && (
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Subjects Handled</label>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {subjects.length > 0 ? (
-                                                        subjects.map((subject) => (
-                                                            <span
-                                                                key={subject._id}
-                                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 border border-gray-200"
-                                                            >
-                                                                {subject.name}
-                                                            </span>
-                                                        ))
-                                                    ) : (
-                                                        <p className="text-sm text-gray-500 italic">No subjects assigned yet.</p>
-                                                    )}
+                                            <h3 className="text-lg font-bold text-gray-900 mb-4">Personal Details</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                                    <input type="text" value={profileForm.firstName} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Middle Name</label>
+                                                    <input type="text" value={profileForm.middleName} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                                    <input type="text" value={profileForm.lastName} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                                                    <input type="text" value={profileForm.dateOfBirth ? new Date(profileForm.dateOfBirth).toLocaleDateString() : ""} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Place of Birth</label>
+                                                    <input type="text" value={profileForm.placeOfBirth} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Civil Status</label>
+                                                    <input type="text" value={profileForm.civilStatus} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
+                                                    <input type="text" value={profileForm.nationality} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">No. of Children</label>
+                                                    <input type="text" value={profileForm.childrenCount} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
                                                 </div>
                                             </div>
-                                        )}
+                                        </div>
+
+                                        {/* Contact Information */}
+                                        <div className="pt-6 border-t border-gray-100">
+                                            <h3 className="text-lg font-bold text-gray-900 mb-4">Contact Information</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                                    <input type="text" value={profileForm.address} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                                    <div className="relative">
+                                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                                        <input type="email" value={profileForm.email} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-12 pr-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                                                    <input type="text" value={profileForm.phone} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Tel. No.</label>
+                                                    <input type="text" value={profileForm.telNo} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Facebook Link</label>
+                                                    <input type="text" value={profileForm.facebook} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Emergency Contact */}
+                                        <div className="pt-6 border-t border-gray-100">
+                                            <h3 className="text-lg font-bold text-gray-900 mb-4">Emergency Contact</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Contact Name</label>
+                                                    <input type="text" value={profileForm.emergencyContactName} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
+                                                    <input type="text" value={profileForm.emergencyContactNumber} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-6 flex justify-end">
+                                            <button
+                                                type="submit"
+                                                disabled={isSaving}
+                                                className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                            >
+                                                {isSaving ? (
+                                                    <>Saving Changes...</>
+                                                ) : (
+                                                    <>
+                                                        <Save className="h-4 w-4" />
+                                                        Save Changes
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "academic" && (
+                            <div className="space-y-6">
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:p-8">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900">Academic & Work</h2>
+                                            <p className="text-gray-500 text-sm mt-1">View your educational background and work experience.</p>
+                                        </div>
+                                        <span className="px-3 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                                            {user.role} Account
+                                        </span>
+                                    </div>
+
+                                    <form onSubmit={handleProfileUpdate} className="space-y-8">
+                                        {/* Course Information */}
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900 mb-4">Course Information</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Course Enrolling To</label>
+                                                    <input type="text" value={profileForm.courseEnrollingTo} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                                                    <input type="text" value={profileForm.courseDate ? new Date(profileForm.courseDate).toLocaleDateString() : ""} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Scheduled Days</label>
+                                                    <input type="text" value={profileForm.scheduledDays} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                                                    <input type="text" value={profileForm.scheduledTime} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Education */}
+                                        <div className="pt-6 border-t border-gray-100">
+                                            <h3 className="text-lg font-bold text-gray-900 mb-4">Education</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">School</label>
+                                                    <input type="text" value={profileForm.school} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Degree</label>
+                                                    <input type="text" value={profileForm.degree} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Highest Attainment</label>
+                                                    <input type="text" value={profileForm.education} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Date Attended</label>
+                                                    <input type="text" value={profileForm.dateAttended} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Language Spoken</label>
+                                                    <input type="text" value={profileForm.languageSpoken} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Professional Experience */}
+                                        <div className="pt-6 border-t border-gray-100">
+                                            <h3 className="text-lg font-bold text-gray-900 mb-4">Professional Experience</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Current Position</label>
+                                                    <input type="text" value={profileForm.jobPosition} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                                                    <input type="text" value={profileForm.company} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Employment</label>
+                                                    <input type="text" value={profileForm.dateEmployment} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Exam Taken</label>
+                                                    <input type="text" value={profileForm.examTaken} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Date Taken</label>
+                                                    <input type="text" value={profileForm.dateTaken} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Other Information */}
+                                        <div className="pt-6 border-t border-gray-100">
+                                            <h3 className="text-lg font-bold text-gray-900 mb-4">Other Information</h3>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">How did you know about us?</label>
+                                                <input type="text" value={profileForm.source} disabled className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed" />
+                                            </div>
+                                        </div>
 
                                         {user.role === 'student' && (
                                             <div className="pt-6 border-t border-gray-100">

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import StandardHeader from '../../components/ui/StandardHeader';
 import cvService from '../../services/cvService';
+import apiClient from '../../services/apiClient';
 import { HarvardCV, ModernCV, MinimalCV } from './CVTemplates';
 
 // --- Configuration Data ---
@@ -452,13 +453,13 @@ const ProjectsForm = ({ data, addItem, deleteItem }) => {
                         className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
                     />
                 </div>
-                 <input
-                        placeholder="Project Link (Optional)"
-                        value={newItem.link}
-                        onChange={(e) => setNewItem({ ...newItem, link: e.target.value })}
-                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
-                    />
-                 <textarea
+                <input
+                    placeholder="Project Link (Optional)"
+                    value={newItem.link}
+                    onChange={(e) => setNewItem({ ...newItem, link: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                />
+                <textarea
                     placeholder="Description"
                     value={newItem.description}
                     onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
@@ -683,24 +684,65 @@ const CVPage = () => {
         const loadData = async () => {
             try {
                 setIsLoading(true);
-                const cv = await cvService.getMyCv();
+
+                // 1. Fetch existing CV
+                const cvPromise = cvService.getMyCv();
+
+                // 2. Fetch Registration Data (Profile)
+                const regPromise = apiClient.get("/users/my-registration").catch(() => null);
+
+                const [cv, regRes] = await Promise.all([cvPromise, regPromise]);
+                const regData = regRes?.data?.data;
+
+                // Map Registration to CV format
+                const regCV = {
+                    name: regData ? `${regData.personalInfo?.firstName || ''} ${regData.personalInfo?.lastName || ''}`.trim() : '',
+                    email: regData?.personalInfo?.email || '',
+                    phone: regData?.personalInfo?.mobile || '',
+                    location: regData?.personalInfo?.address || '',
+                    // Education mapping - Registration only has one entry usually
+                    education: (regData?.education?.school) ? [{
+                        id: generateId(),
+                        institution: regData.education.school,
+                        degree: regData.education.degree || '',
+                        year: regData.education.dateAttended || '',
+                        details: regData.education.highestAttainment || ''
+                    }] : [],
+                    // Experience mapping
+                    experience: (regData?.professional?.company) ? [{
+                        id: generateId(),
+                        title: regData.professional.position || '',
+                        company: regData.professional.company,
+                        duration: regData.professional.dateEmployment || '',
+                        description: ''
+                    }] : []
+                };
+
                 if (cv) {
                     setCvData({
-                        name: cv.personalInfo?.name || '',
-                        email: cv.personalInfo?.email || '',
-                        phone: cv.personalInfo?.phone || '',
+                        name: cv.personalInfo?.name || regCV.name || '',
+                        email: cv.personalInfo?.email || regCV.email || '',
+                        phone: cv.personalInfo?.phone || regCV.phone || '',
                         linkedin: cv.personalInfo?.linkedin || '',
-                        location: cv.personalInfo?.location || '',
+                        location: cv.personalInfo?.location || regCV.location || '',
                         website: cv.personalInfo?.website || '',
                         github: cv.personalInfo?.github || '',
                         summary: cv.personalInfo?.summary || '',
-                        education: cv.education || [],
-                        experience: cv.experience || [],
+                        education: (cv.education && cv.education.length > 0) ? cv.education : regCV.education,
+                        experience: (cv.experience && cv.experience.length > 0) ? cv.experience : regCV.experience,
                         skills: cv.skills || [],
                         certifications: cv.certifications || [],
                         projects: cv.projects || [],
                         languages: cv.languages || [],
                         awards: cv.awards || []
+                    });
+                } else {
+                    // No CV found, use Reg Data
+                    setCvData({
+                        ...initialCVData,
+                        ...regCV,
+                        education: regCV.education,
+                        experience: regCV.experience
                     });
                 }
             } catch (error) {
@@ -821,8 +863,8 @@ const CVPage = () => {
                                             key={t.id}
                                             onClick={() => setSelectedTemplate(t.id)}
                                             className={`p-2 rounded-lg text-xs font-medium transition-all ${selectedTemplate === t.id
-                                                    ? 'ring-2 ring-black ring-offset-1'
-                                                    : 'hover:bg-gray-50'
+                                                ? 'ring-2 ring-black ring-offset-1'
+                                                : 'hover:bg-gray-50'
                                                 }`}
                                         >
                                             <div className={`w-full h-12 rounded mb-2 ${t.color} flex items-center justify-center border border-gray-200`}>

@@ -91,11 +91,12 @@ export const approveApplication = async (req, res, next) => {
             password: defaultPassword,
             firstName: application.personalInfo.firstName,
             lastName: application.personalInfo.lastName,
+            fullName: `${application.personalInfo.firstName} ${application.personalInfo.middleName ? application.personalInfo.middleName + ' ' : ''}${application.personalInfo.lastName}`.trim(),
             phone: application.personalInfo.mobile,
             role: "student",
             isProfileComplete: true,
             examType: examType || "Professional", // Default if not provided
-            // Map other fields if necessary
+            registrationNumber: application.registrationNumber,
         });
 
         application.status = "approved";
