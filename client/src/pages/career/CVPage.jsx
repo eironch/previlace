@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Mail, Phone, Linkedin, Briefcase, BookOpen, User, Zap, X,
-    ChevronDown, ChevronUp, Printer, Plus, Trash2, Award, FileText, Download
+    ChevronDown, ChevronUp, Printer, Plus, Trash2, Award, FileText, Download,
+    Globe, Github, MapPin, FolderGit, Languages, Star
 } from 'lucide-react';
 import StandardHeader from '../../components/ui/StandardHeader';
 import cvService from '../../services/cvService';
+import { HarvardCV, ModernCV, MinimalCV } from './CVTemplates';
 
 // --- Configuration Data ---
 let idCounter = 0;
@@ -18,11 +20,17 @@ const initialCVData = {
     email: '',
     phone: '',
     linkedin: '',
+    location: '',
+    website: '',
+    github: '',
     summary: '',
     education: [],
     experience: [],
     skills: [],
-    certifications: []
+    certifications: [],
+    projects: [],
+    languages: [],
+    awards: []
 };
 
 // --- FORM COMPONENTS ---
@@ -85,6 +93,16 @@ const PersonalDetailsForm = ({ data, updateField }) => {
                 />
             </div>
             <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
+                <input
+                    type="text"
+                    value={data.location}
+                    onChange={(e) => updateField('location', e.target.value)}
+                    className="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                    placeholder="City, Country"
+                />
+            </div>
+            <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-gray-500 mb-1">LinkedIn URL</label>
                 <input
                     type="url"
@@ -92,6 +110,26 @@ const PersonalDetailsForm = ({ data, updateField }) => {
                     onChange={(e) => updateField('linkedin', e.target.value)}
                     className="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
                     placeholder="linkedin.com/in/janedoe"
+                />
+            </div>
+            <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">GitHub URL</label>
+                <input
+                    type="url"
+                    value={data.github}
+                    onChange={(e) => updateField('github', e.target.value)}
+                    className="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                    placeholder="github.com/janedoe"
+                />
+            </div>
+            <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Portfolio / Website</label>
+                <input
+                    type="url"
+                    value={data.website}
+                    onChange={(e) => updateField('website', e.target.value)}
+                    className="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                    placeholder="janedoe.com"
                 />
             </div>
         </div>
@@ -363,25 +401,210 @@ const CertificationsForm = ({ data, addItem, deleteItem }) => {
     );
 };
 
-// --- TEMPLATE RENDERER ---
+const ProjectsForm = ({ data, addItem, deleteItem }) => {
+    const [newItem, setNewItem] = useState({ name: '', role: '', duration: '', description: '', link: '' });
 
-const HarvardCV = ({ data }) => {
-    const { name, email, phone, linkedin, summary, education, experience, skills, certifications } = data;
-
-    const formatDescription = (text) => {
-        if (!text) return [];
-        return text.split('\n').filter(line => line.trim() !== '').map(line => line.trim().replace(/^[\*\-\d\.]\s*/, ''));
+    const handleAdd = () => {
+        if (newItem.name) {
+            addItem('projects', newItem);
+            setNewItem({ name: '', role: '', duration: '', description: '', link: '' });
+        }
     };
 
-    const SectionTitle = ({ title }) => (
-        <div className="mt-6 mb-3">
-            <h2 className="text-base font-bold text-gray-900 uppercase tracking-wider border-b border-gray-900 pb-1">
-                {title}
-            </h2>
+    return (
+        <div className="space-y-6">
+            <div className="space-y-3">
+                {data.projects?.map((item) => (
+                    <div key={item.id} className="group flex justify-between items-start p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-all">
+                        <div>
+                            <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                            <p className="text-sm text-gray-600">{item.role} {item.duration && `• ${item.duration}`}</p>
+                        </div>
+                        <button
+                            onClick={() => deleteItem('projects', item.id)}
+                            className="text-gray-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Add Project</h4>
+                <input
+                    placeholder="Project Name"
+                    value={newItem.name}
+                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                    <input
+                        placeholder="Role"
+                        value={newItem.role}
+                        onChange={(e) => setNewItem({ ...newItem, role: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                    <input
+                        placeholder="Duration"
+                        value={newItem.duration}
+                        onChange={(e) => setNewItem({ ...newItem, duration: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                </div>
+                 <input
+                        placeholder="Project Link (Optional)"
+                        value={newItem.link}
+                        onChange={(e) => setNewItem({ ...newItem, link: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                 <textarea
+                    placeholder="Description"
+                    value={newItem.description}
+                    onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                    rows="2"
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black resize-y"
+                />
+                <button
+                    onClick={handleAdd}
+                    className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                    <Plus className="w-4 h-4" /> Add Project
+                </button>
+            </div>
         </div>
     );
+};
 
-    const hasContent = name || email || phone || linkedin || summary || education.length > 0 || experience.length > 0 || skills.length > 0;
+const LanguagesForm = ({ data, addItem, deleteItem }) => {
+    const [newItem, setNewItem] = useState({ language: '', proficiency: '' });
+
+    const handleAdd = () => {
+        if (newItem.language) {
+            addItem('languages', newItem);
+            setNewItem({ language: '', proficiency: '' });
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="space-y-3">
+                {data.languages?.map((item) => (
+                    <div key={item.id} className="group flex justify-between items-center p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-all">
+                        <div>
+                            <span className="font-semibold text-gray-900">{item.language}</span>
+                            <span className="text-sm text-gray-600 ml-2">({item.proficiency})</span>
+                        </div>
+                        <button
+                            onClick={() => deleteItem('languages', item.id)}
+                            className="text-gray-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Add Language</h4>
+                <div className="grid grid-cols-2 gap-3">
+                    <input
+                        placeholder="Language"
+                        value={newItem.language}
+                        onChange={(e) => setNewItem({ ...newItem, language: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                    <select
+                        value={newItem.proficiency}
+                        onChange={(e) => setNewItem({ ...newItem, proficiency: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    >
+                        <option value="">Select Proficiency</option>
+                        <option value="Native">Native</option>
+                        <option value="Fluent">Fluent</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Basic">Basic</option>
+                    </select>
+                </div>
+                <button
+                    onClick={handleAdd}
+                    className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                    <Plus className="w-4 h-4" /> Add Language
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const AwardsForm = ({ data, addItem, deleteItem }) => {
+    const [newItem, setNewItem] = useState({ title: '', issuer: '', year: '' });
+
+    const handleAdd = () => {
+        if (newItem.title) {
+            addItem('awards', newItem);
+            setNewItem({ title: '', issuer: '', year: '' });
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="space-y-3">
+                {data.awards?.map((item) => (
+                    <div key={item.id} className="group flex justify-between items-start p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-all">
+                        <div>
+                            <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                            <p className="text-sm text-gray-600">{item.issuer} {item.year && `• ${item.year}`}</p>
+                        </div>
+                        <button
+                            onClick={() => deleteItem('awards', item.id)}
+                            className="text-gray-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Add Award</h4>
+                <input
+                    placeholder="Award Title"
+                    value={newItem.title}
+                    onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                    <input
+                        placeholder="Issuer"
+                        value={newItem.issuer}
+                        onChange={(e) => setNewItem({ ...newItem, issuer: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                    <input
+                        placeholder="Year"
+                        value={newItem.year}
+                        onChange={(e) => setNewItem({ ...newItem, year: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                </div>
+                <button
+                    onClick={handleAdd}
+                    className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                    <Plus className="w-4 h-4" /> Add Award
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// --- TEMPLATE RENDERER ---
+
+// --- TEMPLATE RENDERER ---
+
+const TemplateRenderer = ({ template, data }) => {
+    const hasContent = data.name || data.email || data.phone || data.linkedin || data.summary || data.education.length > 0 || data.experience.length > 0 || data.skills.length > 0;
 
     if (!hasContent) {
         return (
@@ -393,100 +616,19 @@ const HarvardCV = ({ data }) => {
         );
     }
 
-    return (
-        <div className="cv-preview bg-white p-8 md:p-12 max-w-[210mm] mx-auto min-h-[297mm] shadow-lg print:shadow-none print:mx-0 print:w-full text-gray-900 font-serif leading-relaxed">
-            {/* Header */}
-            <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 uppercase tracking-widest mb-3">{name}</h1>
-                <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-                    {email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {email}</span>}
-                    {phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {phone}</span>}
-                    {linkedin && <span className="flex items-center gap-1"><Linkedin className="w-3 h-3" /> {linkedin.replace(/^https?:\/\/(www\.)?/, '')}</span>}
-                </div>
-            </div>
-
-            {/* Summary */}
-            {summary && (
-                <div className="mb-6">
-                    <p className="text-sm text-justify text-gray-800">{summary}</p>
-                </div>
-            )}
-
-            {/* Experience */}
-            {experience.length > 0 && (
-                <div>
-                    <SectionTitle title="Professional Experience" />
-                    <div className="space-y-5">
-                        {experience.map((item) => (
-                            <div key={item.id}>
-                                <div className="flex justify-between items-baseline mb-1">
-                                    <h3 className="font-bold text-gray-900">{item.company}</h3>
-                                    <span className="text-sm text-gray-600 font-medium">{item.duration}</span>
-                                </div>
-                                <div className="text-sm font-semibold text-gray-800 italic mb-2">{item.title}</div>
-                                <ul className="list-disc list-outside ml-4 space-y-1">
-                                    {formatDescription(item.description).map((line, i) => (
-                                        <li key={i} className="text-sm text-gray-700 pl-1">{line}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Education */}
-            {education.length > 0 && (
-                <div>
-                    <SectionTitle title="Education" />
-                    <div className="space-y-3">
-                        {education.map((item) => (
-                            <div key={item.id} className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-bold text-gray-900">{item.institution}</h3>
-                                    <div className="text-sm text-gray-800">{item.degree}</div>
-                                    {item.details && <div className="text-xs text-gray-500 mt-0.5">{item.details}</div>}
-                                </div>
-                                <span className="text-sm text-gray-600 font-medium whitespace-nowrap">{item.year}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Certifications */}
-            {certifications && certifications.length > 0 && (
-                <div>
-                    <SectionTitle title="Certifications" />
-                    <div className="space-y-2">
-                        {certifications.map((item) => (
-                            <div key={item.id} className="flex justify-between text-sm">
-                                <div>
-                                    <span className="font-bold text-gray-900">{item.name}</span>
-                                    <span className="text-gray-600"> — {item.issuer}</span>
-                                </div>
-                                <span className="text-gray-600">{item.year}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Skills */}
-            {skills.length > 0 && (
-                <div>
-                    <SectionTitle title="Skills" />
-                    <p className="text-sm text-gray-800 leading-relaxed">
-                        {skills.join(' • ')}
-                    </p>
-                </div>
-            )}
-        </div>
-    );
+    switch (template) {
+        case 'modern':
+            return <ModernCV data={data} />;
+        case 'minimal':
+            return <MinimalCV data={data} />;
+        case 'harvard':
+        default:
+            return <HarvardCV data={data} />;
+    }
 };
 
 
-const MobileCVPreviewModal = ({ data, onClose }) => {
+const MobileCVPreviewModal = ({ data, template, onClose }) => {
     return (
         <div className="fixed inset-0 z-[60] bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 lg:hidden print:hidden animate-fade-in">
             <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
@@ -501,7 +643,7 @@ const MobileCVPreviewModal = ({ data, onClose }) => {
                 </div>
                 <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
                     <div className="cv-preview-container transform scale-[0.6] sm:scale-[0.7] origin-top-left w-[210mm] h-[297mm] bg-white shadow-sm mx-auto">
-                        <HarvardCV data={data} />
+                        <TemplateRenderer template={template} data={data} />
                     </div>
                 </div>
                 <div className="p-4 border-t border-gray-200 bg-white flex gap-3">
@@ -533,6 +675,7 @@ const CVPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [openSection, setOpenSection] = useState('personal');
+    const [selectedTemplate, setSelectedTemplate] = useState('harvard');
     const [showMobilePreview, setShowMobilePreview] = useState(false);
 
     // Load Data
@@ -547,11 +690,17 @@ const CVPage = () => {
                         email: cv.personalInfo?.email || '',
                         phone: cv.personalInfo?.phone || '',
                         linkedin: cv.personalInfo?.linkedin || '',
+                        location: cv.personalInfo?.location || '',
+                        website: cv.personalInfo?.website || '',
+                        github: cv.personalInfo?.github || '',
                         summary: cv.personalInfo?.summary || '',
                         education: cv.education || [],
                         experience: cv.experience || [],
                         skills: cv.skills || [],
-                        certifications: cv.certifications || []
+                        certifications: cv.certifications || [],
+                        projects: cv.projects || [],
+                        languages: cv.languages || [],
+                        awards: cv.awards || []
                     });
                 }
             } catch (error) {
@@ -576,12 +725,18 @@ const CVPage = () => {
                     email: cvData.email,
                     phone: cvData.phone,
                     linkedin: cvData.linkedin,
+                    location: cvData.location,
+                    website: cvData.website,
+                    github: cvData.github,
                     summary: cvData.summary,
                 },
                 education: cvData.education,
                 experience: cvData.experience,
                 skills: cvData.skills,
-                certifications: cvData.certifications
+                certifications: cvData.certifications,
+                projects: cvData.projects,
+                languages: cvData.languages,
+                awards: cvData.awards
             };
             await cvService.updateCv(backendData);
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cvData));
@@ -653,6 +808,32 @@ const CVPage = () => {
                                 {isSaving && <span className="text-xs text-gray-400 animate-pulse">Saving...</span>}
                             </div>
 
+                            {/* Template Selector */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-6">
+                                <h3 className="text-sm font-semibold text-gray-900 mb-3">Choose Template</h3>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[
+                                        { id: 'harvard', name: 'Classic', color: 'bg-gray-100' },
+                                        { id: 'modern', name: 'Modern', color: 'bg-gray-900' },
+                                        { id: 'minimal', name: 'Minimal', color: 'bg-white border border-gray-200' }
+                                    ].map(t => (
+                                        <button
+                                            key={t.id}
+                                            onClick={() => setSelectedTemplate(t.id)}
+                                            className={`p-2 rounded-lg text-xs font-medium transition-all ${selectedTemplate === t.id
+                                                    ? 'ring-2 ring-black ring-offset-1'
+                                                    : 'hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            <div className={`w-full h-12 rounded mb-2 ${t.color} flex items-center justify-center border border-gray-200`}>
+                                                <div className="w-1/2 h-1 bg-current opacity-20 rounded"></div>
+                                            </div>
+                                            {t.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             <SectionWrapper title="Personal Details" icon={User} isOpen={openSection === 'personal'} onToggle={() => toggleSection('personal')}>
                                 <PersonalDetailsForm data={cvData} updateField={updateField} />
                             </SectionWrapper>
@@ -675,6 +856,18 @@ const CVPage = () => {
 
                             <SectionWrapper title="Skills" icon={Zap} isOpen={openSection === 'skills'} onToggle={() => toggleSection('skills')}>
                                 <SkillsForm data={cvData} setSkills={setSkills} />
+                            </SectionWrapper>
+
+                            <SectionWrapper title="Projects" icon={FolderGit} isOpen={openSection === 'projects'} onToggle={() => toggleSection('projects')}>
+                                <ProjectsForm data={cvData} addItem={addItem} deleteItem={deleteItem} />
+                            </SectionWrapper>
+
+                            <SectionWrapper title="Languages" icon={Languages} isOpen={openSection === 'languages'} onToggle={() => toggleSection('languages')}>
+                                <LanguagesForm data={cvData} addItem={addItem} deleteItem={deleteItem} />
+                            </SectionWrapper>
+
+                            <SectionWrapper title="Awards" icon={Star} isOpen={openSection === 'awards'} onToggle={() => toggleSection('awards')}>
+                                <AwardsForm data={cvData} addItem={addItem} deleteItem={deleteItem} />
                             </SectionWrapper>
 
                             <div className="pt-4 border-t border-gray-200">
@@ -719,7 +912,7 @@ const CVPage = () => {
                                 </div>
                             </div>
                             <div className="cv-preview-container border border-gray-200 shadow-xl rounded-lg overflow-hidden bg-white print:border-none print:shadow-none">
-                                <HarvardCV data={cvData} />
+                                <TemplateRenderer template={selectedTemplate} data={cvData} />
                             </div>
                         </div>
                     </div>
@@ -728,7 +921,7 @@ const CVPage = () => {
             </div>
 
             {/* Mobile Preview Modal */}
-            {showMobilePreview && <MobileCVPreviewModal data={cvData} onClose={() => setShowMobilePreview(false)} />}
+            {showMobilePreview && <MobileCVPreviewModal data={cvData} template={selectedTemplate} onClose={() => setShowMobilePreview(false)} />}
         </div>
     );
 };
