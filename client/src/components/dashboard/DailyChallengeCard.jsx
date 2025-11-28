@@ -100,64 +100,8 @@ function DailyChallengeCard() {
     );
   }
 
-  if (isWeekend) {
-    return (
-      <div className="rounded-lg border border-gray-300 bg-white p-6">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200">
-            <Target className="h-6 w-6 text-gray-600" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Weekend Class</h3>
-            <p className="text-sm text-gray-500">{dayName} session</p>
-          </div>
-        </div>
-        {weekendClass ? (
-          <div className="rounded-lg border border-gray-300 bg-gray-50 p-4">
-            <h4 className="font-bold text-gray-900">{weekendClass.topic}</h4>
-            <p className="mb-3 text-sm text-gray-600">{weekendClass.description}</p>
-            <div className="mb-3 flex items-center gap-2 text-sm text-gray-500">
-              <Clock className="h-4 w-4" />
-              <span>{weekendClass.startTime} - {weekendClass.endTime}</span>
-            </div>
-            {weekendClass.meetingLink && (
-              <a 
-                href={weekendClass.meetingLink} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block w-full rounded-lg bg-black px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-gray-800"
-              >
-                Join Class
-              </a>
-            )}
-          </div>
-        ) : (
-          <div className="rounded-lg bg-gray-50 py-6 text-center text-gray-500">
-            No class scheduled for today.
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  if (!currentWeek) {
-    return (
-      <div className="rounded-lg border border-gray-300 bg-white p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200">
-            <Target className="h-6 w-6 text-gray-900" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Daily Practice</h3>
-            <p className="text-sm text-gray-500">Study plan not active</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const currentWeekPostTest = postTestStatus.find(
-    (s) => s.weekNumber === currentWeek.weekNumber && s.completed
+  const currentWeekPostTest = currentWeek && postTestStatus?.find(
+    (s) => s && s.weekNumber === currentWeek.weekNumber && s.completed
   );
 
   const isPostTestCompleted = !!currentWeekPostTest;
@@ -178,7 +122,7 @@ function DailyChallengeCard() {
               {isPostTestCompleted ? "Daily Practice" : "Post-Test"}
             </h3>
             <p className="text-sm text-gray-500">
-              Week {currentWeek.weekNumber} - {dayName}
+              Week {currentWeek?.weekNumber || 1} - {dayName}
             </p>
           </div>
         </div>
@@ -200,10 +144,7 @@ function DailyChallengeCard() {
 
       {isPostTestCompleted ? (
         <>
-          <div className="mb-4 flex items-center gap-2 rounded-lg bg-green-50 p-3">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-medium text-green-800">Post-Test Completed</span>
-          </div>
+          {/* Post-Test Completed Banner Removed */}
           <div className="mb-4 space-y-2 text-sm text-gray-600">
              <div className="flex items-center justify-between">
               <span>Questions</span>

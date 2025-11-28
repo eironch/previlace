@@ -22,6 +22,7 @@ import UserDetailsModal from "./UserDetailsModal";
 import UserGeneratorModal from "./UserGeneratorModal";
 import { formatDistanceToNow } from "date-fns";
 import StandardHeader from "@/components/ui/StandardHeader";
+import AdminSkeleton from "@/components/ui/AdminSkeleton";
 
 function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -164,7 +165,10 @@ function UserManagement() {
         </div>
       </StandardHeader>
       <div className="flex-1 overflow-y-auto px-4 py-8 sm:px-6 lg:px-8">
-
+        {isLoading ? (
+            <AdminSkeleton showHeader={false} />
+        ) : (
+          <>
       <div className="rounded-lg bg-white shadow">
         <div className="border-b border-gray-300 p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -301,16 +305,7 @@ function UserManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan="9"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    Loading users...
-                  </td>
-                </tr>
-              ) : users.length === 0 ? (
+              {users.length === 0 ? (
                 <tr>
                   <td
                     colSpan="9"
@@ -577,6 +572,8 @@ function UserManagement() {
           </div>
         </div>
       )}
+          </>
+        )}
       </div>
     </div>
   );

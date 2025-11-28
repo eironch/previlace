@@ -491,56 +491,27 @@ const useExamStore = create(
             throw new Error("No active session");
           }
 
+          let payload = {};
+
           if (!hasImmediateFeedback) {
-            const answersToSubmit = Object.entries(answers);
+            // Prepare all answers for batch submission
+            const allAnswers = sessionQuestions.map((question) => {
+              const answerData = answers[question._id];
+              return {
+                questionId: question._id,
+                answer: answerData?.answer || "",
+                timeSpent: answerData?.timeSpent || 0,
+                topicId: question?.topicId,
+                topicName: question?.topicName,
+              };
+            });
 
-            for (const [questionId, answerData] of answersToSubmit) {
-              const question = sessionQuestions.find((q) => q._id === questionId);
-              try {
-                await apiClient.post(`/exam/${currentSession._id}/answer`, {
-                  questionId,
-                  answer: answerData.answer || "",
-                  timeSpent: answerData.timeSpent || 0,
-                  topicId: question?.topicId,
-                  topicName: question?.topicName,
-                });
-              } catch (error) {
-                if (process.env.NODE_ENV === "development") {
-                  console.error(
-                    `Failed to submit answer for question ${questionId}:`,
-                    error
-                  );
-                }
-              }
-            }
-
-            const unansweredQuestionIds = sessionQuestions
-              .map((q) => q._id)
-              .filter((id) => !answers[id]);
-
-            for (const questionId of unansweredQuestionIds) {
-              const question = sessionQuestions.find((q) => q._id === questionId);
-              try {
-                await apiClient.post(`/exam/${currentSession._id}/answer`, {
-                  questionId,
-                  answer: "",
-                  timeSpent: 0,
-                  topicId: question?.topicId,
-                  topicName: question?.topicName,
-                });
-              } catch (error) {
-                if (process.env.NODE_ENV === "development") {
-                  console.error(
-                    `Failed to submit unanswered question ${questionId}:`,
-                    error
-                  );
-                }
-              }
-            }
+            payload = { answers: allAnswers };
           }
 
           const response = await apiClient.post(
-            `/exam/${currentSession._id}/complete`
+            `/exam/${currentSession._id}/complete`,
+            payload
           );
 
           set({
@@ -570,6 +541,26 @@ const useExamStore = create(
             [questionId]: (state.questionTimings[questionId] || 0) + timeSpent,
           },
         }));
+      },
+
+      fetchQuizReview: async (sessionId) => {
+        try {
+          set({ loading: true });
+          const response = await apiClient.get(`/exam/${sessionId}/result?includeAnswers=true`);
+          
+          if (response.data.success) {
+            set((state) => ({
+              currentResult: {
+                ...state.currentResult,
+                answers: response.data.data.result.answers
+              },
+              loading: false
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to fetch quiz review:", error);
+          set({ loading: false, error: error.message });
+        }
       },
 
       clearFeedback: () =>

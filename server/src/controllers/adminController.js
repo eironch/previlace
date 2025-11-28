@@ -5,7 +5,17 @@ import UserActivity from "../models/UserActivity.js";
 import { catchAsync } from "../utils/AppError.js";
 
 const getDashboardStats = catchAsync(async (req, res) => {
+  const { startDate, endDate } = req.query;
   const baseQuery = { role: "student" };
+  
+  // Date filter for created items
+  const dateFilter = {};
+  if (startDate && endDate) {
+    dateFilter.createdAt = {
+      $gte: new Date(startDate),
+      $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
+    };
+  }
 
   const [
     totalUsers,
@@ -36,32 +46,32 @@ const getDashboardStats = catchAsync(async (req, res) => {
       status: "completed"
     }).then(ids => ids.length),
     User.aggregate([
-      { $match: baseQuery },
+      { $match: { ...baseQuery, ...dateFilter } },
       { $match: { examType: { $ne: "" } } },
       { $group: { _id: "$examType", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
     ]),
     User.aggregate([
-      { $match: { ...baseQuery, education: { $ne: "" } } },
+      { $match: { ...baseQuery, ...dateFilter, education: { $ne: "" } } },
       { $group: { _id: "$education", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
     ]),
     User.aggregate([
-      { $match: baseQuery },
+      { $match: { ...baseQuery, ...dateFilter } },
       { $match: { struggles: { $exists: true, $not: { $size: 0 } } } },
       { $unwind: "$struggles" },
       { $group: { _id: "$struggles", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
     ]),
     User.aggregate([
-      { $match: baseQuery },
+      { $match: { ...baseQuery, ...dateFilter } },
       { $match: { studyMode: { $exists: true, $not: { $size: 0 } } } },
       { $unwind: "$studyMode" },
       { $group: { _id: "$studyMode", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
     ]),
     User.aggregate([
-      { $match: baseQuery },
+      { $match: { ...baseQuery, ...dateFilter } },
       {
         $group: {
           _id: {
@@ -76,8 +86,13 @@ const getDashboardStats = catchAsync(async (req, res) => {
     ]),
     // Category Performance
     QuizAttempt.aggregate([
-       { $match: { status: "completed" } },
+       { $match: { status: "completed", ...dateFilter } },
        { $unwind: "$answers" },
+       { 
+         $addFields: {
+           "answers.questionId": { $toObjectId: "$answers.questionId" }
+         }
+       },
        { 
          $lookup: {
            from: "manualquestions",
@@ -91,18 +106,40 @@ const getDashboardStats = catchAsync(async (req, res) => {
          $group: {
            _id: "$question.category",
            totalQuestions: { $sum: 1 },
-           correctQuestions: { $sum: { $cond: ["$answers.isCorrect", 1, 0] } }
+           correctQuestions: { 
+             $sum: { 
+               $cond: [
+                 { $or: [
+                   { $eq: ["$answers.isCorrect", true] },
+                   { $eq: ["$answers.isCorrect", "true"] }
+                 ]}, 
+                 1, 
+                 0
+               ] 
+             } 
+           }
          }
        },
        {
          $project: {
-           avgScore: { $multiply: [{ $divide: ["$correctQuestions", "$totalQuestions"] }, 100] }
+           avgScore: { 
+             $round: [
+               { 
+                 $multiply: [
+                   { $divide: ["$correctQuestions", { $max: ["$totalQuestions", 1] }] }, 
+                   100
+                 ] 
+               }, 
+               0 
+             ]
+           }
          }
        },
        { $sort: { avgScore: -1 } }
     ]),
     // Activity by Hour (Learning Patterns)
     UserActivity.aggregate([
+      { $match: dateFilter },
       {
         $group: {
           _id: { $hour: "$createdAt" },
@@ -111,11 +148,13 @@ const getDashboardStats = catchAsync(async (req, res) => {
       },
       { $sort: { _id: 1 } },
     ]),
-    // User Retention (Daily Active Users - Last 30 Days)
+    // User Retention (Daily Active Users - Last 30 Days OR Date Range)
     UserActivity.aggregate([
       { 
         $match: { 
-          createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } 
+          ...(Object.keys(dateFilter).length > 0 ? dateFilter : {
+            createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } 
+          })
         } 
       },
       { 
@@ -187,6 +226,18 @@ const getDashboardStats = catchAsync(async (req, res) => {
 });
 
 const getAnalyticsStats = catchAsync(async (req, res) => {
+  const { startDate, endDate } = req.query;
+  
+  const dateFilter = {};
+  if (startDate && endDate) {
+    dateFilter.createdAt = {
+      $gte: new Date(startDate),
+      $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
+    };
+  } else if (startDate) {
+     dateFilter.createdAt = { $gte: new Date(startDate) };
+  }
+
   const [
     performanceStats,
     activityStats,
@@ -197,7 +248,7 @@ const getAnalyticsStats = catchAsync(async (req, res) => {
   ] = await Promise.all([
     // Performance Stats
     QuizAttempt.aggregate([
-      { $match: { status: "completed" } },
+      { $match: { status: "completed", ...dateFilter } },
       {
         $group: {
           _id: null,
@@ -249,11 +300,12 @@ const getAnalyticsStats = catchAsync(async (req, res) => {
     ]),
     // Quiz Completion Stats
     QuizAttempt.aggregate([
+      { $match: { ...dateFilter } },
       { $group: { _id: "$status", count: { $sum: 1 } } }
     ]),
     // Quiz Duration Stats (0-5m, 5-10m, 10-20m, 20m+)
     QuizAttempt.aggregate([
-      { $match: { status: "completed" } },
+      { $match: { status: "completed", ...dateFilter } },
       {
         $bucket: {
           groupBy: "$timing.totalTimeSpent",
@@ -263,10 +315,15 @@ const getAnalyticsStats = catchAsync(async (req, res) => {
         }
       }
     ]),
-    // Category Performance
+    // Category Performance (Dynamic by Subject)
     QuizAttempt.aggregate([
-       { $match: { status: "completed" } },
+       { $match: { status: "completed", ...dateFilter } },
        { $unwind: "$answers" },
+       { 
+         $addFields: {
+           "answers.questionId": { $toObjectId: "$answers.questionId" }
+         }
+       },
        { 
          $lookup: {
            from: "manualquestions",
@@ -276,16 +333,46 @@ const getAnalyticsStats = catchAsync(async (req, res) => {
          }
        },
        { $unwind: "$question" },
+       { 
+         $lookup: {
+           from: "subjects",
+           localField: "question.subjectId",
+           foreignField: "_id",
+           as: "subject"
+         }
+       },
+       { $unwind: "$subject" },
        {
          $group: {
-           _id: "$question.category",
+           _id: "$subject.name",
            totalQuestions: { $sum: 1 },
-           correctQuestions: { $sum: { $cond: ["$answers.isCorrect", 1, 0] } }
+           correctQuestions: { 
+             $sum: { 
+               $cond: [
+                 { $or: [
+                   { $eq: ["$answers.isCorrect", true] },
+                   { $eq: ["$answers.isCorrect", "true"] }
+                 ]}, 
+                 1, 
+                 0
+               ] 
+             } 
+           }
          }
        },
        {
          $project: {
-           avgScore: { $multiply: [{ $divide: ["$correctQuestions", "$totalQuestions"] }, 100] }
+           avgScore: { 
+             $round: [
+               { 
+                 $multiply: [
+                   { $divide: ["$correctQuestions", { $max: ["$totalQuestions", 1] }] }, 
+                   100
+                 ] 
+               }, 
+               0 
+             ]
+           }
          }
        },
        { $sort: { avgScore: -1 } }

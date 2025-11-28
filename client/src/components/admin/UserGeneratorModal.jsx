@@ -136,7 +136,7 @@ export default function UserGeneratorModal({ onClose, onSuccess }) {
             )}
           </div>
 
-          <div className="space-y-2 rounded-lg bg-gray-50 p-4 border border-gray-200">
+          <div className="space-y-2 rounded-lg bg-gray-50 p-4 border border-gray-300">
             <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold uppercase text-gray-500">Password</label>
                 <button 
@@ -190,7 +190,7 @@ export default function UserGeneratorModal({ onClose, onSuccess }) {
 
         {/* Basic Info */}
         <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2">Basic Information</h4>
+            <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Information</h4>
             <div className="grid grid-cols-2 gap-4">
             <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">First Name</label>
@@ -246,7 +246,7 @@ export default function UserGeneratorModal({ onClose, onSuccess }) {
         {/* Student Specific Fields */}
         {formData.role === 'student' && (
             <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2 pt-2">Exam Details</h4>
+                <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-300 pb-2 pt-2">Exam Details</h4>
                 
                 <div>
                     <label className="mb-1.5 block text-sm font-medium text-gray-700">Exam Level</label>
@@ -302,7 +302,7 @@ export default function UserGeneratorModal({ onClose, onSuccess }) {
                     <label className="mb-2 block text-sm font-medium text-gray-700">Strong Subjects (Optional)</label>
                     <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-1">
                         {CORE_SUBJECTS.map(subject => (
-                            <label key={subject} className="flex items-center gap-2 p-2 rounded border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                            <label key={subject} className="flex items-center gap-2 p-2 rounded border border-gray-300 hover:bg-gray-50 cursor-pointer">
                                 <input
                                     type="checkbox"
                                     checked={formData.strongSubjects.includes(subject)}
@@ -319,7 +319,7 @@ export default function UserGeneratorModal({ onClose, onSuccess }) {
 
         {/* Account Options */}
         <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2 pt-2">Account Options</h4>
+            <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-300 pb-2 pt-2">Account Options</h4>
             <label className="flex items-center gap-3 cursor-pointer">
                 <input
                     type="checkbox"

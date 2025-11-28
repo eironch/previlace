@@ -43,7 +43,7 @@ const QuestionBankView = forwardRef((props, ref) => {
   return (
     <div className="space-y-6">
         {isLoadingCache && !useQuestionBankStore.getState().questions.length ? (
-          <AdminSkeleton />
+          <AdminSkeleton showHeader={false} />
         ) : (
           <QuestionList
             useQuestionStore={useQuestionBankStore}

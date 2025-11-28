@@ -12,6 +12,7 @@ function StandardHeader({
   refreshLabel = "Refresh",
   isRefreshing = false,
   startContent,
+  endContent,
   bottomContent,
   children 
 }) {
@@ -68,6 +69,7 @@ function StandardHeader({
                 <span className="inline">{refreshLabel}</span>
               </Button>
             )}
+            {endContent}
             {children}
           </div>
         </div>

@@ -52,7 +52,25 @@ export default function FileList({ relatedType, relatedId, refreshTrigger }) {
   };
 
   if (loading) {
-    return <div className="h-20 animate-pulse rounded-lg bg-gray-200"></div>;
+    return (
+      <div className="space-y-2 animate-pulse">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3">
+            <div className="flex items-center gap-3">
+              <div className="h-5 w-5 rounded bg-gray-200"></div>
+              <div className="space-y-2">
+                <div className="h-4 w-32 rounded bg-gray-200"></div>
+                <div className="h-3 w-24 rounded bg-gray-200"></div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="h-8 w-8 rounded-full bg-gray-200"></div>
+              <div className="h-8 w-8 rounded-full bg-gray-200"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if ((files || []).length === 0) {

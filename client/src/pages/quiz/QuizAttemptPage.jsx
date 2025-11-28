@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronLeft, Flag, CheckCircle2, Clock, BookOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flag, CheckCircle2, Clock, BookOpen } from "lucide-react";
 import useExamStore from "@/store/examStore";
 import QuestionDisplay from "@/components/exam/QuestionDisplay";
 import QuizTimer from "@/components/exam/QuizTimer";
@@ -92,7 +92,11 @@ function QuizAttemptPage() {
         await confirmAnswer();
       } else {
         saveProgress();
-        nextQuestion();
+        if (currentQuestionIndex === totalQuestions - 1) {
+          await handleSubmitQuiz();
+        } else {
+          nextQuestion();
+        }
       }
     }
   }
@@ -322,6 +326,7 @@ function QuizAttemptPage() {
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 )}
                 {getNextButtonText()}
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>

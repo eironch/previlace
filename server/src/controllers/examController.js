@@ -202,6 +202,7 @@ const submitAnswer = catchAsync(async (req, res, next) => {
 
 const completeQuizAttempt = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
+  const { answers } = req.body; // Expect answers array for batch processing
 
   const session = await QuizAttempt.findById(sessionId).populate("questions");
 
@@ -215,6 +216,36 @@ const completeQuizAttempt = catchAsync(async (req, res, next) => {
 
   if (session.status === "completed") {
     return next(new AppError("Quiz session already completed", 400));
+  }
+
+  // Process batch answers if provided
+  if (answers && Array.isArray(answers) && answers.length > 0) {
+    // Process answers in parallel for efficiency
+    await Promise.all(
+      answers.map(async (ans) => {
+        try {
+          await session.submitAnswer(ans.questionId, ans.answer, { 
+            topicId: ans.topicId, 
+            topicName: ans.topicName 
+          });
+          
+          // Update time spent if provided
+          if (ans.timeSpent && ans.timeSpent > 0) {
+            const answerRecord = session.answers.find(
+              (a) => a.questionId.toString() === ans.questionId.toString()
+            );
+            if (answerRecord) {
+              answerRecord.timeSpent = ans.timeSpent;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing answer for question ${ans.questionId}:`, error);
+          // Continue processing other answers even if one fails
+        }
+      })
+    );
+    // Save once after all answers are processed
+    await session.save();
   }
 
   await session.complete();
@@ -235,30 +266,8 @@ const completeQuizAttempt = catchAsync(async (req, res, next) => {
     score: session.score,
     timing: session.timing,
     analytics: session.analytics,
-    answers: session.answers.map((answer) => {
-      const question = session.questions.find((q) => q._id.toString() === answer.questionId.toString());
-
-      return {
-        questionId: answer.questionId,
-        question: question
-          ? {
-              questionText: question.questionText,
-              questionMath: question.questionMath,
-              options: question.options,
-              explanation: question.explanation,
-              explanationMath: question.explanationMath,
-              category: question.category,
-              difficulty: question.difficulty,
-            }
-          : null,
-        userAnswer: answer.userAnswer,
-        correctAnswer: question
-          ? question.options.find((opt) => opt.isCorrect)?.text
-          : null,
-        isCorrect: answer.isCorrect,
-        timeSpent: answer.timeSpent,
-      };
-    }),
+    // Answers are now fetched on demand
+    answers: [], 
   };
 
   res.json({
@@ -269,6 +278,7 @@ const completeQuizAttempt = catchAsync(async (req, res, next) => {
 
 const getQuizResult = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
+  const { includeAnswers } = req.query;
 
   const session = await QuizAttempt.findById(sessionId).populate("questions");
 
@@ -288,7 +298,11 @@ const getQuizResult = catchAsync(async (req, res, next) => {
     score: session.score,
     timing: session.timing,
     analytics: session.analytics,
-    answers: session.answers.map((answer) => {
+    answers: [],
+  };
+
+  if (includeAnswers === 'true') {
+    result.answers = session.answers.map((answer) => {
       const question = session.questions.find((q) => q._id.toString() === answer.questionId.toString());
 
       return {
@@ -311,8 +325,8 @@ const getQuizResult = catchAsync(async (req, res, next) => {
         isCorrect: answer.isCorrect,
         timeSpent: answer.timeSpent,
       };
-    }),
-  };
+    });
+  }
 
   res.json({
     success: true,
@@ -543,6 +557,21 @@ const trackStudySession = catchAsync(async (req, res, next) => {
   res.json({
     success: true,
     data: { adherenceUpdate },
+  });
+});
+
+const resetPostTest = catchAsync(async (req, res, next) => {
+  await PostTestTracking.deleteMany({ userId: req.user._id });
+  
+  // Optional: Mark previous post-test attempts as abandoned so they don't show up as active
+  await QuizAttempt.updateMany(
+    { userId: req.user._id, mode: "post-test", status: { $ne: "completed" } },
+    { status: "abandoned" }
+  );
+
+  res.json({
+    success: true,
+    data: { message: "Post-test status reset successfully" },
   });
 });
 
@@ -1195,4 +1224,5 @@ export default {
   startPretest,
   getPostTestStatus,
   checkPretestAvailability,
+  resetPostTest,
 };

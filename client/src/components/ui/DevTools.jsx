@@ -114,6 +114,23 @@ export default function DevTools() {
               {isReseeding ? "Reseeding..." : "Reset & Reseed Database"}
             </button>
 
+            <button 
+              onClick={async () => {
+                if(confirm("Reset Post-Test status for current user?")) {
+                  try {
+                    await apiClient.post("/exam/reset-post-test");
+                    alert("Post-Test status reset!");
+                    window.location.reload();
+                  } catch(e) {
+                    alert(e.message);
+                  }
+                }
+              }}
+              className="w-full rounded border px-2 py-1 bg-blue-600 text-white hover:bg-blue-700 font-semibold mt-2"
+            >
+              Reset Post-Test Status
+            </button>
+
             <div className="border-t my-2"></div>
 
             <button 

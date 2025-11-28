@@ -33,7 +33,7 @@ export const useStatsStore = create((set, get) => ({
             ]);
 
             set({
-                stats: fetchedStats,
+                stats: fetchedStats || [],
                 isLoading: false,
                 error: null
             });

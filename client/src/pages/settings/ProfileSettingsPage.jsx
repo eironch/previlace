@@ -10,12 +10,14 @@ import {
     Mail, 
     Key, 
     CheckCircle, 
-    AlertCircle 
+    AlertCircle,
+    History
 } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import apiClient from "@/services/apiClient";
 import StandardHeader from "@/components/ui/StandardHeader";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
+import HistoryTab from "@/components/settings/HistoryTab";
 
 export default function ProfileSettingsPage() {
   const navigate = useNavigate();
@@ -104,6 +106,7 @@ export default function ProfileSettingsPage() {
   const tabs = [
       { id: "profile", label: "Profile Settings", icon: User },
       { id: "security", label: "Security", icon: Lock },
+      { id: "history", label: "Test History", icon: History },
       { id: "notifications", label: "Notifications", icon: Bell },
   ];
 
@@ -353,6 +356,8 @@ export default function ProfileSettingsPage() {
                         </div>
                     </div>
                 )}
+
+                {activeTab === "history" && <HistoryTab />}
             </div>
         </div>
       </div>

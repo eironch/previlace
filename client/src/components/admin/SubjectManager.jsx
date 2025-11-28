@@ -1,6 +1,7 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Plus, Edit, Trash, ChevronRight, ChevronDown, BookOpen } from 'lucide-react';
 import subjectService from '../../services/subjectService';
+import AdminSkeleton from '../ui/AdminSkeleton';
 
 const SubjectManager = forwardRef((props, ref) => {
   const [subjects, setSubjects] = useState([]);
@@ -102,6 +103,9 @@ const SubjectManager = forwardRef((props, ref) => {
         <h2 className="text-xl font-bold text-gray-900">Subjects & Topics</h2>
       </div>
 
+      {loading ? (
+        <AdminSkeleton showHeader={false} />
+      ) : (
       <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
         {subjects.map(subject => (
           <div key={subject._id} className="border-b border-gray-300 last:border-b-0">
@@ -157,10 +161,12 @@ const SubjectManager = forwardRef((props, ref) => {
                   <p className="text-sm text-gray-500 ml-8 italic">No topics found.</p>
                 )}
               </div>
+
             )}
           </div>
         ))}
       </div>
+      )}
 
       {/* Subject Modal */}
       {showSubjectModal && (

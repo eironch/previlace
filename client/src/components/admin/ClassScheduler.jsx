@@ -259,7 +259,7 @@ const ClassScheduler = forwardRef((props, ref) => {
   });
 
   if (loading) {
-    return <AdminSkeleton />;
+    return <AdminSkeleton showHeader={false} />;
   }
 
   return (

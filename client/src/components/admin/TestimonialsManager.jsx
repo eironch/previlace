@@ -73,48 +73,49 @@ export default function TestimonialsManager({ landingPage = false }) {
             let statusText = testimonial.status.toUpperCase();
 
             if (testimonial.status === 'pending') {
-                borderColor = 'border-gray-700';
-                textColor = 'text-gray-700';
+                borderColor = 'bg-gray-100'; // Changed to match UserManagement style (no border, just bg)
+                textColor = 'text-gray-800';
             } else if (testimonial.status === 'approved') {
-                // ⭐ Change text to 'FAVORITED' or 'APPROVED' based on context/preference
-                borderColor = 'border-black';
-                textColor = 'text-black';
-                statusText = 'FAVORITED'; // ⭐ Visual change for the approved state
+                borderColor = 'bg-green-100';
+                textColor = 'text-green-800';
+                statusText = 'FEATURED';
             } 
 
             return (
-                <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${borderColor} ${textColor}`}>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${borderColor} ${textColor}`}>
                     {statusText}
                 </span>
             );
         };
 
         return (
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-300 transition-all duration-200 hover:shadow-md hover:border-gray-300">
-                <div className="flex justify-between items-start mb-4 border-b border-gray-300 pb-3">
+            <div className="bg-white p-6 hover:bg-gray-50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center space-x-3">
-                        <User className="h-6 w-6 text-gray-700" />
+                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                            <User className="h-5 w-5 text-gray-600" />
+                        </div>
                         <div>
-                            <p className="font-semibold text-lg text-gray-900">{testimonial.userName || 'Anonymous User'}</p>
-                            <p className="text-sm text-gray-500">{testimonial.role || 'No Role Specified'}</p>
+                            <p className="font-semibold text-gray-900">{testimonial.userName || 'Anonymous User'}</p>
+                            <p className="text-xs text-gray-500">{testimonial.role || 'No Role Specified'}</p>
                         </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end gap-1">
                         <StatusBadge />
-                        <div className="flex items-center justify-end text-xs text-gray-500 mt-1 space-x-2">
+                        <div className="flex items-center text-xs text-gray-400 gap-1">
                             <Clock className="h-3 w-3" />
-                            <span>Submitted: {formatDate(testimonial.submittedAt)}</span>
+                            <span>{formatDate(testimonial.submittedAt)}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-4 pl-13">
                     <div className="flex mb-2">
                         {[...Array(testimonial.rating || 5)].map((_, i) => (
                             <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
                         ))}
                     </div>
-                    <p className="text-gray-700 italic">"{testimonial.content}"</p>
+                    <p className="text-gray-600 leading-relaxed">"{testimonial.content}"</p>
                 </div>
 
                 {actionError && (
@@ -124,32 +125,30 @@ export default function TestimonialsManager({ landingPage = false }) {
                 )}
 
                 {!landingPage && (
-                    <div className="flex space-x-3 pt-3 border-t border-gray-300">
-                        {isPending && (
-                            <Button 
-                                onClick={() => handleAction(testimonial._id, 'approve')} 
-                                disabled={isActionDisabled || approvedCount >= MAX_APPROVED_TESTIMONIALS} // ⭐ Disable if at limit
-                                className="flex items-center border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                            >
-                                <Heart className="h-4 w-4 mr-2 text-red-500" /> 
-                                {actionLoading === 'approve' ? 'Favoriting...' : 'Favorite for Display'}
-                            </Button>
-                        )}
+                    <div className="flex items-center justify-between pt-4">
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            {isPending && (
+                                <Button 
+                                    onClick={() => handleAction(testimonial._id, 'approve')} 
+                                    disabled={isActionDisabled || approvedCount >= MAX_APPROVED_TESTIMONIALS}
+                                    className="bg-black text-white hover:bg-gray-800 text-xs px-3 py-2 h-auto w-full sm:w-auto justify-center"
+                                >
+                                    <Heart className="h-3 w-3 mr-2" /> 
+                                    {actionLoading === 'approve' ? 'Featuring...' : 'Feature'}
+                                </Button>
+                            )}
 
-                        {isApproved && (
-                            <Button 
-                                onClick={() => handleAction(testimonial._id, 'revert')} 
-                                disabled={isActionDisabled} 
-                                className="flex items-center border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                            >
-                                <Clock className="h-4 w-4 mr-2" /> Revert to Pending
-                            </Button>
-                        )}
-                        
-                        {/* ⭐ Display limit info near actions */}
-                        <p className="text-sm text-gray-500 self-center ml-4">
-                            Approved: {approvedCount}/{MAX_APPROVED_TESTIMONIALS}
-                        </p>
+                            {isApproved && (
+                                <Button 
+                                    onClick={() => handleAction(testimonial._id, 'revert')} 
+                                    disabled={isActionDisabled} 
+                                    variant="outline"
+                                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 text-xs px-3 py-2 h-auto w-full sm:w-auto justify-center"
+                                >
+                                    <Clock className="h-3 w-3 mr-2" /> Unfeature
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
@@ -177,54 +176,49 @@ export default function TestimonialsManager({ landingPage = false }) {
 
     return (
         <div className="space-y-6">
-            {!landingPage && (
-                <>
-                    <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-4">
-                        Testimonials Management ({filteredTestimonials.length})
-                        <span className="text-base font-medium text-gray-600">
-                            (Display Limit: {approvedCount}/{MAX_APPROVED_TESTIMONIALS})
-                        </span>
-                        <button 
-                            onClick={() => fetchTestimonials()} 
-                            disabled={isLoading}
-                            className="ml-auto flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-all duration-200 active:scale-95"
-                        >
-                            <RefreshCw 
-                                className="h-4 w-4" 
-                                style={{ animation: isLoading ? "custom-spin 1s linear infinite" : "none" }}
-                            />
-                            Refresh
-                        </button>
-                    </h2>
-
-                    {/* Filter dropdown */}
-                    <div className="mb-4">
-                        <label className="mr-2 font-semibold text-black">Filter Status:</label>
-                        <select 
-                            value={filterStatus} 
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="border border-black rounded px-2 py-1 text-black"
-                        >
-                            <option value="all">All</option>
-                            <option value="pending">Pending</option>
-                            <option value="approved">Favorited (Approved)</option>
-                        </select>
-                    </div>
-                </>
-            )}
-
-            <div className="space-y-4">
-                {filteredTestimonials.length > 0 ? (
-                    filteredTestimonials.map(t => (
-                        <TestimonialRow key={t._id} testimonial={t} />
-                    ))
-                ) : (
-                    <div className="p-8 text-center bg-white rounded-lg border border-dashed border-gray-300">
-                        <p className="text-lg text-gray-500">
-                            {landingPage ? 'No favorite testimonials yet.' : `No ${filterStatus} testimonials found.`}
-                        </p>
+            <div className="rounded-lg border border-gray-300 bg-white shadow-sm">
+                {!landingPage && (
+                    <div className="border-b border-gray-300 px-6 py-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <h3 className="text-lg font-medium text-gray-900">Testimonials</h3>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-500">Filter:</span>
+                                    <select 
+                                        value={filterStatus} 
+                                        onChange={(e) => setFilterStatus(e.target.value)}
+                                        className="text-sm border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black"
+                                    >
+                                        <option value="all">All Status</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Featured</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {approvedCount}/{MAX_APPROVED_TESTIMONIALS} Featured
+                            </span>
+                        </div>
                     </div>
                 )}
+
+                <div className="divide-y divide-gray-200">
+                    {filteredTestimonials.length > 0 ? (
+                        filteredTestimonials.map(t => (
+                            <TestimonialRow key={t._id} testimonial={t} />
+                        ))
+                    ) : (
+                        <div className="p-12 text-center">
+                            <div className="mx-auto h-12 w-12 text-gray-400 mb-3">
+                                <User className="h-full w-full" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900">No testimonials found</h3>
+                            <p className="text-gray-500 mt-1">
+                                {landingPage ? 'No featured testimonials yet.' : `No ${filterStatus} testimonials match your criteria.`}
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

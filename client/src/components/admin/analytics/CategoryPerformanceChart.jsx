@@ -28,6 +28,7 @@ export default function CategoryPerformanceChart({ data }) {
                 tick={{ fontSize: 12 }}
               />
               <Tooltip
+                formatter={(value) => [`${Math.round(value)}%`, "Average Score"]}
                 contentStyle={{
                   backgroundColor: "#fff",
                   border: "1px solid #e5e7eb",

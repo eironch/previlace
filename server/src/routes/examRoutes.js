@@ -38,5 +38,6 @@ router.get("/pretest-availability", examController.checkPretestAvailability);
 
 router.post("/study-plan/generate", validateStudyPlan, examController.generateStudyPlan);
 router.post("/study-plan/track", validateStudySession, examController.trackStudySession);
+router.post("/reset-post-test", examController.resetPostTest);
 
 export default router;

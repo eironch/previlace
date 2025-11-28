@@ -46,7 +46,7 @@ const ReviewQueueView = forwardRef((props, ref) => {
   return (
     <div className="space-y-6">
         {isLoadingCache && !useReviewQuestionStore.getState().questions.length ? (
-          <AdminSkeleton />
+          <AdminSkeleton showHeader={false} />
         ) : (
           <QuestionList
             useQuestionStore={useReviewQuestionStore}

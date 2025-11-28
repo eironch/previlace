@@ -10,7 +10,7 @@ export default function ChartCard({
   className = "" 
 }) {
   return (
-    <div className={`flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm ${className}`}>
+    <div className={`flex flex-col rounded-xl border border-gray-300 bg-white p-6 shadow-sm ${className}`}>
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           {Icon && <Icon className="h-5 w-5 text-gray-900" />}

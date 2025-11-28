@@ -28,6 +28,8 @@ import {
 import StandardHeader from "@/components/ui/StandardHeader";
 import { useAuthStore } from "@/store/authStore";
 import useAdminCacheStore from "@/store/adminCacheStore";
+import { useTestimonialsStore } from "@/store/testimonialsStore";
+import { useStatsStore } from "@/store/statsStore";
 import Sidebar, { adminNavItems } from "../components/layout/Sidebar";
 import UserManagement from "../components/admin/UserManagement";
 import QuestionManagementPage from "./admin/QuestionManagementPage";
@@ -40,9 +42,11 @@ import StatsCard from "@/components/admin/dashboard/StatsCard";
 import RecentUsers from "@/components/admin/dashboard/RecentUsers";
 import SystemHealth from "@/components/admin/dashboard/SystemHealth";
 import ChartCard from "@/components/ui/ChartCard";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import CategoryPerformanceChart from "@/components/admin/analytics/CategoryPerformanceChart";
 import LearningPatterns from "@/components/admin/analytics/LearningPatterns";
 import UserRetention from "@/components/admin/analytics/UserRetention";
+import AdminSkeleton from "@/components/ui/AdminSkeleton";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -70,6 +74,12 @@ function AdminPage() {
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Date Filter State
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0]
+  });
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
@@ -78,16 +88,12 @@ function AdminPage() {
     if (activeTab === 'dashboard') {
       loadData();
     }
-  }, [activeTab]);
+  }, [activeTab, dateRange]);
 
   async function loadData() {
-    const cached = getCachedData(CACHE_KEY);
-    if (cached) {
-      setStats(cached.data.stats);
-      setIsLoading(false);
-      if (!cached.isStale) return;
-    }
-    await fetchAdminData(!!cached);
+    // Skip cache if date range is custom or just always fetch for simplicity with filters
+    // For now, let's just fetch fresh data when dates change
+    await fetchAdminData();
   }
 
   async function fetchAdminData(isBackgroundRefresh = false) {
@@ -95,7 +101,12 @@ function AdminPage() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/stats`, { credentials: "include" });
+      const queryParams = new URLSearchParams({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate
+      });
+      
+      const response = await fetch(`${API_BASE_URL}/api/admin/stats?${queryParams}`, { credentials: "include" });
 
       if (!response.ok) {
         throw new Error("Failed to fetch admin data");
@@ -105,7 +116,7 @@ function AdminPage() {
 
       if (data.success) {
         setStats(data.data);
-        setCachedData(CACHE_KEY, { stats: data.data });
+        // Only cache default view if needed, but for now we rely on fresh data for filters
       }
 
       setIsLoading(false);
@@ -119,18 +130,18 @@ function AdminPage() {
   }
 
   const optimizedStats = useMemo(() => {
-    if (!stats?.overview) return null;
+    if (!stats || !stats.overview) return null;
 
     const current = stats.overview;
     const previous = stats.previousMonth || {
-      totalUsers: Math.max(0, Math.floor(current.totalUsers * 0.85)),
-      activeLearners: Math.max(0, Math.floor(current.activeLearners * 0.80)),
-      completedProfiles: Math.max(0, Math.floor(current.completedProfiles * 0.75)),
-      activeStudents: Math.max(0, Math.floor(current.activeStudents * 0.82)),
+      totalUsers: 0,
+      activeLearners: 0,
+      completedProfiles: 0,
+      activeStudents: 0,
     };
 
     function calculateGrowth(current, previous) {
-      if (previous === 0) return current > 0 ? 100 : 0;
+      if (!previous || previous === 0) return current > 0 ? 100 : 0;
       return Math.round(((current - previous) / previous) * 100);
     }
 
@@ -187,6 +198,8 @@ function AdminPage() {
                 isLoading={isLoading} 
                 loadData={loadData}
                 setIsMobileMenuOpen={setIsMobileMenuOpen}
+                dateRange={dateRange}
+                setDateRange={setDateRange}
             />
          )}
 
@@ -202,13 +215,29 @@ function AdminPage() {
   );
 }
 
-function DashboardSection({ stats, optimizedStats, isLoading, loadData, setIsMobileMenuOpen }) {
+function DashboardSection({ stats, optimizedStats, isLoading, loadData, setIsMobileMenuOpen, dateRange, setDateRange }) {
     return (
         <>
             <StandardHeader
                 title="Dashboard"
                 description="Overview of system performance and key metrics"
                 onRefresh={loadData}
+                endContent={
+                  <DateRangePicker 
+                    date={{
+                      from: dateRange.startDate ? new Date(dateRange.startDate) : undefined,
+                      to: dateRange.endDate ? new Date(dateRange.endDate) : undefined
+                    }}
+                    setDate={(range) => {
+                      if (range?.from) {
+                        setDateRange({
+                          startDate: range.from.toISOString().split('T')[0],
+                          endDate: range.to ? range.to.toISOString().split('T')[0] : range.from.toISOString().split('T')[0]
+                        });
+                      }
+                    }}
+                  />
+                }
                 startContent={
                 <button
                     onClick={() => setIsMobileMenuOpen(true)}
@@ -220,29 +249,14 @@ function DashboardSection({ stats, optimizedStats, isLoading, loadData, setIsMob
             />
             <div className="flex-1 overflow-y-auto p-4 sm:p-8">
                 <div className="min-h-full">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-300 min-h-full p-6">
-                        {isLoading && !stats ? (
-                            <div className="space-y-12 animate-pulse">
-                                <section>
-                                    <div className="mb-6 h-8 w-64 bg-gray-200 rounded"></div>
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-                                        {[1, 2, 3, 4].map(i => (
-                                            <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-                                        ))}
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                                        <div className="h-80 bg-gray-200 rounded-lg"></div>
-                                        <div className="h-80 bg-gray-200 rounded-lg"></div>
-                                    </div>
-                                </section>
-                            </div>
-                        ) : (
-                            <AdminDashboard 
-                                stats={stats} 
-                                optimizedStats={optimizedStats} 
-                            />
-                        )}
-                    </div>
+                    {isLoading && !stats ? (
+                        <AdminSkeleton showHeader={false} />
+                    ) : (
+                        <AdminDashboard 
+                            stats={stats} 
+                            optimizedStats={optimizedStats} 
+                        />
+                    )}
                 </div>
             </div>
         </>
@@ -255,13 +269,14 @@ function LandingSection() {
             <StandardHeader
                 title="Landing Page"
                 description="Manage landing page content and testimonials"
-                onRefresh={() => {}}
+                onRefresh={() => {
+                    useTestimonialsStore.getState().fetchTestimonials();
+                    useStatsStore.getState().fetchStats();
+                }}
             />
             <div className="flex-1 overflow-y-auto p-4 sm:p-8">
                 <div className="h-full">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-300 min-h-[600px] p-6">
-                        <LandingPageManager />
-                    </div>
+                    <LandingPageManager />
                 </div>
             </div>
         </>
@@ -308,7 +323,6 @@ function AdminDashboard({ stats, optimizedStats }) {
              <LearningPatterns stats={stats} />
              <UserRetention data={stats?.userRetention || []} />
           </div>
-          <CategoryPerformanceChart data={stats?.categoryStats || []} />
           <RecentUsers />
         </div>
       </section>

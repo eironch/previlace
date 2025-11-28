@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { RefreshCw, TrendingUp, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 
-// FIX: Using the determined stable relative path
 import { useStatsStore } from "@/store/statsStore";
 
 // Map labels from the store array structure back to simple form keys
@@ -89,52 +88,45 @@ export default function AdminStatsEditor() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Landing Page Metrics</h2>
-
-            {/* --- Summary / Refresh Controls --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 rounded-lg border border-gray-300">
-                <h3 className="text-lg font-semibold text-black mb-2 md:mb-0">Current Live Values</h3>
-                <button 
-                    onClick={() => fetchStats()} 
-                    disabled={isStatsLoading}
-                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-all duration-200 active:scale-95"
-                >
-                    <RefreshCw 
-                        className="h-4 w-4" 
-                        style={{ animation: isStatsLoading ? "custom-spin 1s linear infinite" : "none" }}
-                    />
-                    Refresh Data
-                </button>
-            </div>
-
-            {/* --- Stats Summary Panel --- */}
-            <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
-                {isStatsLoading && stats.length === 0 ? (
-                    <div className="flex items-center text-gray-500 py-4">
-                        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading current stats...
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Live Preview Card */}
+                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
+                    <div className="flex items-center gap-2 mb-6">
+                        <div className="p-2 bg-green-50 rounded-lg">
+                            <TrendingUp className="h-5 w-5 text-green-600" />
+                        </div>
+                        <h3 className="font-semibold text-gray-900">Live Preview</h3>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                        {stats.map((stat, index) => (
-                            <div key={index} className="border-l-4 border-black/10 pl-3">
-                                <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                                <p className="text-2xl font-bold text-black">{stat.number}</p>
-                            </div>
-                        ))}
+
+                    {isStatsLoading && stats.length === 0 ? (
+                        <div className="flex items-center justify-center py-12 text-gray-500">
+                            <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading stats...
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {stats.map((stat, index) => (
+                                <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">{stat.label}</p>
+                                    <p className="text-2xl font-bold text-black">{stat.number}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Edit Form Card */}
+                <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-300 shadow-sm p-6 flex flex-col h-full">
+                    <div className="flex items-center gap-2 mb-6">
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                            <RefreshCw className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <h3 className="font-semibold text-gray-900">Update Values</h3>
                     </div>
-                )}
-            </div>
-            
-            {/* --- Inline Editing Form (Moved from Modal) --- */}
-            <form onSubmit={handleSubmit} className="p-6 bg-white rounded-lg border border-gray-300 shadow-sm space-y-4">
-                <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">Update Metrics</h3>
-                
-                <div className="space-y-4">
-                    {/* Input Fields Container */}
-                    <div className="grid grid-cols-1 gap-4">
+                    
+                    <div className="space-y-4 flex-1">
                         {formFields.map(({ label, key, value }) => (
-                            <div key={key} className="space-y-1">
-                                <label htmlFor={key} className="text-sm font-medium text-gray-700 block">
+                            <div key={key}>
+                                <label htmlFor={key} className="text-sm font-medium text-gray-700 block mb-1">
                                     {label}
                                 </label>
                                 <input
@@ -144,34 +136,32 @@ export default function AdminStatsEditor() {
                                     value={value || ''}
                                     onChange={handleChange}
                                     disabled={isSaving}
-                                    placeholder="Enter value (e.g., 90% or 5,000+)"
-                                    className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm focus:ring-black focus:border-black transition"
+                                    placeholder="e.g., 90%"
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-black transition-colors"
                                     required
                                 />
                             </div>
                         ))}
                     </div>
-                </div>
 
-                {/* Status Message Area */}
-                {statusMessage.type && (
-                    <div className={`p-3 rounded-lg flex items-center ${statusMessage.type === 'success' ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
-                        {statusMessage.type === 'success' ? <CheckCircle className="h-5 w-5 mr-2" /> : <AlertCircle className="h-5 w-5 mr-2" />}
-                        <span className="text-sm font-medium">{statusMessage.text}</span>
+                    <div className="mt-6 pt-4 border-t border-gray-100">
+                        {statusMessage.type && (
+                            <div className={`mb-4 p-3 rounded-lg flex items-center text-sm ${statusMessage.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                {statusMessage.type === 'success' ? <CheckCircle className="h-4 w-4 mr-2" /> : <AlertCircle className="h-4 w-4 mr-2" />}
+                                {statusMessage.text}
+                            </div>
+                        )}
+
+                        <Button
+                            isSaving={isSaving}
+                            disabled={isStatsLoading}
+                            className="w-full"
+                        >
+                            {isSaving ? "Saving Changes..." : "Save Updates"}
+                        </Button>
                     </div>
-                )}
-
-                {/* Submit Button */}
-                <div className="pt-4 flex justify-end">
-                    <Button
-                        isSaving={isSaving}
-                        disabled={isStatsLoading}
-                        className="text-base"
-                    >
-                        {isSaving ? "Saving Changes" : "Save Metrics to Live Site"}
-                    </Button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 }

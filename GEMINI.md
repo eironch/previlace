@@ -262,11 +262,11 @@ Follow this Prettier configuration:
 
       "cards": {
         "standard": {
-          "className": "rounded-lg border border-gray-200 bg-white p-6 shadow-sm",
+          "className": "rounded-lg border border-gray-300 bg-white p-6 shadow-sm",
           "usage": "Content containers, question cards, result cards"
         },
         "interactive": {
-          "className": "rounded-lg border border-gray-200 bg-white p-6 hover:border-black hover:shadow-lg transition-all cursor-pointer",
+          "className": "rounded-lg border border-gray-300 bg-white p-6 hover:border-black hover:shadow-lg transition-all cursor-pointer",
           "usage": "Clickable subject cards, topic cards, selectable items"
         },
         "highlight": {

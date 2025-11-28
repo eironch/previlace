@@ -36,7 +36,7 @@ const fileSchema = new mongoose.Schema(
         default: "other",
       },
       id: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String, // Changed from ObjectId to String to support "global_resources"
       },
     },
     downloadCount: {
