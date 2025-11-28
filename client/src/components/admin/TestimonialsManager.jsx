@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTestimonialsStore } from "@/store/testimonialsStore";
-import { 
-    CheckCircle, Clock, User, Star, AlertTriangle, 
+import {
+    CheckCircle, Clock, User, Star, AlertTriangle,
     Loader2, RefreshCw, Heart // ⭐ Added Heart icon for 'Favorited' visual
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -33,7 +33,7 @@ export default function TestimonialsManager({ landingPage = false }) {
 
     const handleAction = async (testimonialId, actionType) => {
         setActionError(null);
-        
+
         // ⭐ NEW LOGIC: Check the limit BEFORE approving
         if (actionType === 'approve' && approvedCount >= MAX_APPROVED_TESTIMONIALS) {
             setActionError(`Cannot approve more than ${MAX_APPROVED_TESTIMONIALS} testimonials. Please revert one first.`);
@@ -76,11 +76,11 @@ export default function TestimonialsManager({ landingPage = false }) {
                 borderColor = 'border-gray-700';
                 textColor = 'text-gray-700';
             } else if (testimonial.status === 'approved') {
-                // ⭐ Change text to 'FAVORITED' or 'APPROVED' based on context/preference
+                // ⭐ Change text to 'DISPLAYED' or 'APPROVED' based on context/preference
                 borderColor = 'border-black';
                 textColor = 'text-black';
-                statusText = 'FAVORITED'; // ⭐ Visual change for the approved state
-            } 
+                statusText = 'DISPLAYED'; // ⭐ Visual change for the approved state
+            }
 
             return (
                 <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${borderColor} ${textColor}`}>
@@ -126,26 +126,26 @@ export default function TestimonialsManager({ landingPage = false }) {
                 {!landingPage && (
                     <div className="flex space-x-3 pt-3 border-t border-gray-300">
                         {isPending && (
-                            <Button 
-                                onClick={() => handleAction(testimonial._id, 'approve')} 
+                            <Button
+                                onClick={() => handleAction(testimonial._id, 'approve')}
                                 disabled={isActionDisabled || approvedCount >= MAX_APPROVED_TESTIMONIALS} // ⭐ Disable if at limit
                                 className="flex items-center border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                             >
-                                <Heart className="h-4 w-4 mr-2 text-red-500" /> 
-                                {actionLoading === 'approve' ? 'Favoriting...' : 'Favorite for Display'}
+                                <Heart className="h-4 w-4 mr-2 text-red-500" />
+                                {actionLoading === 'approve' ? 'Displaying...' : 'Display'}
                             </Button>
                         )}
 
                         {isApproved && (
-                            <Button 
-                                onClick={() => handleAction(testimonial._id, 'revert')} 
-                                disabled={isActionDisabled} 
+                            <Button
+                                onClick={() => handleAction(testimonial._id, 'revert')}
+                                disabled={isActionDisabled}
                                 className="flex items-center border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                             >
                                 <Clock className="h-4 w-4 mr-2" /> Revert to Pending
                             </Button>
                         )}
-                        
+
                         {/* ⭐ Display limit info near actions */}
                         <p className="text-sm text-gray-500 self-center ml-4">
                             Approved: {approvedCount}/{MAX_APPROVED_TESTIMONIALS}
@@ -184,13 +184,13 @@ export default function TestimonialsManager({ landingPage = false }) {
                         <span className="text-base font-medium text-gray-600">
                             (Display Limit: {approvedCount}/{MAX_APPROVED_TESTIMONIALS})
                         </span>
-                        <button 
-                            onClick={() => fetchTestimonials()} 
+                        <button
+                            onClick={() => fetchTestimonials()}
                             disabled={isLoading}
                             className="ml-auto flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-all duration-200 active:scale-95"
                         >
-                            <RefreshCw 
-                                className="h-4 w-4" 
+                            <RefreshCw
+                                className="h-4 w-4"
                                 style={{ animation: isLoading ? "custom-spin 1s linear infinite" : "none" }}
                             />
                             Refresh
@@ -200,14 +200,14 @@ export default function TestimonialsManager({ landingPage = false }) {
                     {/* Filter dropdown */}
                     <div className="mb-4">
                         <label className="mr-2 font-semibold text-black">Filter Status:</label>
-                        <select 
-                            value={filterStatus} 
+                        <select
+                            value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                             className="border border-black rounded px-2 py-1 text-black"
                         >
                             <option value="all">All</option>
                             <option value="pending">Pending</option>
-                            <option value="approved">Favorited (Approved)</option>
+                            <option value="approved">Displayed (Approved)</option>
                         </select>
                     </div>
                 </>
@@ -221,7 +221,7 @@ export default function TestimonialsManager({ landingPage = false }) {
                 ) : (
                     <div className="p-8 text-center bg-white rounded-lg border border-dashed border-gray-300">
                         <p className="text-lg text-gray-500">
-                            {landingPage ? 'No favorite testimonials yet.' : `No ${filterStatus} testimonials found.`}
+                            {landingPage ? 'No displayed testimonials yet.' : `No ${filterStatus} testimonials found.`}
                         </p>
                     </div>
                 )}

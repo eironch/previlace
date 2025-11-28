@@ -73,13 +73,6 @@ export default function LandingPage() {
       >
         Sign In
       </Button>
-      <Button
-        size="sm"
-        onClick={() => navigate("/register")}
-        className="cursor-pointer"
-      >
-        Apply Now
-      </Button>
     </div>
   );
 
@@ -197,13 +190,6 @@ export default function LandingPage() {
                   >
                     Sign In
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => navigate("/register")}
-                    className="w-full"
-                  >
-                    Apply Now
-                  </Button>
                 </div>
               ) : (
                 <div className="p-4 space-y-4">
@@ -265,14 +251,7 @@ export default function LandingPage() {
           <div className="flex justify-center space-x-3">
             {!isAuthenticated ? (
               <>
-                <Button
-                  size="lg"
-                  onClick={() => navigate("/register")}
-                  className="cursor-pointer"
-                >
-                  Apply Now
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+
                 <Button
                   variant="outline"
                   size="lg"
@@ -355,17 +334,7 @@ export default function LandingPage() {
               Join thousands of successful Civil Service Exam passers.
             </p>
 
-            {!isAuthenticated ? (
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-black hover:bg-white"
-                onClick={() => navigate("/register")}
-              >
-                Apply Now
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            ) : (
+            {!isAuthenticated ? null : (
               <DashboardButton
                 size="lg"
                 variant="outline"
