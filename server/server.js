@@ -33,6 +33,7 @@ import seedRoutes from "./src/routes/seedRoutes.js";
 import subjectRoutes from "./src/routes/subjectRoutes.js";
 import topicRoutes from "./src/routes/topicRoutes.js";
 import learningContentRoutes from "./src/routes/learningContentRoutes.js";
+import learningProgressRoutes from "./src/routes/learningProgressRoutes.js";
 import testimonialRoutes from "./src/routes/testimonialRoutes.js";
 import testimonialPublicRoutes from "./src/routes/testimonialPublicRoutes.js";
 import statRoutes from "./src/routes/statRoutes.js";
@@ -141,6 +142,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/learning", learningProgressRoutes);
 app.use("/api/database", databaseRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/question-templates", questionTemplateRoutes);

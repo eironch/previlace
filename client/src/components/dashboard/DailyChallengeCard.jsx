@@ -15,7 +15,7 @@ function DailyChallengeCard() {
   const navigate = useNavigate();
   const { studyPlan: activePlan, isLoading: dashboardLoading } = useDashboardStore();
   const { postTestStatus, fetchPostTestStatus, loading: postTestLoading } = usePostTestStore();
-  const { startQuizSession, startDailyPractice, loading: quizLoading, currentSession, sessionActive } = useExamStore();
+  const { startQuizAttempt, startDailyPractice, loading: quizLoading, currentSession, sessionActive } = useExamStore();
   const [weekendClass, setWeekendClass] = useState(null);
   const [currentWeek, setCurrentWeek] = useState(null);
   const [error, setError] = useState(null);
@@ -60,7 +60,7 @@ function DailyChallengeCard() {
     
     try {
       setError(null);
-      await startQuizSession({
+      await startQuizAttempt({
         mode: "post-test",
         weekNumber: currentWeek.weekNumber,
       });

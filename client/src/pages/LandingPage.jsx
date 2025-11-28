@@ -73,13 +73,6 @@ export default function LandingPage() {
       >
         Sign In
       </Button>
-      <Button
-        size="sm"
-        onClick={() => openAuthModal("register")}
-        className="cursor-pointer"
-      >
-        Get Started
-      </Button>
     </div>
   );
 
@@ -197,13 +190,6 @@ export default function LandingPage() {
                   >
                     Sign In
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => openAuthModal("register")}
-                    className="w-full"
-                  >
-                    Get Started
-                  </Button>
                 </div>
               ) : (
                 <div className="p-4 space-y-4">
@@ -265,14 +251,6 @@ export default function LandingPage() {
           <div className="flex justify-center space-x-3">
             {!isAuthenticated ? (
               <>
-                <Button
-                  size="lg"
-                  onClick={() => openAuthModal("register")}
-                  className="cursor-pointer"
-                >
-                  Start Learning
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
                 <Button
                   variant="outline"
                   size="lg"
@@ -360,9 +338,9 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 className="border-white text-black hover:bg-white"
-                onClick={() => openAuthModal("register")}
+                onClick={() => openAuthModal("login")}
               >
-                Create Your Free Account
+                Sign In to Your Account
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (

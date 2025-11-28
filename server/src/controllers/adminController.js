@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import QuizSession from "../models/QuizSession.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 import DailyActivity from "../models/DailyActivity.js";
 import UserActivity from "../models/UserActivity.js";
 import { catchAsync } from "../utils/AppError.js";
@@ -31,7 +31,7 @@ const getDashboardStats = catchAsync(async (req, res) => {
       isProfileComplete: true,
     }),
     // Active Students (Completed at least one quiz session in last 30 days)
-    QuizSession.distinct("userId", {
+    QuizAttempt.distinct("userId", {
       createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
       status: "completed"
     }).then(ids => ids.length),
@@ -75,7 +75,7 @@ const getDashboardStats = catchAsync(async (req, res) => {
       { $limit: 6 },
     ]),
     // Category Performance
-    QuizSession.aggregate([
+    QuizAttempt.aggregate([
        { $match: { status: "completed" } },
        { $unwind: "$answers" },
        { 
@@ -196,7 +196,7 @@ const getAnalyticsStats = catchAsync(async (req, res) => {
     categoryStats,
   ] = await Promise.all([
     // Performance Stats
-    QuizSession.aggregate([
+    QuizAttempt.aggregate([
       { $match: { status: "completed" } },
       {
         $group: {
@@ -248,11 +248,11 @@ const getAnalyticsStats = catchAsync(async (req, res) => {
       { $sort: { date: 1 } }
     ]),
     // Quiz Completion Stats
-    QuizSession.aggregate([
+    QuizAttempt.aggregate([
       { $group: { _id: "$status", count: { $sum: 1 } } }
     ]),
     // Quiz Duration Stats (0-5m, 5-10m, 10-20m, 20m+)
-    QuizSession.aggregate([
+    QuizAttempt.aggregate([
       { $match: { status: "completed" } },
       {
         $bucket: {
@@ -264,7 +264,7 @@ const getAnalyticsStats = catchAsync(async (req, res) => {
       }
     ]),
     // Category Performance
-    QuizSession.aggregate([
+    QuizAttempt.aggregate([
        { $match: { status: "completed" } },
        { $unwind: "$answers" },
        { 

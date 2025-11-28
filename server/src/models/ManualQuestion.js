@@ -549,13 +549,16 @@ manualQuestionSchema.statics.getByFilters = function (filters) {
 };
 
 manualQuestionSchema.statics.getRandomQuestions = function (filters, limit = 10) {
-  const query = { workflowState: "published", isActive: true };
+  const query = { status: "published", isActive: true };
   
   if (filters.category) query.category = filters.category;
   if (filters.subjectArea) query.subjectArea = filters.subjectArea;
   if (filters.difficulty) query.difficulty = filters.difficulty;
   if (filters.examLevel) {
-    query.$or = [{ examLevel: filters.examLevel }, { examLevel: "Both" }];
+    query.$or = [
+      { examLevel: { $regex: new RegExp(`^${filters.examLevel}$`, "i") } },
+      { examLevel: "Both" }
+    ];
   }
   
   return this.aggregate([{ $match: query }, { $sample: { size: limit } }]);

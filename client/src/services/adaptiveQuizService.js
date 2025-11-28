@@ -1,7 +1,7 @@
 import apiClient from "./apiClient";
 
 const adaptiveQuizService = {
-  async startAdaptiveQuizSession(config) {
+  async startAdaptiveQuizAttempt(config) {
     const { data } = await apiClient.post("/exam/adaptive-start", config);
     return data;
   },

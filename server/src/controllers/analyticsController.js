@@ -84,7 +84,7 @@ async function getWeakAreas(req, res, next) {
           totalQuestions: "$totalAttempts",
         },
       },
-      { $match: { accuracy: { $lt: 60 }, totalQuestions: { $gte: 5 } } },
+      { $match: { accuracy: { $lt: 60 }, totalQuestions: { $gte: 1 } } },
       { $sort: { accuracy: 1 } },
       { $limit: 5 },
       {
@@ -246,7 +246,7 @@ async function getStudentAnalytics(req, res, next) {
             totalQuestions: "$totalAttempts",
           },
         },
-        { $match: { accuracy: { $lt: 60 }, totalQuestions: { $gte: 5 } } },
+        { $match: { accuracy: { $lt: 60 }, totalQuestions: { $gte: 1 } } },
         { $sort: { accuracy: 1 } },
         { $limit: 5 },
         {

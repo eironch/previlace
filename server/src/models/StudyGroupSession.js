@@ -67,7 +67,7 @@ const studyGroupSessionSchema = new mongoose.Schema(
     quizzes: [{
       quizId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "QuizSession",
+        ref: "QuizAttempt",
       },
       sharedBy: {
         type: mongoose.Schema.Types.ObjectId,

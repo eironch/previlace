@@ -30,7 +30,7 @@ const userQuestionHistorySchema = new mongoose.Schema(
       {
         sessionId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "QuizSession",
+          ref: "QuizAttempt",
         },
         isCorrect: Boolean,
         timeSpent: Number,

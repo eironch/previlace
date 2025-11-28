@@ -174,16 +174,17 @@ function QuizResultsPage() {
         </div>
 
         {/* Analytics Section */}
-        {(analytics?.strongAreas?.length > 0 || analytics?.weakAreas?.length > 0) && (
+        {/* Analytics Section */}
+        {(analytics?.strongTopics?.length > 0 || analytics?.strongAreas?.length > 0 || analytics?.weakTopics?.length > 0 || analytics?.weakAreas?.length > 0) && (
           <div className="mb-8 grid gap-6 md:grid-cols-2">
-            {analytics.strongAreas?.length > 0 && (
+            {(analytics.strongTopics?.length > 0 || analytics.strongAreas?.length > 0) && (
               <div className="rounded-xl border border-gray-300 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
                   <Award className="h-5 w-5 text-green-600" />
                   <h3 className="font-bold text-gray-900">Strong Areas</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {analytics.strongAreas.map((area, i) => (
+                  {(analytics.strongTopics?.length > 0 ? analytics.strongTopics : analytics.strongAreas).map((area, i) => (
                     <span key={i} className="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-200">
                       {area}
                     </span>
@@ -192,14 +193,14 @@ function QuizResultsPage() {
               </div>
             )}
             
-            {analytics.weakAreas?.length > 0 && (
+            {(analytics.weakTopics?.length > 0 || analytics.weakAreas?.length > 0) && (
               <div className="rounded-xl border border-gray-300 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-yellow-600" />
                   <h3 className="font-bold text-gray-900">Areas to Improve</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {analytics.weakAreas.map((area, i) => (
+                  {(analytics.weakTopics?.length > 0 ? analytics.weakTopics : analytics.weakAreas).map((area, i) => (
                     <span key={i} className="rounded-full bg-yellow-50 px-3 py-1 text-sm font-medium text-yellow-700 border border-yellow-200">
                       {area}
                     </span>

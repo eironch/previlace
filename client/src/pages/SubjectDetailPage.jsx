@@ -13,7 +13,7 @@ function SubjectDetailPage() {
   const { currentSubject, loading: subjectLoading, fetchSubjectById } = useSubjectStore();
   const { topics, loading: topicsLoading, fetchTopicsBySubject } = useTopicStore();
   const { user } = useAuthStore();
-  const { startQuizSession, loading: quizLoading } = useExamStore();
+  const { startQuizAttempt, loading: quizLoading } = useExamStore();
   const [quizError, setQuizError] = useState(null);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ function SubjectDetailPage() {
     try {
       setQuizError(null);
 
-      await startQuizSession({
+      await startQuizAttempt({
         mode: "subject",
         subjectId: id,
         examLevel: user?.examLevel,

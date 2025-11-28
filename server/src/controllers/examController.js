@@ -1,4 +1,4 @@
-import QuizSession from "../models/QuizSession.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 import UserQuestionHistory from "../models/UserQuestionHistory.js";
 import ManualQuestion from "../models/ManualQuestion.js";
 import PostTestTracking from "../models/PostTestTracking.js";
@@ -12,7 +12,7 @@ import studyPlanService from "../services/studyPlanService.js";
 import adaptiveQuizService from "../services/adaptiveQuizService.js";
 import pdfGenerationService from "../services/pdfGenerationService.js";
 
-const startQuizSession = catchAsync(async (req, res, next) => {
+const startQuizAttempt = catchAsync(async (req, res, next) => {
   const {
     mode = "practice",
     title,
@@ -28,7 +28,7 @@ const startQuizSession = catchAsync(async (req, res, next) => {
   }
 
   // Check for existing active session
-  const existingSession = await QuizSession.findOne({
+  const existingSession = await QuizAttempt.findOne({
     userId: req.user._id,
     mode,
     status: { $in: ["active", "paused"] },
@@ -105,7 +105,7 @@ const startQuizSession = catchAsync(async (req, res, next) => {
     _id: { $in: questions.map(q => q._id) }
   }).populate("topicId", "name");
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode,
     title: title || `${mode.charAt(0).toUpperCase() + mode.slice(1)} Quiz`,
@@ -160,7 +160,7 @@ const submitAnswer = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
   const { questionId, answer, timeSpent, topicId, topicName } = req.body;
 
-  const session = await QuizSession.findById(sessionId).populate("questions");
+  const session = await QuizAttempt.findById(sessionId).populate("questions");
 
   if (!session) {
     return next(new AppError("Quiz session not found", 404));
@@ -200,10 +200,10 @@ const submitAnswer = catchAsync(async (req, res, next) => {
   });
 });
 
-const completeQuizSession = catchAsync(async (req, res, next) => {
+const completeQuizAttempt = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
 
-  const session = await QuizSession.findById(sessionId).populate("questions");
+  const session = await QuizAttempt.findById(sessionId).populate("questions");
 
   if (!session) {
     return next(new AppError("Quiz session not found", 404));
@@ -270,7 +270,7 @@ const completeQuizSession = catchAsync(async (req, res, next) => {
 const getQuizResult = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
 
-  const session = await QuizSession.findById(sessionId).populate("questions");
+  const session = await QuizAttempt.findById(sessionId).populate("questions");
 
   if (!session) {
     return next(new AppError("Quiz session not found", 404));
@@ -328,7 +328,7 @@ const getSessionHistory = catchAsync(async (req, res, next) => {
   if (status) filters.status = status;
   if (examLevel) filters["config.examLevel"] = examLevel;
 
-  const sessions = await QuizSession.getSessionHistory(req.user._id, filters);
+  const sessions = await QuizAttempt.getSessionHistory(req.user._id, filters);
 
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const paginatedSessions = sessions.slice(skip, skip + parseInt(limit));
@@ -348,10 +348,10 @@ const getSessionHistory = catchAsync(async (req, res, next) => {
   });
 });
 
-const pauseQuizSession = catchAsync(async (req, res, next) => {
+const pauseQuizAttempt = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
 
-  const session = await QuizSession.findById(sessionId);
+  const session = await QuizAttempt.findById(sessionId);
 
   if (!session) {
     return next(new AppError("Quiz session not found", 404));
@@ -373,10 +373,10 @@ const pauseQuizSession = catchAsync(async (req, res, next) => {
   }
 });
 
-const resumeQuizSession = catchAsync(async (req, res, next) => {
+const resumeQuizAttempt = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
 
-  const session = await QuizSession.findById(sessionId);
+  const session = await QuizAttempt.findById(sessionId);
 
   if (!session) {
     return next(new AppError("Quiz session not found", 404));
@@ -399,7 +399,7 @@ const resumeQuizSession = catchAsync(async (req, res, next) => {
 });
 
 const getUserStats = catchAsync(async (req, res, next) => {
-  const stats = await QuizSession.getUserStats(req.user._id);
+  const stats = await QuizAttempt.getUserStats(req.user._id);
 
   res.json({
     success: true,
@@ -452,7 +452,7 @@ const startMockExam = catchAsync(async (req, res, next) => {
     _id: { $in: questions.map(q => q._id) }
   }).populate("topicId", "name");
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode: "mock",
     title: `${examLevel} Mock Exam`,
@@ -549,7 +549,7 @@ const trackStudySession = catchAsync(async (req, res, next) => {
 const exportQuizResultPdf = catchAsync(async (req, res, next) => {
   const { sessionId } = req.params;
 
-  const session = await QuizSession.findById(sessionId).populate("questions");
+  const session = await QuizAttempt.findById(sessionId).populate("questions");
 
   if (!session) {
     return next(new AppError("Quiz session not found", 404));
@@ -622,7 +622,7 @@ const startSubjectQuiz = catchAsync(async (req, res, next) => {
     _id: { $in: quizData.questions.map(q => q._id) }
   }).populate("topicId", "name");
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode: "subject",
     title: "Subject Quiz",
@@ -689,7 +689,7 @@ const startTopicQuiz = catchAsync(async (req, res, next) => {
     _id: { $in: quizData.questions.map(q => q._id) }
   }).populate("topicId", "name");
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode: "topic",
     title: "Topic Quiz",
@@ -742,9 +742,12 @@ const startPostTest = catchAsync(async (req, res, next) => {
     return next(new AppError("Week number is required", 400));
   }
 
-  const studyPlan = await StudyPlan.getActiveStudyPlan();
+  const studyPlan = await StudyPlan.findOne({ enrolledStudents: req.user._id, status: "active" })
+    .populate("weeks.saturdaySession.subjectId")
+    .populate("weeks.sundaySession.subjectId");
+
   if (!studyPlan) {
-    return next(new AppError("No active study plan found", 404));
+    return next(new AppError("No active study plan found for this user", 404));
   }
 
   const week = studyPlan.weeks.find((w) => w.weekNumber === weekNumber);
@@ -759,12 +762,22 @@ const startPostTest = catchAsync(async (req, res, next) => {
 
   const subjects = [];
   if (week.saturdaySession?.subjectId) {
-    const subject = await Subject.findById(week.saturdaySession.subjectId);
-    if (subject) subjects.push(subject);
+    const subjectData = week.saturdaySession.subjectId;
+    if (subjectData.name) {
+      subjects.push(subjectData);
+    } else {
+      const subject = await Subject.findById(subjectData);
+      if (subject) subjects.push(subject);
+    }
   }
   if (week.sundaySession?.subjectId) {
-    const subject = await Subject.findById(week.sundaySession.subjectId);
-    if (subject) subjects.push(subject);
+    const subjectData = week.sundaySession.subjectId;
+    if (subjectData.name) {
+      subjects.push(subjectData);
+    } else {
+      const subject = await Subject.findById(subjectData);
+      if (subject) subjects.push(subject);
+    }
   }
 
   if (subjects.length === 0) {
@@ -805,7 +818,7 @@ const startPostTest = catchAsync(async (req, res, next) => {
     _id: { $in: quizData.questions.map((q) => q._id) },
   }).populate("topicId", "name");
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode: "post-test",
     title: `Week ${weekNumber} Post-Test`,
@@ -857,18 +870,20 @@ const startAssessment = catchAsync(async (req, res, next) => {
     return next(new AppError("Current week number is required", 400));
   }
 
-  const hasCompletedPostTest = await PostTestTracking.hasCompletedPostTest(
-    req.user._id,
-    currentWeekNumber
-  );
-
-  if (!hasCompletedPostTest) {
-    return next(
-      new AppError(
-        `You must complete the post-test for Week ${currentWeekNumber} before taking an assessment`,
-        400
-      )
+  if (currentWeekNumber > 1) {
+    const hasCompletedPostTest = await PostTestTracking.hasCompletedPostTest(
+      req.user._id,
+      currentWeekNumber
     );
+
+    if (!hasCompletedPostTest) {
+      return next(
+        new AppError(
+          `You must complete the post-test for Week ${currentWeekNumber} before taking an assessment`,
+          400
+        )
+      );
+    }
   }
 
   const userExamLevel = req.user.examType || "Professional";
@@ -883,7 +898,7 @@ const startAssessment = catchAsync(async (req, res, next) => {
     _id: { $in: quizData.questions.map((q) => q._id) },
   }).populate("topicId", "name");
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode: "assessment",
     title: `Week ${currentWeekNumber} Assessment`,
@@ -930,7 +945,7 @@ const startAssessment = catchAsync(async (req, res, next) => {
 
 const startDailyPractice = catchAsync(async (req, res, next) => {
   // Check for existing active session
-  const existingSession = await QuizSession.findOne({
+  const existingSession = await QuizAttempt.findOne({
     userId: req.user._id,
     mode: "daily-practice",
     status: { $in: ["active", "paused"] },
@@ -1007,7 +1022,7 @@ const startDailyPractice = catchAsync(async (req, res, next) => {
     _id: { $in: questions.map((q) => q._id) },
   }).populate("topicId", "name");
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode: "daily-practice",
     title: "Daily Practice",
@@ -1078,7 +1093,7 @@ const startPretest = catchAsync(async (req, res, next) => {
     _id: { $in: quizData.questions.map((q) => q._id) },
   }).populate("topicId", "name");
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode: "pretest",
     title: "Week 0 Comprehensive Pretest",
@@ -1158,13 +1173,13 @@ const checkPretestAvailability = catchAsync(async (req, res, next) => {
 });
 
 export default {
-  startQuizSession,
+  startQuizAttempt,
   submitAnswer,
-  completeQuizSession,
+  completeQuizAttempt,
   getQuizResult,
   getSessionHistory,
-  pauseQuizSession,
-  resumeQuizSession,
+  pauseQuizAttempt,
+  resumeQuizAttempt,
   getUserStats,
   startMockExam,
   startSubjectQuiz,

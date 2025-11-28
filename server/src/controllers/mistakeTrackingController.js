@@ -1,5 +1,5 @@
 import UserQuestionHistory from "../models/UserQuestionHistory.js";
-import QuizSession from "../models/QuizSession.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 import mistakeAnalysisService from "../services/mistakeAnalysisService.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
 
@@ -134,7 +134,7 @@ const createMistakeQuiz = catchAsync(async (req, res, next) => {
     );
   }
 
-  const session = await QuizSession.create({
+  const session = await QuizAttempt.create({
     userId: req.user._id,
     mode: "practice",
     title: `Mistake Review: ${category}`,

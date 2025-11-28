@@ -25,7 +25,7 @@ const useExamStore = create(
       showingFeedback: false,
       questionTimings: {},
 
-      startQuizSession: async (config) => {
+      startQuizAttempt: async (config) => {
         try {
           set({ loading: true, error: null });
 
@@ -254,8 +254,6 @@ const useExamStore = create(
       nextQuestion: () => {
         const state = get();
         
-        if (!state.showingFeedback) return;
-
         const nextIndex = state.currentQuestionIndex + 1;
         if (nextIndex >= state.sessionQuestions.length) return;
 

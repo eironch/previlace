@@ -27,7 +27,7 @@ const studyGroupMessageSchema = new mongoose.Schema(
     metadata: {
       quizId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "QuizSession",
+        ref: "QuizAttempt",
       },
       fileName: String,
       fileUrl: String,

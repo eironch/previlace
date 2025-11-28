@@ -33,7 +33,7 @@ const sessionAnswerSchema = new mongoose.Schema({
   },
 });
 
-const quizSessionSchema = new mongoose.Schema(
+const quizAttemptSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -43,9 +43,51 @@ const quizSessionSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: ["practice", "timed", "mock", "subject", "topic", "post-test", "assessment", "pretest", "daily-practice"],
+      enum: [
+        "practice",
+        "timed",
+        "mock",
+        "subject",
+        "topic",
+        "post-test",
+        "assessment",
+        "pretest",
+        "daily-practice",
+      ],
       default: "practice",
     },
+    quizPurpose: {
+      type: String,
+      enum: [
+        "pre_assessment", // Before learning (CEVAS Day 1)
+        "topic_practice", // After learning topic (CEVAS pattern)
+        "subject_practice", // Practice across subject
+        "subject_mock", // Subject-level mock test
+        "weekly_post_test", // End of week assessment
+        "full_mock", // Full CSE simulation
+        "daily_review", // SM2 spaced repetition
+        "weakness_drill", // Focused weak area practice
+      ],
+      default: "topic_practice",
+    },
+    questionSources: [
+      {
+        questionId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "ManualQuestion",
+        },
+        source: {
+          type: String,
+          enum: [
+            "sm2_due",
+            "weak_area",
+            "new_content",
+            "reinforcement",
+            "random",
+          ],
+        },
+      },
+    ],
     weekNumber: {
       type: Number,
       default: null,
@@ -152,6 +194,10 @@ const quizSessionSchema = new mongoose.Schema(
         type: [String],
         default: [],
       },
+      strongTopics: {
+        type: [String],
+        default: [],
+      },
       weakTopics: {
         type: [String],
         default: [],
@@ -181,21 +227,25 @@ const quizSessionSchema = new mongoose.Schema(
   }
 );
 
-quizSessionSchema.virtual("duration").get(function () {
+quizAttemptSchema.virtual("duration").get(function () {
   if (this.timing.completedAt) {
     return this.timing.completedAt - this.timing.startedAt;
   }
   return Date.now() - this.timing.startedAt;
 });
 
-quizSessionSchema.virtual("isExpired").get(function () {
+quizAttemptSchema.virtual("isExpired").get(function () {
   if (this.status === "completed") return false;
   const elapsed =
     Date.now() - this.timing.startedAt - this.timing.pausedDuration;
   return elapsed > this.config.timeLimit * 1000;
 });
 
-quizSessionSchema.methods.submitAnswer = async function (questionId, userAnswer, topicInfo = {}) {
+quizAttemptSchema.methods.submitAnswer = async function (
+  questionId,
+  userAnswer,
+  topicInfo = {}
+) {
   const existingAnswerIndex = this.answers.findIndex(
     (answer) => answer.questionId.toString() === questionId.toString()
   );
@@ -218,7 +268,7 @@ quizSessionSchema.methods.submitAnswer = async function (questionId, userAnswer,
   return this.save();
 };
 
-quizSessionSchema.methods.verifyAnswer = async function (questionId) {
+quizAttemptSchema.methods.verifyAnswer = async function (questionId) {
   const question = this.questions.find(
     (q) => q._id.toString() === questionId.toString()
   );
@@ -243,6 +293,18 @@ quizSessionSchema.methods.verifyAnswer = async function (questionId) {
   answer.isCorrect = isCorrect;
   answer.feedbackShown = true;
 
+  // Update UserQuestionHistory
+  const enhancedQuestionSelectionService = (
+    await import("../services/enhancedQuestionSelectionService.js")
+  ).default;
+  await enhancedQuestionSelectionService.processAnswerWithSM2(
+    this.userId,
+    questionId,
+    isCorrect,
+    answer.timeSpent || 0,
+    question
+  );
+
   await this.save();
 
   return {
@@ -253,7 +315,7 @@ quizSessionSchema.methods.verifyAnswer = async function (questionId) {
   };
 };
 
-quizSessionSchema.methods.calculateScore = async function () {
+quizAttemptSchema.methods.calculateScore = async function () {
   if (!this.questions || this.questions.length === 0) {
     await this.populate("questions");
   }
@@ -296,7 +358,7 @@ quizSessionSchema.methods.calculateScore = async function () {
   return this.save();
 };
 
-quizSessionSchema.methods.complete = async function () {
+quizAttemptSchema.methods.complete = async function () {
   this.status = "completed";
   this.timing.completedAt = new Date();
   this.timing.totalTimeSpent =
@@ -307,10 +369,31 @@ quizSessionSchema.methods.complete = async function () {
   await this.calculateScore();
   await this.generateAnalytics();
 
+  // Update UserQuestionHistory for all answers if not already done (e.g. for non-immediate feedback)
+  if (!this.hasImmediateFeedback) {
+    const enhancedQuestionSelectionService = (
+      await import("../services/enhancedQuestionSelectionService.js")
+    ).default;
+    for (const answer of this.answers) {
+      const question = this.questions.find(
+        (q) => q._id.toString() === answer.questionId.toString()
+      );
+      if (question) {
+        await enhancedQuestionSelectionService.processAnswerWithSM2(
+          this.userId,
+          answer.questionId,
+          answer.isCorrect,
+          answer.timeSpent || 0,
+          question
+        );
+      }
+    }
+  }
+
   return this.save();
 };
 
-quizSessionSchema.methods.generateAnalytics = function () {
+quizAttemptSchema.methods.generateAnalytics = function () {
   if (!this.questions || this.questions.length === 0) {
     return;
   }
@@ -340,8 +423,9 @@ quizSessionSchema.methods.generateAnalytics = function () {
     );
 
     const category = question.category || "Uncategorized";
-    const difficultyNormalized =
-      (question.difficulty || "intermediate").toLowerCase();
+    const difficultyNormalized = (
+      question.difficulty || "intermediate"
+    ).toLowerCase();
 
     if (!categoryStats[category]) {
       categoryStats[category] = { correct: 0, total: 0, percentage: 0 };
@@ -410,22 +494,30 @@ quizSessionSchema.methods.generateAnalytics = function () {
   };
 
   this.analytics.strongAreas = Object.entries(categoryStats)
-    .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total >= 0.7)
+    .filter(
+      ([, stats]) => stats.total > 0 && stats.correct / stats.total >= 0.7
+    )
     .map(([category]) => category);
 
   this.analytics.weakAreas = Object.entries(categoryStats)
-    .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total < 0.5)
+    .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total < 0.6)
     .map(([category]) => category);
 
+  this.analytics.strongTopics = Object.entries(topicStats)
+    .filter(
+      ([, stats]) => stats.total > 0 && stats.correct / stats.total >= 0.7
+    )
+    .map(([topic]) => topic);
+
   this.analytics.weakTopics = Object.entries(topicStats)
-    .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total < 0.5)
+    .filter(([, stats]) => stats.total > 0 && stats.correct / stats.total < 0.6)
     .map(([topic]) => topic);
 
   this.analytics.recommendedTopics = this.analytics.weakTopics;
   this.analytics.difficultyAnalysis = difficultyStats;
-}
+};
 
-quizSessionSchema.methods.pause = function () {
+quizAttemptSchema.methods.pause = function () {
   if (this.status === "active") {
     this.status = "paused";
     this.timing.pausedAt = new Date();
@@ -434,7 +526,7 @@ quizSessionSchema.methods.pause = function () {
   throw new Error("Session is not active");
 };
 
-quizSessionSchema.methods.resume = function () {
+quizAttemptSchema.methods.resume = function () {
   if (this.status === "paused") {
     this.status = "active";
     if (this.timing.pausedAt) {
@@ -447,7 +539,7 @@ quizSessionSchema.methods.resume = function () {
   throw new Error("Session is not paused");
 };
 
-quizSessionSchema.statics.getSessionHistory = function (userId, filters = {}) {
+quizAttemptSchema.statics.getSessionHistory = function (userId, filters = {}) {
   const query = { userId, isActive: true };
 
   if (filters.status) query.status = filters.status;
@@ -459,7 +551,7 @@ quizSessionSchema.statics.getSessionHistory = function (userId, filters = {}) {
     .sort({ createdAt: -1 });
 };
 
-quizSessionSchema.statics.getUserStats = function (userId) {
+quizAttemptSchema.statics.getUserStats = function (userId) {
   return this.aggregate([
     {
       $match: {
@@ -481,9 +573,9 @@ quizSessionSchema.statics.getUserStats = function (userId) {
   ]);
 };
 
-quizSessionSchema.index({ userId: 1, status: 1 });
-quizSessionSchema.index({ "timing.startedAt": -1 });
-quizSessionSchema.index({ "score.percentage": -1 });
-quizSessionSchema.index({ mode: 1, status: 1 });
+quizAttemptSchema.index({ userId: 1, status: 1 });
+quizAttemptSchema.index({ "timing.startedAt": -1 });
+quizAttemptSchema.index({ "score.percentage": -1 });
+quizAttemptSchema.index({ mode: 1, status: 1 });
 
-export default mongoose.model("QuizSession", quizSessionSchema);
+export default mongoose.model("QuizAttempt", quizAttemptSchema);

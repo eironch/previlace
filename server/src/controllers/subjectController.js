@@ -161,10 +161,44 @@ async function deleteSubject(req, res) {
   }
 }
 
+async function toggleSubjectPublish(req, res) {
+  try {
+    const { id } = req.params;
+
+    const subject = await Subject.findById(id);
+
+    if (!subject) {
+      return res.status(404).json({
+        success: false,
+        message: "Subject not found",
+      });
+    }
+
+    subject.isPublished = !subject.isPublished;
+    await subject.save();
+
+    res.status(200).json({
+      success: true,
+      data: subject,
+      message: `Subject ${subject.isPublished ? "published" : "unpublished"} successfully`,
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Toggle subject publish error:", error);
+    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to toggle subject publication",
+      error: error.message,
+    });
+  }
+}
+
 export {
   getAllSubjects,
   getSubjectById,
   createSubject,
   updateSubject,
   deleteSubject,
+  toggleSubjectPublish,
 };

@@ -17,17 +17,21 @@ function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md" }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
-      <div className={`w-full ${maxWidth} rounded-lg border border-gray-300 bg-white p-6 shadow-xl`}>
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-200"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className={`relative max-h-[90vh] w-full ${maxWidth} overflow-y-auto rounded-xl bg-white p-6 shadow-xl`}>
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X className="h-6 w-6" />
+        </button>
+        
+        {title && (
+          <div className="mb-6 pr-8">
+            <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+          </div>
+        )}
+        
         {children}
       </div>
     </div>

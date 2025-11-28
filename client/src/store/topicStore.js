@@ -65,6 +65,27 @@ export const useTopicStore = create((set, get) => ({
   clearError: () => {
     set({ error: null });
   },
+
+  toggleTopicPublish: async (topicId) => {
+    try {
+      const response = await learningService.toggleTopicPublish(topicId);
+      const updatedTopic = response.data;
+      
+      set((state) => ({
+        topics: state.topics.map((t) => 
+          t._id === topicId ? { ...t, isPublished: updatedTopic.isPublished } : t
+        ),
+        currentTopic: state.currentTopic?._id === topicId 
+          ? { ...state.currentTopic, isPublished: updatedTopic.isPublished } 
+          : state.currentTopic
+      }));
+      
+      return updatedTopic;
+    } catch (error) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
 }));
 
 export default useTopicStore;

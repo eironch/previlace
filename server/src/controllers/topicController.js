@@ -161,10 +161,44 @@ async function deleteTopic(req, res) {
   }
 }
 
+async function toggleTopicPublish(req, res) {
+  try {
+    const { id } = req.params;
+
+    const topic = await Topic.findById(id);
+
+    if (!topic) {
+      return res.status(404).json({
+        success: false,
+        message: "Topic not found",
+      });
+    }
+
+    topic.isPublished = !topic.isPublished;
+    await topic.save();
+
+    res.status(200).json({
+      success: true,
+      data: topic,
+      message: `Topic ${topic.isPublished ? "published" : "unpublished"} successfully`,
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Toggle topic publish error:", error);
+    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to toggle topic publication",
+      error: error.message,
+    });
+  }
+}
+
 export {
   getTopicsBySubject,
   getTopicById,
   createTopic,
   updateTopic,
   deleteTopic,
+  toggleTopicPublish,
 };

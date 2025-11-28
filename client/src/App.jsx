@@ -9,9 +9,10 @@ import SubjectsPage from "./pages/SubjectsPage";
 import SubjectDetailPage from "./pages/SubjectDetailPage";
 import TopicDetailPage from "./pages/TopicDetailPage";
 import QuizSetupPage from "./pages/quiz/QuizSetupPage";
-import QuizSessionPage from "./pages/quiz/QuizSessionPage";
+import QuizAttemptPage from "./pages/quiz/QuizAttemptPage";
 import QuizResultsPage from "./pages/quiz/QuizResultsPage";
 import MockExamStartPage from "./pages/quiz/MockExamStartPage";
+import AssessmentStartPage from "./pages/quiz/AssessmentStartPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ProfileSettingsPage from "./pages/settings/ProfileSettingsPage";
 import AchievementsPage from "./pages/AchievementsPage";
@@ -19,7 +20,6 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import ChallengePage from "./pages/ChallengePage";
 
 import ExamReadinessPage from "./pages/ExamReadinessPage";
-import StudyPlanPage from "./pages/StudyPlanPage";
 
 import InstructorDashboardPage from "./pages/InstructorDashboardPage";
 import MyTicketsPage from "./pages/student/MyTicketsPage";
@@ -164,7 +164,7 @@ function App() {
           path="/dashboard/quiz-session"
           element={
             <DashboardRoute>
-              <QuizSessionPage />
+              <QuizAttemptPage />
             </DashboardRoute>
           }
         />
@@ -183,6 +183,15 @@ function App() {
           element={
             <DashboardRoute>
               <MockExamStartPage />
+            </DashboardRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/assessment"
+          element={
+            <DashboardRoute>
+              <AssessmentStartPage />
             </DashboardRoute>
           }
         />
@@ -243,14 +252,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/dashboard/study-plan"
-          element={
-            <DashboardRoute>
-              <StudyPlanPage />
-            </DashboardRoute>
-          }
-        />
+
 
         <Route
           path="/dashboard/jobs"

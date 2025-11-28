@@ -6,6 +6,7 @@ function QuestionNavigation({
   answers,
   onNavigate,
   disabled,
+  hasImmediateFeedback,
 }) {
   const totalQuestions = questions?.length || 0;
   const answeredCount = Object.keys(answers).length;
@@ -27,24 +28,28 @@ function QuestionNavigation({
 
       <div className={`grid gap-2 ${getGridCols()}`}>
         {questions.map((question, index) => {
-          const isAnswered = !!answers[question?._id];
+          const answerData = answers[question?._id];
+          const isAnswered = !!answerData;
           const isCurrent = index === currentIndex;
+          const isIncorrect = hasImmediateFeedback && isAnswered && answerData?.isCorrect === false;
 
           return (
             <button
               key={index}
               onClick={() => onNavigate(index)}
               disabled={disabled}
-              className={`relative flex h-10 w-full items-center justify-center rounded-lg text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+              className={`relative flex h-10 w-full cursor-pointer items-center justify-center rounded-lg text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
                 isCurrent
                   ? "bg-black text-white shadow-sm"
-                  : isAnswered
-                    ? "border border-green-500 bg-green-50 text-green-800 hover:bg-green-200"
-                    : "border border-gray-300 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                  : isIncorrect
+                    ? "border-2 border-red-500 bg-red-50 text-red-700 hover:bg-red-100"
+                    : isAnswered
+                      ? "border border-green-500 bg-green-50 text-green-800 hover:bg-green-200"
+                      : "border border-gray-300 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
               }`}
             >
               {index + 1}
-              {isAnswered && !isCurrent && (
+              {isAnswered && !isCurrent && !isIncorrect && (
                 <CheckCircle2 className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full bg-white text-green-600" />
               )}
             </button>
@@ -52,7 +57,7 @@ function QuestionNavigation({
         })}
       </div>
 
-      <div className="mt-4 flex flex-col gap-2 text-xs text-gray-500">
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded bg-black" />
           <span>Current</span>
@@ -61,6 +66,12 @@ function QuestionNavigation({
           <div className="h-3 w-3 rounded border border-green-500 bg-green-50" />
           <span>Answered</span>
         </div>
+        {hasImmediateFeedback && (
+          <div className="flex items-center gap-2">
+            <div className="h-3 w-3 rounded border-2 border-red-500 bg-red-50" />
+            <span>Incorrect</span>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded border border-gray-300 bg-white" />
           <span>Unanswered</span>

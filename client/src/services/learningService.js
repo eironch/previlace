@@ -93,6 +93,66 @@ const learningService = {
       throw error;
     }
   },
+
+  toggleSubjectPublish: async (subjectId) => {
+    try {
+      const response = await apiClient.patch(`/subjects/${subjectId}/publish`);
+      return response.data;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Toggle subject publish error:", error);
+      }
+      throw error;
+    }
+  },
+
+  toggleTopicPublish: async (topicId) => {
+    try {
+      const response = await apiClient.patch(`/topics/${topicId}/publish`);
+      return response.data;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Toggle topic publish error:", error);
+      }
+      throw error;
+    }
+  },
+
+  trackView: async (topicId, timeSpent) => {
+    try {
+      const response = await apiClient.post("/learning/track-view", { topicId, timeSpent });
+      return response.data;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Track view error:", error);
+      }
+      // Don't throw, just log
+    }
+  },
+
+  getLearningStatus: async (topicId) => {
+    try {
+      const response = await apiClient.get(`/learning/status/${topicId}`);
+      return response.data;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Get learning status error:", error);
+      }
+      throw error;
+    }
+  },
+
+  markLearningComplete: async (topicId, timeSpent) => {
+    try {
+      const response = await apiClient.post("/learning/complete", { topicId, timeSpent });
+      return response.data;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Mark complete error:", error);
+      }
+      throw error;
+    }
+  },
 };
 
 export default learningService;

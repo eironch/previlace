@@ -1,6 +1,6 @@
 import Achievement from "../models/Achievement.js";
 import UserAchievement from "../models/UserAchievement.js";
-import QuizSession from "../models/QuizSession.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
 
 const getUserAchievements = catchAsync(async (req, res, next) => {
@@ -94,7 +94,7 @@ const getAchievementsByCategory = catchAsync(async (req, res, next) => {
 const checkNewAchievements = catchAsync(async (req, res, next) => {
   const unlockedAchievements = [];
 
-  const stats = await QuizSession.getUserStats(req.user._id);
+  const stats = await QuizAttempt.getUserStats(req.user._id);
   const userStats = stats[0] || {};
 
   const allAchievements = await Achievement.getActiveAchievements();

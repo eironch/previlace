@@ -68,10 +68,9 @@ function StatSubmissionModal({ onClose, currentStat = null }) {
         setForm(prev => ({ ...prev, [name]: value }));
     };
 
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
                 
                 <button
                     onClick={onClose}

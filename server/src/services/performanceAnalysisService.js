@@ -1,4 +1,4 @@
-import QuizSession from "../models/QuizSession.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 import UserQuestionHistory from "../models/UserQuestionHistory.js";
 import ManualQuestion from "../models/ManualQuestion.js";
 import mongoose from "mongoose";
@@ -22,7 +22,7 @@ class PerformanceAnalysisService {
   }
 
   async getOverallStatistics(userId) {
-    const stats = await QuizSession.aggregate([
+    const stats = await QuizAttempt.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
@@ -69,7 +69,7 @@ class PerformanceAnalysisService {
   }
 
   async getCategoryStatistics(userId) {
-    return QuizSession.aggregate([
+    return QuizAttempt.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
@@ -163,7 +163,7 @@ class PerformanceAnalysisService {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    return QuizSession.aggregate([
+    return QuizAttempt.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
@@ -217,7 +217,7 @@ class PerformanceAnalysisService {
   }
 
   async getRecentPerformance(userId, sessionCount = 10) {
-    return QuizSession.find({
+    return QuizAttempt.find({
       userId,
       status: "completed"
     })
@@ -227,7 +227,7 @@ class PerformanceAnalysisService {
   }
 
   async getTimeManagementAnalysis(userId) {
-    return QuizSession.aggregate([
+    return QuizAttempt.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
@@ -412,7 +412,7 @@ class PerformanceAnalysisService {
     const userStats = await this.getOverallStatistics(userId);
     const userValue = userStats[metric] || 0;
 
-    const allUserStats = await QuizSession.aggregate([
+    const allUserStats = await QuizAttempt.aggregate([
       {
         $match: { status: "completed" }
       },

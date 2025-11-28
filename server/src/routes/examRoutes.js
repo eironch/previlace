@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.use(protect);
 
-router.post("/start", validateQuizConfig, examController.startQuizSession);
+router.post("/start", validateQuizConfig, examController.startQuizAttempt);
 router.post("/mock-exam", examController.startMockExam);
 router.post("/subject-quiz", examController.startSubjectQuiz);
 router.post("/topic-quiz", examController.startTopicQuiz);
@@ -23,9 +23,9 @@ router.post("/assessment", examController.startAssessment);
 router.post("/daily-practice", examController.startDailyPractice);
 router.post("/pretest", examController.startPretest);
 router.post("/:sessionId/answer", validateAnswerSubmission, examController.submitAnswer);
-router.post("/:sessionId/complete", examController.completeQuizSession);
-router.post("/:sessionId/pause", examController.pauseQuizSession);
-router.post("/:sessionId/resume", examController.resumeQuizSession);
+router.post("/:sessionId/complete", examController.completeQuizAttempt);
+router.post("/:sessionId/pause", examController.pauseQuizAttempt);
+router.post("/:sessionId/resume", examController.resumeQuizAttempt);
 
 router.get("/history", examController.getSessionHistory);
 router.get("/stats", examController.getUserStats);

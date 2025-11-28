@@ -11,7 +11,7 @@ import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 import { useAuthStore } from "@/store/authStore";
 
-function QuizSessionPage() {
+function QuizAttemptPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,6 +39,7 @@ function QuizSessionPage() {
     confirmAnswer,
     completeSession,
     trackQuestionTime,
+    selectAnswer,
   } = useExamStore();
 
   const currentQuestion = getCurrentQuestion();
@@ -50,7 +51,7 @@ function QuizSessionPage() {
   const [searchParams] = useSearchParams();
   const subjectId = searchParams.get("subjectId");
   const topicId = searchParams.get("topicId");
-  const { startQuizSession } = useExamStore();
+  const { startQuizAttempt } = useExamStore();
 
   useEffect(() => {
     setQuestionStartTime(Date.now());
@@ -60,55 +61,9 @@ function QuizSessionPage() {
     return Date.now() - questionStartTime;
   }, [questionStartTime]);
 
-  useEffect(() => {
-    async function initSession() {
-      if (currentSession || loading) return;
+  // ... (initSession useEffect)
 
-      const examLevel = user?.examType || "Professional";
-
-      if (subjectId) {
-        try {
-          await startQuizSession({
-            mode: "subject",
-            subjectId: subjectId,
-            examLevel: examLevel,
-            questionCount: 10,
-          });
-        } catch (error) {
-          if (process.env.NODE_ENV === "development") {
-            console.error("Failed to start session:", error);
-          }
-          navigate("/dashboard");
-        }
-      } else if (topicId) {
-        try {
-          await startQuizSession({
-            mode: "topic",
-            topicId: topicId,
-            examLevel: examLevel,
-            questionCount: 10,
-          });
-        } catch (error) {
-          if (process.env.NODE_ENV === "development") {
-            console.error("Failed to start session:", error);
-          }
-          navigate("/dashboard");
-        }
-      } else {
-        navigate("/dashboard");
-      }
-    }
-
-    if (user) {
-      initSession();
-    }
-  }, [currentSession, loading, navigate, subjectId, topicId, startQuizSession, user]);
-
-  useEffect(() => {
-    if (hasTimer && timeRemaining <= 0 && sessionActive) {
-      handleAutoSubmit();
-    }
-  }, [timeRemaining, sessionActive, hasTimer]);
+  // ... (autoSubmit useEffect)
 
   function handleAnswerSelect(answer) {
     if (!currentQuestion || !sessionActive || showingFeedback) return;
@@ -118,6 +73,12 @@ function QuizSessionPage() {
     }
     setPendingAnswer(answer);
   }
+
+  const saveProgress = () => {
+    if (!hasImmediateFeedback && pendingAnswer && currentQuestion) {
+      selectAnswer(currentQuestion._id, pendingAnswer);
+    }
+  };
 
   async function handleNextAction() {
     if (showingFeedback) {
@@ -130,18 +91,26 @@ function QuizSessionPage() {
       if (hasImmediateFeedback) {
         await confirmAnswer();
       } else {
+        saveProgress();
         nextQuestion();
       }
     }
   }
 
+  function handlePreviousAction() {
+    saveProgress();
+    previousQuestion();
+  }
+
   function handleQuestionNavigation(index) {
     if (index >= 0 && index < totalQuestions) {
+      saveProgress();
       setCurrentQuestionIndex(index);
     }
   }
 
   function handleExitQuiz() {
+    saveProgress();
     navigate("/dashboard");
   }
 
@@ -298,46 +267,9 @@ function QuizSessionPage() {
       </div>
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-4">
-          <div className="order-2 lg:order-1 lg:col-span-1">
-            <div className="sticky top-32">
-              <QuestionNavigation
-                questions={sessionQuestions}
-                currentIndex={currentQuestionIndex}
-                answers={answers}
-                onNavigate={handleQuestionNavigation}
-                disabled={false}
-              />
-
-              <div className="mt-4 rounded-lg border border-gray-300 bg-white p-4">
-                <h3 className="mb-3 text-sm font-semibold text-gray-900">Session Info</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Mode</span>
-                    <span className="font-medium text-gray-900 capitalize">
-                      {currentSession?.mode || "Practice"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Answered</span>
-                    <span className="font-medium text-gray-900">
-                      {answeredCount}/{totalQuestions}
-                    </span>
-                  </div>
-                  {currentQuestion?.difficulty && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Difficulty</span>
-                      <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700 capitalize">
-                        {currentQuestion.difficulty}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="order-1 space-y-6 lg:order-2 lg:col-span-3">
+        <div className="space-y-8">
+          {/* Main Content Area */}
+          <div className="space-y-6">
             <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
               <QuestionDisplay
                 question={currentQuestion}
@@ -373,7 +305,7 @@ function QuizSessionPage() {
 
             <div className="flex items-center justify-between gap-4">
               <button
-                onClick={previousQuestion}
+                onClick={handlePreviousAction}
                 disabled={currentQuestionIndex === 0 && !showingFeedback}
                 className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -393,10 +325,48 @@ function QuizSessionPage() {
               </button>
             </div>
           </div>
+
+          {/* Bottom Navigation & Info Area */}
+          <div className="space-y-6">
+            <QuestionNavigation
+              questions={sessionQuestions}
+              currentIndex={currentQuestionIndex}
+              answers={answers}
+              onNavigate={handleQuestionNavigation}
+              disabled={false}
+              hasImmediateFeedback={hasImmediateFeedback}
+            />
+
+            <div className="rounded-lg border border-gray-300 bg-white p-4">
+              <h3 className="mb-3 text-sm font-semibold text-gray-900">Quiz Details</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Mode</span>
+                  <span className="font-medium text-gray-900 capitalize">
+                    {currentSession?.mode || "Practice"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Answered</span>
+                  <span className="font-medium text-gray-900">
+                    {answeredCount}/{totalQuestions}
+                  </span>
+                </div>
+                {currentQuestion?.difficulty && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Difficulty</span>
+                    <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700 capitalize">
+                      {currentQuestion.difficulty}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
   );
 }
 
-export default QuizSessionPage;
+export default QuizAttemptPage;

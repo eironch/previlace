@@ -10,6 +10,8 @@ const useDashboardStore = create((set) => ({
   longestStreak: 0,
   analytics: null,
   studyPlan: null,
+  preAssessmentCompleted: false,
+  mockExamCompleted: false,
   isLoading: false,
   error: null,
 
@@ -30,6 +32,8 @@ const useDashboardStore = create((set) => ({
           longestStreak: streak.longestStreak,
           analytics,
           studyPlan,
+          preAssessmentCompleted: response.data.data.analytics.preAssessmentCompleted,
+          mockExamCompleted: response.data.data.analytics.mockExamCompleted,
           isLoading: false,
         });
       }

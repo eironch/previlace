@@ -298,7 +298,7 @@ class EnhancedQuestionSelectionService {
     );
 
     history.weaknessScore = (1 - accuracy) * 100;
-    history.isWeakArea = history.weaknessScore > 50 && history.totalAttempts >= 3;
+    history.isWeakArea = history.weaknessScore > 40 && history.totalAttempts >= 1;
 
     const totalTime = history.attempts.reduce((sum, a) => sum + (a.timeSpent || 0), 0);
     history.averageResponseTime = totalTime / history.totalAttempts;

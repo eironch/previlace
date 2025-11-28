@@ -101,6 +101,8 @@ const testSchema = new mongoose.Schema(
       averageTimePerQuestion: Number,
       strongAreas: [String],
       weakAreas: [String],
+      strongTopics: [String],
+      weakTopics: [String],
       recommendedTopics: [String],
     },
     isActive: {
@@ -148,7 +150,10 @@ testSchema.methods.submitAnswer = function (questionId, userAnswer) {
 };
 
 testSchema.methods.calculateScore = async function () {
-  await this.populate("questions");
+  await this.populate({
+    path: "questions",
+    populate: { path: "topicId", select: "name" }
+  });
 
   let correct = 0;
   const total = this.questions.length;
@@ -187,6 +192,23 @@ testSchema.methods.complete = async function () {
   await this.calculateScore();
   await this.generateAnalytics();
 
+  // Update UserQuestionHistory
+  const enhancedQuestionSelectionService = (await import("../services/enhancedQuestionSelectionService.js")).default;
+  for (const answer of this.answers) {
+    const question = this.questions.find(
+      (q) => q._id.toString() === answer.questionId.toString()
+    );
+    if (question) {
+      await enhancedQuestionSelectionService.processAnswerWithSM2(
+        this.userId,
+        answer.questionId,
+        answer.isCorrect,
+        answer.timeSpent || 0,
+        question
+      );
+    }
+  }
+
   return this.save();
 };
 
@@ -200,19 +222,29 @@ testSchema.methods.generateAnalytics = function () {
   this.analytics.averageTimePerQuestion = totalTime / this.answers.length;
 
   const categoryStats = {};
+  const topicStats = {};
 
   this.questions.forEach((question) => {
     const answer = this.answers.find(
       (a) => a.questionId.toString() === question._id.toString()
     );
 
+    // Category Stats
     if (!categoryStats[question.category]) {
       categoryStats[question.category] = { correct: 0, total: 0 };
     }
-
     categoryStats[question.category].total++;
+    
+    // Topic Stats
+    const topicName = question.topicId?.name || "Unknown Topic";
+    if (!topicStats[topicName]) {
+      topicStats[topicName] = { correct: 0, total: 0 };
+    }
+    topicStats[topicName].total++;
+
     if (answer && answer.isCorrect) {
       categoryStats[question.category].correct++;
+      topicStats[topicName].correct++;
     }
   });
 
@@ -221,10 +253,20 @@ testSchema.methods.generateAnalytics = function () {
     .map(([category]) => category);
 
   this.analytics.weakAreas = Object.entries(categoryStats)
-    .filter(([, stats]) => stats.correct / stats.total < 0.5)
+    .filter(([, stats]) => stats.correct / stats.total < 0.6)
     .map(([category]) => category);
 
-  this.analytics.recommendedTopics = this.analytics.weakAreas;
+  this.analytics.strongTopics = Object.entries(topicStats)
+    .filter(([, stats]) => stats.correct / stats.total >= 0.7)
+    .map(([topic]) => topic);
+
+  this.analytics.weakTopics = Object.entries(topicStats)
+    .filter(([, stats]) => stats.correct / stats.total < 0.6)
+    .map(([topic]) => topic);
+
+  this.analytics.recommendedTopics = this.analytics.weakTopics.length > 0 
+    ? this.analytics.weakTopics 
+    : this.analytics.weakAreas;
 };
 
 testSchema.methods.pause = function () {
