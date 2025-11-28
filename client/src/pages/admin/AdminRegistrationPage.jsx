@@ -5,14 +5,14 @@ import { CheckCircle, XCircle, Clock, Eye, Search, Filter, Plus } from "lucide-r
 import { format } from "date-fns";
 import RegistrationForm from "../../components/registrations/RegistrationForm";
 
-export default function AdminRegistrationPage() {
+export default function AdminRegistrationPage({ showHeader = true, defaultOpenCreate = false }) {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedApp, setSelectedApp] = useState(null);
     const [filterStatus, setFilterStatus] = useState("pending");
     const [searchTerm, setSearchTerm] = useState("");
     const [actionLoading, setActionLoading] = useState(false);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(defaultOpenCreate);
 
     const fetchApplications = async () => {
         try {
@@ -30,12 +30,29 @@ export default function AdminRegistrationPage() {
         fetchApplications();
     }, []);
 
-    const handleApprove = async (id) => {
+    const [approveData, setApproveData] = useState({
+        examType: "Sub-Professional",
+        sendEmail: true
+    });
+
+    // Reset approve data when a new app is selected
+    useEffect(() => {
+        if (selectedApp) {
+            setApproveData({
+                examType: "Sub-Professional",
+                sendEmail: true
+            });
+        }
+    }, [selectedApp]);
+
+    const handleApproveConfirm = async () => {
+        if (!selectedApp) return;
+
         if (!window.confirm("Are you sure you want to approve this application? This will create a user account.")) return;
 
         try {
             setActionLoading(true);
-            const res = await apiClient.post(`/registrations/${id}/approve`);
+            const res = await apiClient.post(`/registrations/${selectedApp._id}/approve`, approveData);
             alert(`Application approved! User created with password: ${res.data.data.generatedPassword}`);
             fetchApplications();
             setSelectedApp(null);
@@ -81,10 +98,12 @@ export default function AdminRegistrationPage() {
 
     return (
         <div className="flex flex-col h-full bg-gray-50">
-            <StandardHeader
-                title="Registration Applications"
-                subtitle="Review and manage student registration forms"
-            />
+            {showHeader && (
+                <StandardHeader
+                    title="Registration Applications"
+                    subtitle="Review and manage student registration forms"
+                />
+            )}
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-8">
                 <div className="max-w-7xl mx-auto">
@@ -218,83 +237,239 @@ export default function AdminRegistrationPage() {
                 )}
 
                 {/* Detail Modal */}
+                {/* Detail Modal */}
                 {selectedApp && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm overflow-y-auto">
-                        <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="bg-white rounded-xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-                                <h2 className="text-xl font-bold text-gray-900">Application Details</h2>
+                                <div className="flex items-center gap-3">
+                                    <h2 className="text-xl font-bold text-gray-900">Application Details</h2>
+                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium capitalize border ${selectedApp.status === 'approved' ? 'bg-green-50 text-green-700 border-green-200' :
+                                        selectedApp.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                                            'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                        }`}>
+                                        {selectedApp.status}
+                                    </span>
+                                </div>
                                 <button
                                     onClick={() => setSelectedApp(null)}
-                                    className="text-gray-400 hover:text-gray-600"
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
                                 >
                                     <XCircle className="w-6 h-6" />
                                 </button>
                             </div>
 
-                            <div className="p-6 space-y-6">
-                                {/* Status Banner */}
-                                <div className={`p-4 rounded-lg flex items-center gap-3 ${selectedApp.status === 'pending' ? 'bg-yellow-50 text-yellow-800' :
-                                    selectedApp.status === 'approved' ? 'bg-green-50 text-green-800' :
-                                        'bg-red-50 text-red-800'
-                                    }`}>
-                                    {selectedApp.status === 'pending' ? <Clock className="w-5 h-5" /> :
-                                        selectedApp.status === 'approved' ? <CheckCircle className="w-5 h-5" /> :
-                                            <XCircle className="w-5 h-5" />}
-                                    <span className="font-medium capitalize">Status: {selectedApp.status}</span>
-                                    {selectedApp.registrationNumber && (
-                                        <span className="ml-auto font-mono text-sm">Reg No: {selectedApp.registrationNumber}</span>
-                                    )}
+                            <div className="p-6 sm:p-8 space-y-8">
+                                {/* Header Info */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-gray-500 border-b border-gray-100 pb-6">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-4 h-4" />
+                                            <span>Submitted: {format(new Date(selectedApp.createdAt), "PPP")}</span>
+                                        </div>
+                                        {selectedApp.registrationNumber && (
+                                            <div className="font-mono bg-gray-100 px-2 py-1 rounded text-gray-700">
+                                                {selectedApp.registrationNumber}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Personal Info</h3>
-                                        <div className="space-y-2 text-sm">
-                                            <p><span className="text-gray-500">Name:</span> {selectedApp.personalInfo.firstName} {selectedApp.personalInfo.middleName} {selectedApp.personalInfo.lastName}</p>
-                                            <p><span className="text-gray-500">Email:</span> {selectedApp.personalInfo.email}</p>
-                                            <p><span className="text-gray-500">Mobile:</span> {selectedApp.personalInfo.mobile}</p>
-                                            <p><span className="text-gray-500">Address:</span> {selectedApp.personalInfo.address}</p>
-                                            <p><span className="text-gray-500">Birth:</span> {format(new Date(selectedApp.personalInfo.dateOfBirth), "MMM d, yyyy")} ({selectedApp.personalInfo.placeOfBirth})</p>
-                                            <p><span className="text-gray-500">Civil Status:</span> {selectedApp.personalInfo.civilStatus}</p>
-                                            <p><span className="text-gray-500">Nationality:</span> {selectedApp.personalInfo.nationality}</p>
-                                            <p><span className="text-gray-500">Emergency:</span> {selectedApp.personalInfo.emergencyContact.name} ({selectedApp.personalInfo.emergencyContact.number})</p>
-                                        </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                    {/* Left Column: Personal Info (Span 7) */}
+                                    <div className="lg:col-span-7 space-y-8">
+                                        <section>
+                                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                Personal Information
+                                            </h3>
+                                            <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                                                    <div className="sm:col-span-2">
+                                                        <p className="text-xs text-gray-500 mb-1">Full Name</p>
+                                                        <p className="font-medium text-gray-900 text-base">
+                                                            {selectedApp.personalInfo.firstName} {selectedApp.personalInfo.middleName} {selectedApp.personalInfo.lastName}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Email Address</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.personalInfo.email}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Mobile Number</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.personalInfo.mobile}</p>
+                                                    </div>
+                                                    <div className="sm:col-span-2">
+                                                        <p className="text-xs text-gray-500 mb-1">Address</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.personalInfo.address}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Date of Birth</p>
+                                                        <p className="font-medium text-gray-900">
+                                                            {format(new Date(selectedApp.personalInfo.dateOfBirth), "MMM d, yyyy")}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Place of Birth</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.personalInfo.placeOfBirth}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Civil Status</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.personalInfo.civilStatus}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Nationality</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.personalInfo.nationality}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        <section>
+                                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Emergency Contact</h3>
+                                            <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Contact Person</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.personalInfo.emergencyContact.name}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Contact Number</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.personalInfo.emergencyContact.number}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
                                     </div>
 
-                                    <div>
-                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Course Info</h3>
-                                        <div className="space-y-2 text-sm">
-                                            <p><span className="text-gray-500">Course:</span> {selectedApp.courseInfo.courseEnrollingTo}</p>
-                                            <p><span className="text-gray-500">Schedule:</span> {selectedApp.courseInfo.scheduledDays}</p>
-                                            <p><span className="text-gray-500">Time:</span> {selectedApp.courseInfo.time}</p>
-                                            <p><span className="text-gray-500">Start Date:</span> {format(new Date(selectedApp.courseInfo.date), "MMM d, yyyy")}</p>
-                                        </div>
+                                    {/* Right Column: Academic & Work (Span 5) */}
+                                    <div className="lg:col-span-5 space-y-8">
+                                        <section>
+                                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Course Details</h3>
+                                            <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                                                <div className="space-y-4 text-sm">
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Selected Course</p>
+                                                        <p className="font-bold text-gray-900">{selectedApp.courseInfo.courseEnrollingTo}</p>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 mb-1">Schedule</p>
+                                                            <p className="font-medium text-gray-900">{selectedApp.courseInfo.scheduledDays}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 mb-1">Time</p>
+                                                            <p className="font-medium text-gray-900">{selectedApp.courseInfo.time}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Start Date</p>
+                                                        <p className="font-medium text-gray-900">
+                                                            {format(new Date(selectedApp.courseInfo.date), "MMMM d, yyyy")}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
 
-                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 mt-6">Education</h3>
-                                        <div className="space-y-2 text-sm">
-                                            <p><span className="text-gray-500">School:</span> {selectedApp.education.school}</p>
-                                            <p><span className="text-gray-500">Degree:</span> {selectedApp.education.degree}</p>
-                                            <p><span className="text-gray-500">Highest Attainment:</span> {selectedApp.education.highestAttainment}</p>
-                                        </div>
+                                        <section>
+                                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Education</h3>
+                                            <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm space-y-4 text-sm">
+                                                <div>
+                                                    <p className="text-xs text-gray-500 mb-1">School / University</p>
+                                                    <p className="font-medium text-gray-900">{selectedApp.education.school}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 mb-1">Degree / Course</p>
+                                                    <p className="font-medium text-gray-900">{selectedApp.education.degree}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 mb-1">Highest Attainment</p>
+                                                    <p className="font-medium text-gray-900">{selectedApp.education.highestAttainment}</p>
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        {selectedApp.professional && (
+                                            <section>
+                                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Professional History</h3>
+                                                <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm space-y-4 text-sm">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 mb-1">Exam Taken</p>
+                                                            <p className="font-medium text-gray-900">{selectedApp.professional.examTaken || "N/A"}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 mb-1">Date Taken</p>
+                                                            <p className="font-medium text-gray-900">{selectedApp.professional.dateTaken || "N/A"}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Company</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.professional.company || "N/A"}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-1">Position</p>
+                                                        <p className="font-medium text-gray-900">{selectedApp.professional.position || "N/A"}</p>
+                                                    </div>
+                                                </div>
+                                            </section>
+                                        )}
                                     </div>
                                 </div>
 
                                 {selectedApp.status === 'pending' && (
-                                    <div className="pt-6 border-t border-gray-200 flex justify-end gap-3">
-                                        <button
-                                            onClick={() => handleReject(selectedApp._id)}
-                                            disabled={actionLoading}
-                                            className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 font-medium disabled:opacity-50"
-                                        >
-                                            Reject Application
-                                        </button>
-                                        <button
-                                            onClick={() => handleApprove(selectedApp._id)}
-                                            disabled={actionLoading}
-                                            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-medium disabled:opacity-50"
-                                        >
-                                            Approve & Create Account
-                                        </button>
+                                    <div className="pt-6 border-t border-gray-200">
+                                        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                                            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Approval Settings</h4>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                                        Assign Exam Type
+                                                    </label>
+                                                    <select
+                                                        value={approveData.examType}
+                                                        onChange={(e) => setApproveData({ ...approveData, examType: e.target.value })}
+                                                        className="w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black"
+                                                    >
+                                                        <option value="Sub-Professional">Sub-Professional</option>
+                                                        <option value="Professional">Professional</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex items-end pb-2">
+                                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                                        <div className="relative flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="sendEmail"
+                                                                checked={approveData.sendEmail}
+                                                                onChange={(e) => setApproveData({ ...approveData, sendEmail: e.target.checked })}
+                                                                className="peer h-5 w-5 rounded border-gray-300 text-black focus:ring-black transition-all"
+                                                            />
+                                                        </div>
+                                                        <span className="text-sm text-gray-700 group-hover:text-black transition-colors select-none">
+                                                            Send login credentials via email
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-end gap-3">
+                                            <button
+                                                onClick={() => handleReject(selectedApp._id)}
+                                                disabled={actionLoading}
+                                                className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 font-medium disabled:opacity-50"
+                                            >
+                                                Reject Application
+                                            </button>
+                                            <button
+                                                onClick={handleApproveConfirm}
+                                                disabled={actionLoading}
+                                                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-medium disabled:opacity-50"
+                                            >
+                                                Approve & Create Account
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -305,3 +480,4 @@ export default function AdminRegistrationPage() {
         </div>
     );
 }
+

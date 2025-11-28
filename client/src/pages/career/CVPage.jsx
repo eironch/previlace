@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, Linkedin, Briefcase, BookOpen, User, Zap, X, ChevronRight, ChevronLeft, Download, Printer } from 'lucide-react';
+import {
+    Mail, Phone, Linkedin, Briefcase, BookOpen, User, Zap, X,
+    ChevronDown, ChevronUp, Printer, Plus, Trash2, Award, FileText, Download
+} from 'lucide-react';
 import StandardHeader from '../../components/ui/StandardHeader';
 import cvService from '../../services/cvService';
 
@@ -8,15 +11,6 @@ import cvService from '../../services/cvService';
 let idCounter = 0;
 const generateId = () => `item-${idCounter++}-${Date.now()}`;
 const LOCAL_STORAGE_KEY = 'cvBuilderData';
-
-const STEPS = [
-    'Personal Details',
-    'Professional Summary',
-    'Education History',
-    'Work Experience',
-    'Key Skills',
-    'Review & Finalize'
-];
 
 // --- INITIAL DATA STRUCTURE ---
 const initialCVData = {
@@ -28,46 +22,76 @@ const initialCVData = {
     education: [],
     experience: [],
     skills: [],
+    certifications: []
 };
 
 // --- FORM COMPONENTS ---
 
+const SectionWrapper = ({ title, icon: Icon, isOpen, onToggle, children }) => {
+    return (
+        <div className="border border-gray-200 rounded-lg bg-white mb-4 overflow-hidden shadow-sm transition-all duration-200">
+            <button
+                onClick={onToggle}
+                className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors"
+            >
+                <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${isOpen ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}>
+                        <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="font-semibold text-gray-900">{title}</span>
+                </div>
+                {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+            </button>
+            {isOpen && (
+                <div className="p-4 border-t border-gray-100 bg-gray-50/50 animate-fade-in">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const PersonalDetailsForm = ({ data, updateField }) => {
     return (
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <User className="w-5 h-5 mr-2" /> Personal Details
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
                 <input
                     type="text"
-                    placeholder="Full Name (e.g., Jane M. Doe)"
                     value={data.name}
                     onChange={(e) => updateField('name', e.target.value)}
-                    className="p-3 border border-gray-300 rounded-lg w-full focus:ring-black focus:border-black transition duration-150"
-                    required
+                    className="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                    placeholder="e.g. Jane Doe"
                 />
+            </div>
+            <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
                 <input
                     type="email"
-                    placeholder="Email Address"
                     value={data.email}
                     onChange={(e) => updateField('email', e.target.value)}
-                    className="p-3 border border-gray-300 rounded-lg w-full focus:ring-black focus:border-black transition duration-150"
-                    required
+                    className="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                    placeholder="jane@example.com"
                 />
+            </div>
+            <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Phone</label>
                 <input
                     type="tel"
-                    placeholder="Phone Number"
                     value={data.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
-                    className="p-3 border border-gray-300 rounded-lg w-full focus:ring-black focus:border-black transition duration-150"
+                    className="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                    placeholder="+1 234 567 890"
                 />
+            </div>
+            <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-500 mb-1">LinkedIn URL</label>
                 <input
                     type="url"
-                    placeholder="LinkedIn Profile URL (Optional)"
                     value={data.linkedin}
                     onChange={(e) => updateField('linkedin', e.target.value)}
-                    className="p-3 border border-gray-300 rounded-lg w-full focus:ring-black focus:border-black transition duration-150"
+                    className="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                    placeholder="linkedin.com/in/janedoe"
                 />
             </div>
         </div>
@@ -76,90 +100,16 @@ const PersonalDetailsForm = ({ data, updateField }) => {
 
 const SummaryForm = ({ data, updateField }) => {
     return (
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Zap className="w-5 h-5 mr-2" /> Professional Summary
-            </h3>
-            <p className="text-sm text-gray-500">A concise, powerful paragraph (3-4 sentences) highlighting your key achievements and career goals.</p>
+        <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Professional Summary</label>
             <textarea
-                placeholder="E.g., Highly motivated civil engineer with 5+ years of experience in structural design..."
                 value={data.summary}
                 onChange={(e) => updateField('summary', e.target.value)}
                 rows="6"
-                className="p-3 border border-gray-300 rounded-lg w-full focus:ring-black focus:border-black transition duration-150 resize-y"
-                required
+                className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all resize-y"
+                placeholder="Briefly describe your professional background and key achievements..."
             />
-        </div>
-    );
-};
-
-const EducationForm = ({ data, addItem, deleteItem }) => {
-    const [newItem, setNewItem] = useState({ institution: '', degree: '', year: '', details: '' });
-
-    const handleAdd = () => {
-        if (newItem.institution && newItem.degree && newItem.year) {
-            addItem('education', newItem);
-            setNewItem({ institution: '', degree: '', year: '', details: '' });
-        }
-    };
-
-    return (
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <BookOpen className="w-5 h-5 mr-2" /> Education History
-            </h3>
-
-            <div className="bg-gray-50 p-4 border border-gray-300 rounded-lg space-y-3">
-                <input
-                    placeholder="Degree/Qualification (e.g., B.S. Civil Engineering)"
-                    value={newItem.degree}
-                    onChange={(e) => setNewItem({ ...newItem, degree: e.target.value })}
-                    className="p-2 border border-gray-300 rounded-lg w-full text-sm focus:ring-black focus:border-black"
-                />
-                <input
-                    placeholder="Institution Name (e.g., University of the Philippines)"
-                    value={newItem.institution}
-                    onChange={(e) => setNewItem({ ...newItem, institution: e.target.value })}
-                    className="p-2 border border-gray-300 rounded-lg w-full text-sm focus:ring-black focus:border-black"
-                />
-                <div className='flex space-x-2'>
-                    <input
-                        placeholder="Year (e.g., 2020)"
-                        value={newItem.year}
-                        onChange={(e) => setNewItem({ ...newItem, year: e.target.value })}
-                        className="p-2 border border-gray-300 rounded-lg w-1/3 text-sm focus:ring-black focus:border-black"
-                    />
-                    <input
-                        placeholder="City, Country"
-                        value={newItem.details}
-                        onChange={(e) => setNewItem({ ...newItem, details: e.target.value })}
-                        className="p-2 border border-gray-300 rounded-lg w-2/3 text-sm focus:ring-black focus:border-black"
-                    />
-                </div>
-                <button
-                    onClick={handleAdd}
-                    className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg w-full transition duration-150 shadow-sm"
-                >
-                    Add Education
-                </button>
-            </div>
-
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-                {data.education.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-300 shadow-sm">
-                        <div>
-                            <p className="font-medium text-sm text-gray-900">{item.degree}</p>
-                            <p className="text-xs text-gray-500">{item.institution} ({item.year})</p>
-                        </div>
-                        <button
-                            onClick={() => deleteItem('education', item.id)}
-                            className="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded transition duration-150"
-                        >
-                            Remove
-                        </button>
-                    </div>
-                ))}
-            </div>
+            <p className="text-xs text-gray-400 mt-2 text-right">{data.summary.length} characters</p>
         </div>
     );
 };
@@ -168,119 +118,182 @@ const ExperienceForm = ({ data, addItem, deleteItem }) => {
     const [newItem, setNewItem] = useState({ title: '', company: '', duration: '', description: '' });
 
     const handleAdd = () => {
-        if (newItem.title && newItem.company && newItem.duration) {
+        if (newItem.title && newItem.company) {
             addItem('experience', newItem);
             setNewItem({ title: '', company: '', duration: '', description: '' });
         }
     };
 
     return (
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Briefcase className="w-5 h-5 mr-2" /> Work Experience
-            </h3>
-
-            <div className="bg-gray-50 p-4 border border-gray-300 rounded-lg space-y-3">
-                <input
-                    placeholder="Job Title (e.g., Project Engineer)"
-                    value={newItem.title}
-                    onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                    className="p-2 border border-gray-300 rounded-lg w-full text-sm focus:ring-black focus:border-black"
-                />
-                <input
-                    placeholder="Company Name"
-                    value={newItem.company}
-                    onChange={(e) => setNewItem({ ...newItem, company: e.target.value })}
-                    className="p-2 border border-gray-300 rounded-lg w-full text-sm focus:ring-black focus:border-black"
-                />
-                <input
-                    placeholder="Duration & Location (e.g., 2020 - Present, Manila)"
-                    value={newItem.duration}
-                    onChange={(e) => setNewItem({ ...newItem, duration: e.target.value })}
-                    className="p-2 border border-gray-300 rounded-lg w-full text-sm focus:ring-black focus:border-black"
-                />
-                <textarea
-                    placeholder="Key Achievements (use bullet points)"
-                    value={newItem.description}
-                    onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-                    rows="3"
-                    className="p-2 border border-gray-300 rounded-lg w-full text-sm resize-y focus:ring-black focus:border-black"
-                />
-                <button
-                    onClick={handleAdd}
-                    className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg w-full transition duration-150 shadow-sm"
-                >
-                    Add Experience
-                </button>
-            </div>
-
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="space-y-6">
+            {/* List Existing */}
+            <div className="space-y-3">
                 {data.experience.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-300 shadow-sm">
+                    <div key={item.id} className="group flex justify-between items-start p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-all">
                         <div>
-                            <p className="font-medium text-sm text-gray-900">{item.title}</p>
-                            <p className="text-xs text-gray-500">{item.company} ({item.duration})</p>
+                            <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                            <p className="text-sm text-gray-600">{item.company} • {item.duration}</p>
                         </div>
                         <button
                             onClick={() => deleteItem('experience', item.id)}
-                            className="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded transition duration-150"
+                            className="text-gray-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                            Remove
+                            <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
                 ))}
+            </div>
+
+            {/* Add New */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Add Experience</h4>
+                <input
+                    placeholder="Job Title"
+                    value={newItem.title}
+                    onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                    <input
+                        placeholder="Company"
+                        value={newItem.company}
+                        onChange={(e) => setNewItem({ ...newItem, company: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                    <input
+                        placeholder="Duration (e.g. 2020 - Present)"
+                        value={newItem.duration}
+                        onChange={(e) => setNewItem({ ...newItem, duration: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                </div>
+                <textarea
+                    placeholder="Description (Bullet points recommended)"
+                    value={newItem.description}
+                    onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                    rows="3"
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black resize-y"
+                />
+                <button
+                    onClick={handleAdd}
+                    className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                    <Plus className="w-4 h-4" /> Add Position
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const EducationForm = ({ data, addItem, deleteItem }) => {
+    const [newItem, setNewItem] = useState({ institution: '', degree: '', year: '', details: '' });
+
+    const handleAdd = () => {
+        if (newItem.institution && newItem.degree) {
+            addItem('education', newItem);
+            setNewItem({ institution: '', degree: '', year: '', details: '' });
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="space-y-3">
+                {data.education.map((item) => (
+                    <div key={item.id} className="group flex justify-between items-start p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-all">
+                        <div>
+                            <h4 className="font-semibold text-gray-900">{item.degree}</h4>
+                            <p className="text-sm text-gray-600">{item.institution} • {item.year}</p>
+                        </div>
+                        <button
+                            onClick={() => deleteItem('education', item.id)}
+                            className="text-gray-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Add Education</h4>
+                <input
+                    placeholder="School / University"
+                    value={newItem.institution}
+                    onChange={(e) => setNewItem({ ...newItem, institution: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                />
+                <input
+                    placeholder="Degree / Major"
+                    value={newItem.degree}
+                    onChange={(e) => setNewItem({ ...newItem, degree: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                    <input
+                        placeholder="Year"
+                        value={newItem.year}
+                        onChange={(e) => setNewItem({ ...newItem, year: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                    <input
+                        placeholder="Location / Honors (Optional)"
+                        value={newItem.details}
+                        onChange={(e) => setNewItem({ ...newItem, details: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                </div>
+                <button
+                    onClick={handleAdd}
+                    className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                    <Plus className="w-4 h-4" /> Add Education
+                </button>
             </div>
         </div>
     );
 };
 
 const SkillsForm = ({ data, setSkills }) => {
-    const [skillInput, setSkillInput] = useState('');
+    const [input, setInput] = useState('');
 
-    const handleAdd = () => {
-        const newSkill = skillInput.trim();
-        if (newSkill && !data.skills.includes(newSkill)) {
-            setSkills([...data.skills, newSkill]);
-            setSkillInput('');
+    const handleAdd = (e) => {
+        if (e.key === 'Enter' || e.type === 'click') {
+            const val = input.trim();
+            if (val && !data.skills.includes(val)) {
+                setSkills([...data.skills, val]);
+                setInput('');
+            }
         }
     };
 
-    const handleDelete = (skillToRemove) => {
-        setSkills(data.skills.filter(skill => skill !== skillToRemove));
+    const removeSkill = (skill) => {
+        setSkills(data.skills.filter(s => s !== skill));
     };
 
     return (
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Zap className="w-5 h-5 mr-2" /> Key Skills
-            </h3>
-            <p className="text-sm text-gray-500">Add 3-5 key skills or technologies.</p>
-            <div className="flex space-x-2">
+        <div>
+            <div className="flex gap-2 mb-4">
                 <input
-                    type="text"
-                    placeholder="E.g., AutoCAD, Project Management, Structural Analysis"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-                    className="p-3 border border-gray-300 rounded-lg flex-grow focus:ring-black focus:border-black transition duration-150"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleAdd}
+                    placeholder="Add a skill (e.g. Project Management)"
+                    className="flex-1 p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
                 />
                 <button
                     onClick={handleAdd}
-                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-4 rounded-lg transition duration-150 shadow-sm"
+                    className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800"
                 >
                     Add
                 </button>
             </div>
-            <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
-                {data.skills.map((skill) => (
-                    <span
-                        key={skill}
-                        className="inline-flex items-center bg-gray-200 text-gray-900 text-sm font-medium px-3 py-1 rounded-full cursor-pointer hover:bg-gray-200 transition duration-150 border border-gray-300"
-                        onClick={() => handleDelete(skill)}
-                        title="Click to remove"
-                    >
+            <div className="flex flex-wrap gap-2">
+                {data.skills.map(skill => (
+                    <span key={skill} className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium border border-gray-200">
                         {skill}
-                        <X className="ml-2 w-3 h-3 text-gray-500" />
+                        <button onClick={() => removeSkill(skill)} className="hover:text-red-600">
+                            <X className="w-3 h-3" />
+                        </button>
                     </span>
                 ))}
             </div>
@@ -288,174 +301,247 @@ const SkillsForm = ({ data, setSkills }) => {
     );
 };
 
+const CertificationsForm = ({ data, addItem, deleteItem }) => {
+    const [newItem, setNewItem] = useState({ name: '', issuer: '', year: '' });
 
-// --- Harvard CV Template Renderer ---
+    const handleAdd = () => {
+        if (newItem.name) {
+            addItem('certifications', newItem);
+            setNewItem({ name: '', issuer: '', year: '' });
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="space-y-3">
+                {data.certifications?.map((item) => (
+                    <div key={item.id} className="group flex justify-between items-start p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-all">
+                        <div>
+                            <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                            <p className="text-sm text-gray-600">{item.issuer} {item.year && `• ${item.year}`}</p>
+                        </div>
+                        <button
+                            onClick={() => deleteItem('certifications', item.id)}
+                            className="text-gray-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Add Certification</h4>
+                <input
+                    placeholder="Certification Name"
+                    value={newItem.name}
+                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                    <input
+                        placeholder="Issuing Organization"
+                        value={newItem.issuer}
+                        onChange={(e) => setNewItem({ ...newItem, issuer: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                    <input
+                        placeholder="Year"
+                        value={newItem.year}
+                        onChange={(e) => setNewItem({ ...newItem, year: e.target.value })}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-black focus:border-black"
+                    />
+                </div>
+                <button
+                    onClick={handleAdd}
+                    className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                    <Plus className="w-4 h-4" /> Add Certification
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// --- TEMPLATE RENDERER ---
 
 const HarvardCV = ({ data }) => {
-    const { name, email, phone, linkedin, summary, education, experience, skills } = data;
+    const { name, email, phone, linkedin, summary, education, experience, skills, certifications } = data;
 
     const formatDescription = (text) => {
         if (!text) return [];
-        const lines = text.split('\n').filter(line => line.trim() !== '');
-        return lines.map(line => {
-            // Remove common bullet point characters like *, -, or digits with a dot/space at the start
-            return line.trim().replace(/^[\*\-\d\.]\s*/, '');
-        });
+        return text.split('\n').filter(line => line.trim() !== '').map(line => line.trim().replace(/^[\*\-\d\.]\s*/, ''));
     };
 
     const SectionTitle = ({ title }) => (
-        <h2 className="text-lg font-bold border-b border-gray-900 pb-1 mt-6 mb-3 uppercase tracking-wide text-gray-900">
-            {title}
-        </h2>
+        <div className="mt-6 mb-3">
+            <h2 className="text-base font-bold text-gray-900 uppercase tracking-wider border-b border-gray-900 pb-1">
+                {title}
+            </h2>
+        </div>
     );
-
-    const ContactInfo = ({ icon, text, href }) => {
-        if (!text) return null;
-        const displayLink = text.includes('linkedin.com/in/') ? text.split('/').pop() : text;
-
-        return (
-            <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center text-sm text-gray-700 hover:text-black transition duration-150 mx-3"
-            >
-                {icon}
-                <span className="ml-1.5">{displayLink}</span>
-            </a>
-        );
-    };
 
     const hasContent = name || email || phone || linkedin || summary || education.length > 0 || experience.length > 0 || skills.length > 0;
 
     if (!hasContent) {
         return (
-            <div className="bg-gray-50 p-12 border-2 border-dashed border-gray-300 rounded-xl text-center text-gray-500 h-full flex flex-col justify-center items-center">
-                <Briefcase className="w-12 h-12 mb-4 text-gray-300" />
-                <p className="font-semibold text-lg text-gray-700">Live CV Preview</p>
-                <p className="text-sm mt-2 max-w-xs mx-auto">Start filling out the form on the left to see your professional CV take shape here.</p>
+            <div className="flex flex-col items-center justify-center h-[600px] text-gray-400">
+                <FileText className="w-16 h-16 mb-4 opacity-20" />
+                <p className="text-lg font-medium">Your CV Preview</p>
+                <p className="text-sm">Start editing to see changes appear here.</p>
             </div>
         );
     }
 
-
     return (
-        <div className="bg-white p-8 shadow-lg max-w-full mx-auto rounded-none print:shadow-none print:p-0 min-h-[800px] sticky top-4 cv-preview">
-            {/* Header - Name */}
-            <h1 className="text-3xl font-bold text-gray-900 text-center uppercase tracking-wider mb-2">
-                {name || '[Your Full Name]'}
-            </h1>
-
-            {/* Contact Details */}
-            <div className="flex flex-wrap justify-center items-center mb-6 text-sm text-gray-600">
-                <ContactInfo icon={<Mail className="w-3 h-3" />} text={email} href={`mailto:${email}`} />
-                <ContactInfo icon={<Phone className="w-3 h-3" />} text={phone} href={`tel:${phone}`} />
-                <ContactInfo icon={<Linkedin className="w-3 h-3" />} text={linkedin} href={linkedin} />
+        <div className="cv-preview bg-white p-8 md:p-12 max-w-[210mm] mx-auto min-h-[297mm] shadow-lg print:shadow-none print:mx-0 print:w-full text-gray-900 font-serif leading-relaxed">
+            {/* Header */}
+            <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 uppercase tracking-widest mb-3">{name}</h1>
+                <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
+                    {email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {email}</span>}
+                    {phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {phone}</span>}
+                    {linkedin && <span className="flex items-center gap-1"><Linkedin className="w-3 h-3" /> {linkedin.replace(/^https?:\/\/(www\.)?/, '')}</span>}
+                </div>
             </div>
 
             {/* Summary */}
             {summary && (
-                <>
-                    <SectionTitle title="Profile" />
-                    <p className="text-sm leading-relaxed whitespace-pre-line text-gray-800 text-justify">
-                        {summary}
-                    </p>
-                </>
-            )}
-
-            {/* Education */}
-            {education.length > 0 && (
-                <>
-                    <SectionTitle title="Education" />
-                    {education.map((item) => (
-                        <div key={item.id} className="flex justify-between text-sm mb-2">
-                            <div className="flex-1 pr-4">
-                                <span className="font-bold text-gray-900">{item.institution}</span>
-                                <div className="text-gray-800">{item.degree}</div>
-                            </div>
-                            <div className="text-right whitespace-nowrap text-gray-700">
-                                <span className="font-medium">{item.year}</span>
-                                {item.details && <div className="text-xs text-gray-500">{item.details}</div>}
-                            </div>
-                        </div>
-                    ))}
-                </>
+                <div className="mb-6">
+                    <p className="text-sm text-justify text-gray-800">{summary}</p>
+                </div>
             )}
 
             {/* Experience */}
             {experience.length > 0 && (
-                <>
+                <div>
                     <SectionTitle title="Professional Experience" />
-                    {experience.map((item) => (
-                        <div key={item.id} className="mb-4">
-                            <div className="flex justify-between text-sm mb-1">
-                                <span className="font-bold text-gray-900">{item.company}</span>
-                                <span className="text-gray-700 font-medium">{item.duration}</span>
-                            </div>
-                            <div className="text-sm italic text-gray-800 mb-1">{item.title}</div>
-                            {formatDescription(item.description).length > 0 && (
-                                <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                    <div className="space-y-5">
+                        {experience.map((item) => (
+                            <div key={item.id}>
+                                <div className="flex justify-between items-baseline mb-1">
+                                    <h3 className="font-bold text-gray-900">{item.company}</h3>
+                                    <span className="text-sm text-gray-600 font-medium">{item.duration}</span>
+                                </div>
+                                <div className="text-sm font-semibold text-gray-800 italic mb-2">{item.title}</div>
+                                <ul className="list-disc list-outside ml-4 space-y-1">
                                     {formatDescription(item.description).map((line, i) => (
-                                        <li key={i}>{line}</li>
+                                        <li key={i} className="text-sm text-gray-700 pl-1">{line}</li>
                                     ))}
                                 </ul>
-                            )}
-                        </div>
-                    ))}
-                </>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Education */}
+            {education.length > 0 && (
+                <div>
+                    <SectionTitle title="Education" />
+                    <div className="space-y-3">
+                        {education.map((item) => (
+                            <div key={item.id} className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-bold text-gray-900">{item.institution}</h3>
+                                    <div className="text-sm text-gray-800">{item.degree}</div>
+                                    {item.details && <div className="text-xs text-gray-500 mt-0.5">{item.details}</div>}
+                                </div>
+                                <span className="text-sm text-gray-600 font-medium whitespace-nowrap">{item.year}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Certifications */}
+            {certifications && certifications.length > 0 && (
+                <div>
+                    <SectionTitle title="Certifications" />
+                    <div className="space-y-2">
+                        {certifications.map((item) => (
+                            <div key={item.id} className="flex justify-between text-sm">
+                                <div>
+                                    <span className="font-bold text-gray-900">{item.name}</span>
+                                    <span className="text-gray-600"> — {item.issuer}</span>
+                                </div>
+                                <span className="text-gray-600">{item.year}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             )}
 
             {/* Skills */}
             {skills.length > 0 && (
-                <>
-                    <SectionTitle title="Key Skills" />
-                    <p className="text-sm text-gray-800">
+                <div>
+                    <SectionTitle title="Skills" />
+                    <p className="text-sm text-gray-800 leading-relaxed">
                         {skills.join(' • ')}
                     </p>
-                </>
+                </div>
             )}
         </div>
     );
 };
 
+
 const MobileCVPreviewModal = ({ data, onClose }) => {
     return (
-        <div className="fixed inset-0 z-[60] bg-white lg:hidden overflow-y-auto p-4 sm:p-8">
-            <div className="sticky top-0 bg-white z-50 pt-2 pb-4 flex justify-between items-center border-b border-gray-300">
-                <h2 className="text-xl font-bold text-gray-900">CV Preview</h2>
-                <button
-                    onClick={onClose}
-                    className="p-2 bg-gray-200 text-gray-900 rounded-full hover:bg-gray-200 transition"
-                    aria-label="Close Preview"
-                >
-                    <X className="w-5 h-5" />
-                </button>
-            </div>
-            <div className="mt-4 cv-preview-container">
-                <HarvardCV data={data} />
+        <div className="fixed inset-0 z-[60] bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 lg:hidden print:hidden animate-fade-in">
+            <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white z-10">
+                    <h3 className="font-bold text-gray-900">CV Preview</h3>
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                        <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                </div>
+                <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
+                    <div className="cv-preview-container transform scale-[0.6] sm:scale-[0.7] origin-top-left w-[210mm] h-[297mm] bg-white shadow-sm mx-auto">
+                        <HarvardCV data={data} />
+                    </div>
+                </div>
+                <div className="p-4 border-t border-gray-200 bg-white flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-2.5 text-gray-700 font-semibold hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                        Close
+                    </button>
+                    <button
+                        onClick={() => {
+                            window.print();
+                            onClose();
+                        }}
+                        className="flex-1 py-2.5 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <Printer className="w-4 h-4" /> Print / PDF
+                    </button>
+                </div>
             </div>
         </div>
     );
 };
 
-
-// --- Main Application Component ---
+// --- MAIN PAGE COMPONENT ---
 
 const CVPage = () => {
-    // 1. Initialize state
     const [cvData, setCvData] = useState(initialCVData);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [openSection, setOpenSection] = useState('personal');
+    const [showMobilePreview, setShowMobilePreview] = useState(false);
 
-    // Load data from API on mount
+    // Load Data
     useEffect(() => {
         const loadData = async () => {
             try {
                 setIsLoading(true);
                 const cv = await cvService.getMyCv();
-
                 if (cv) {
-                    // Map backend data to frontend structure
                     setCvData({
                         name: cv.personalInfo?.name || '',
                         email: cv.personalInfo?.email || '',
@@ -465,73 +551,54 @@ const CVPage = () => {
                         education: cv.education || [],
                         experience: cv.experience || [],
                         skills: cv.skills || [],
+                        certifications: cv.certifications || []
                     });
                 }
             } catch (error) {
-                console.error("Error loading CV data:", error);
-                // Fallback to localStorage if API fails
-                try {
-                    const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
-                    if (localData) {
-                        const parsedData = JSON.parse(localData);
-                        if (parsedData) {
-                            setCvData(prev => ({ ...prev, ...parsedData }));
-                        }
-                    }
-                } catch (e) {
-                    console.error("Error loading from local storage", e);
-                }
+                console.error("Error loading CV:", error);
+                const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (localData) setCvData(prev => ({ ...prev, ...JSON.parse(localData) }));
             } finally {
                 setIsLoading(false);
             }
         };
-
         loadData();
     }, []);
 
-    // Debounced save to API
-    useEffect(() => {
-        // Skip initial load or empty data if we want
+    // Save Handler
+    const handleSave = useCallback(async () => {
         if (isLoading) return;
-
-        const saveData = async () => {
-            try {
-                setIsSaving(true);
-
-                // Map frontend structure to backend structure
-                const backendData = {
-                    personalInfo: {
-                        name: cvData.name,
-                        email: cvData.email,
-                        phone: cvData.phone,
-                        linkedin: cvData.linkedin,
-                        summary: cvData.summary,
-                    },
-                    education: cvData.education,
-                    experience: cvData.experience,
-                    skills: cvData.skills,
-                };
-
-                await cvService.updateCv(backendData);
-
-                // Also save to localStorage as backup
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cvData));
-            } catch (error) {
-                console.error("Error saving CV data:", error);
-            } finally {
-                setIsSaving(false);
-            }
-        };
-
-        const timeoutId = setTimeout(saveData, 2000); // Auto-save after 2 seconds of inactivity
-
-        return () => clearTimeout(timeoutId);
+        try {
+            setIsSaving(true);
+            const backendData = {
+                personalInfo: {
+                    name: cvData.name,
+                    email: cvData.email,
+                    phone: cvData.phone,
+                    linkedin: cvData.linkedin,
+                    summary: cvData.summary,
+                },
+                education: cvData.education,
+                experience: cvData.experience,
+                skills: cvData.skills,
+                certifications: cvData.certifications
+            };
+            await cvService.updateCv(backendData);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cvData));
+        } catch (error) {
+            console.error("Error saving CV:", error);
+        } finally {
+            setIsSaving(false);
+        }
     }, [cvData, isLoading]);
 
-    const [step, setStep] = useState(0);
-    const [showMobilePreview, setShowMobilePreview] = useState(false);
+    // Auto-Save
+    useEffect(() => {
+        const timeoutId = setTimeout(handleSave, 2000);
+        return () => clearTimeout(timeoutId);
+    }, [handleSave]);
 
-    // 3. Data update handlers (pass these down)
+    // Handlers
     const updateField = useCallback((field, value) => {
         setCvData(prev => ({ ...prev, [field]: value }));
     }, []);
@@ -539,7 +606,7 @@ const CVPage = () => {
     const addItem = useCallback((collection, item) => {
         setCvData(prev => ({
             ...prev,
-            [collection]: [...prev[collection], { ...item, id: generateId() }],
+            [collection]: [...(prev[collection] || []), { ...item, id: generateId() }],
         }));
     }, []);
 
@@ -554,162 +621,114 @@ const CVPage = () => {
         setCvData(prev => ({ ...prev, skills: skillsArray }));
     }, []);
 
-    const canProceed = useCallback(() => {
-        if (step === STEPS.length - 1) return false;
-
-        switch (step) {
-            case 0:
-                return cvData.name.trim() !== '' && cvData.email.trim() !== '';
-            case 1:
-                return cvData.summary.trim() !== '';
-            default:
-                return true;
-        }
-    }, [step, cvData.name, cvData.email, cvData.summary]);
-
-
-    const handleNext = () => {
-        if (canProceed()) {
-            setStep(prev => Math.min(prev + 1, STEPS.length - 1));
-        }
+    const toggleSection = (section) => {
+        setOpenSection(openSection === section ? null : section);
     };
-
-    const handleBack = () => {
-        setStep(prev => Math.max(prev - 1, 0));
-    };
-
-    const formProps = { data: cvData, updateField, addItem, deleteItem, setSkills };
-
-    const renderCurrentStep = () => {
-        switch (step) {
-            case 0: return <PersonalDetailsForm {...formProps} />;
-            case 1: return <SummaryForm {...formProps} />;
-            case 2: return <EducationForm {...formProps} />;
-            case 3: return <ExperienceForm {...formProps} />;
-            case 4: return <SkillsForm {...formProps} />;
-            case 5:
-                return (
-                    <div className="text-center p-8 bg-gray-50 rounded-xl border border-gray-300">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-200 mb-4">
-                            <Briefcase className="w-8 h-8 text-green-600" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-gray-900">Ready to Export!</h3>
-                        <p className="text-gray-600 mt-2 mb-6">Your CV is ready. Review the preview on the right and click below to print or save as PDF.</p>
-                        <button
-                            onClick={() => window.print()}
-                            className="inline-flex items-center justify-center bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg transition duration-150 shadow-lg w-full sm:w-auto"
-                        >
-                            <Printer className="w-5 h-5 mr-2" /> Print / Save as PDF
-                        </button>
-                    </div>
-                );
-            default: return null;
-        }
-    };
-
-    const proceedAllowed = canProceed();
-    const atLastStep = step === STEPS.length - 1;
-
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <StandardHeader
-                title="CV Builder"
-                showBack={true}
-                backPath="/dashboard/jobs"
-            >
-            </StandardHeader>
+        <div className="min-h-screen bg-gray-50 print:bg-white">
+            <div className="print:hidden">
+                <StandardHeader title="CV Builder" showBack={true} backPath="/dashboard/jobs" />
+            </div>
 
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 print:p-0 print:m-0 print:max-w-none">
 
-                {/* Mobile Header Actions */}
-                <div className="lg:hidden mb-6 flex justify-between items-center">
-                    <div className="text-sm font-medium text-gray-500">Step {step + 1} of {STEPS.length}</div>
+                {/* Mobile Preview Button */}
+                <div className="lg:hidden mb-6">
                     <button
                         onClick={() => setShowMobilePreview(true)}
-                        className="bg-white border border-gray-300 text-gray-700 text-sm font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-gray-50 transition flex items-center"
+                        className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
                     >
-                        Preview <ChevronRight className="w-4 h-4 ml-1" />
+                        <FileText className="w-5 h-5" /> Preview CV
                     </button>
                 </div>
 
-                <div className="flex flex-col lg:flex-row lg:space-x-8">
+                <div className="flex flex-col lg:flex-row gap-8 print:block">
 
-                    {/* Left Column: Form */}
-                    <div className="w-full lg:w-5/12 xl:w-1/3 mb-8 lg:mb-0">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden sticky top-8">
-                            {/* Progress Bar */}
-                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-300">
-                                <div className="flex justify-between mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    <span>Progress</span>
-                                    <span>{Math.round(((step + 1) / STEPS.length) * 100)}%</span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div
-                                        className="bg-black h-2 rounded-full transition-all duration-500 ease-out"
-                                        style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
-                                    ></div>
-                                </div>
-                                <div className="mt-3 text-lg font-bold text-gray-900">{STEPS[step]}</div>
+                    {/* LEFT COLUMN: EDITOR */}
+                    <div className="w-full lg:w-5/12 xl:w-1/3 print:hidden">
+                        <div className="sticky top-8 space-y-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <h2 className="text-lg font-bold text-gray-900">Editor</h2>
+                                {isSaving && <span className="text-xs text-gray-400 animate-pulse">Saving...</span>}
                             </div>
 
-                            <div className="p-6">
-                                {isLoading ? (
-                                    <div className="flex justify-center p-8">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                                    </div>
-                                ) : (
-                                    renderCurrentStep()
-                                )}
-                            </div>
+                            <SectionWrapper title="Personal Details" icon={User} isOpen={openSection === 'personal'} onToggle={() => toggleSection('personal')}>
+                                <PersonalDetailsForm data={cvData} updateField={updateField} />
+                            </SectionWrapper>
 
-                            <div className="bg-gray-50 px-6 py-4 border-t border-gray-300 flex justify-between items-center">
-                                <button
-                                    onClick={handleBack}
-                                    disabled={step === 0}
-                                    className={`flex items-center text-sm font-medium px-4 py-2 rounded-lg transition ${step === 0
-                                        ? 'text-gray-300 cursor-not-allowed'
-                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    <ChevronLeft className="w-4 h-4 mr-1" /> Back
-                                </button>
+                            <SectionWrapper title="Summary" icon={Zap} isOpen={openSection === 'summary'} onToggle={() => toggleSection('summary')}>
+                                <SummaryForm data={cvData} updateField={updateField} />
+                            </SectionWrapper>
 
+                            <SectionWrapper title="Experience" icon={Briefcase} isOpen={openSection === 'experience'} onToggle={() => toggleSection('experience')}>
+                                <ExperienceForm data={cvData} addItem={addItem} deleteItem={deleteItem} />
+                            </SectionWrapper>
+
+                            <SectionWrapper title="Education" icon={BookOpen} isOpen={openSection === 'education'} onToggle={() => toggleSection('education')}>
+                                <EducationForm data={cvData} addItem={addItem} deleteItem={deleteItem} />
+                            </SectionWrapper>
+
+                            <SectionWrapper title="Certifications" icon={Award} isOpen={openSection === 'certifications'} onToggle={() => toggleSection('certifications')}>
+                                <CertificationsForm data={cvData} addItem={addItem} deleteItem={deleteItem} />
+                            </SectionWrapper>
+
+                            <SectionWrapper title="Skills" icon={Zap} isOpen={openSection === 'skills'} onToggle={() => toggleSection('skills')}>
+                                <SkillsForm data={cvData} setSkills={setSkills} />
+                            </SectionWrapper>
+
+                            <div className="pt-4 border-t border-gray-200">
                                 <button
-                                    onClick={handleNext}
-                                    disabled={atLastStep || !proceedAllowed}
-                                    className={`flex items-center justify-center px-6 py-2 rounded-lg text-sm font-bold transition shadow-sm ${atLastStep || !proceedAllowed
-                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                        : 'bg-black text-white hover:bg-gray-800'
-                                        }`}
+                                    onClick={handleSave}
+                                    disabled={isSaving}
+                                    className="w-full flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-70"
                                 >
-                                    {atLastStep ? 'Finish' : 'Next'} <ChevronRight className="w-4 h-4 ml-1" />
+                                    {isSaving ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Briefcase className="w-5 h-5" /> Save Information
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Preview */}
-                    <div className="hidden lg:block w-full lg:w-7/12 xl:w-2/3">
-                        <div className="sticky top-8">
-                            <div className="mb-4 flex justify-between items-center">
-                                <h2 className="text-lg font-bold text-gray-900">Live CV Preview</h2>
-                                <button
-                                    onClick={() => window.print()}
-                                    className="text-sm font-medium text-gray-600 hover:text-black flex items-center"
-                                >
-                                    <Printer className="w-4 h-4 mr-1" /> Print
-                                </button>
+                    {/* RIGHT COLUMN: PREVIEW (Hidden on Mobile) */}
+                    <div className="hidden lg:block w-full lg:w-7/12 xl:w-2/3 print:block print:w-full">
+                        <div className="sticky top-8 print:static">
+                            <div className="mb-4 flex justify-between items-center print:hidden">
+                                <h2 className="text-lg font-bold text-gray-900">Live Preview</h2>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => window.print()}
+                                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        <Printer className="w-4 h-4" /> Print
+                                    </button>
+                                    <button
+                                        onClick={() => window.print()}
+                                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-800 transition-colors"
+                                    >
+                                        <Download className="w-4 h-4" /> PDF
+                                    </button>
+                                </div>
                             </div>
-                            <div className="border border-gray-300 shadow-sm rounded-lg overflow-hidden cv-preview-container">
+                            <div className="cv-preview-container border border-gray-200 shadow-xl rounded-lg overflow-hidden bg-white print:border-none print:shadow-none">
                                 <HarvardCV data={cvData} />
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {showMobilePreview && <MobileCVPreviewModal data={cvData} onClose={() => setShowMobilePreview(false)} />}
+                </div>
             </div>
+
+            {/* Mobile Preview Modal */}
+            {showMobilePreview && <MobileCVPreviewModal data={cvData} onClose={() => setShowMobilePreview(false)} />}
         </div>
     );
 };

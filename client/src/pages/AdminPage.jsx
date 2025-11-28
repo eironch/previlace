@@ -54,7 +54,7 @@ function AdminPage() {
 
   const getTabFromPath = (path) => {
     if (path === "/admin") return "dashboard";
-    if (path.includes("/admin/registrations")) return "registrations";
+    if (path.includes("/admin/registrations")) return "users";
     if (path.includes("/admin/analytics")) return "analytics";
     if (path.includes("/admin/users")) return "users";
     if (path.includes("/admin/questions")) return "questions";
@@ -179,7 +179,6 @@ function AdminPage() {
 
       <main className="flex-1 flex flex-col w-full transition-all duration-300 overflow-hidden">
         {activeTab === "users" && <UserManagement />}
-        {activeTab === "registrations" && <AdminRegistrationPage />}
         {activeTab === "questions" && user?.role === "super_admin" && <QuestionManagementPage />}
         {activeTab === "classes" && user?.role === "super_admin" && <ClassManagementPage />}
         {activeTab === "resources" && <FileManagementPage />}

@@ -17,6 +17,7 @@
 		"seed:questions": "node -e 'import(\"./src/scripts/seed_questions.js\").then(async m => { await import(\"./src/config/database.js\").then(d => d.default()); const s = await import(\"./src/models/Subject.js\").then(m=>m.default.find({})); const t = await import(\"./src/models/Topic.js\").then(m=>m.default.find({})); await m.seedQuestions(s, t); process.exit(0); })'",
 		"seed:schedule": "node -e 'import(\"./src/scripts/seed_schedule.js\").then(async m => { await import(\"./src/config/database.js\").then(d => d.default()); const s = await import(\"./src/models/Subject.js\").then(m=>m.default.find({})); const t = await import(\"./src/models/Topic.js\").then(m=>m.default.find({})); await m.seedWeekendClasses(s, t); process.exit(0); })'",
 		"seed:profiles": "node -e 'console.log(\"Use seed:master for profiles as it requires complex dependencies\")'",
+		"seed:registrations": "node src/scripts/seed_registrations.js",
 		"db:seed": "node src/scripts/seed_master.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},

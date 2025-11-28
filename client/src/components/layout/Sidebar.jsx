@@ -25,14 +25,13 @@ export const studentNavItems = [
   { id: "dashboard", icon: Home, title: "Dashboard", path: "/dashboard" },
   { id: "subjects", icon: BookOpen, title: "Study", path: "/dashboard/subjects" },
   { id: "jobs", icon: Briefcase, title: "Career", path: "/dashboard/jobs" },
-  { id: "cv", icon: FileText, title: "CV Builder", path: "/dashboard/cv" },
+
   { id: "analytics", icon: BarChart3, title: "Progress", path: "/dashboard/analytics" },
   { id: "tickets", icon: MessageSquare, title: "Support", path: "/dashboard/tickets" },
 ];
 
 export const adminNavItems = [
   { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
-  { id: "registrations", icon: FileText, title: "Registrations", path: "/admin/registrations" },
   { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
   { id: "users", icon: Users, title: "Users", path: "/admin/users" },
   { id: "resources", icon: FileText, title: "Resources", path: "/admin/resources" },
@@ -40,7 +39,6 @@ export const adminNavItems = [
 
 export const superAdminNavItems = [
   { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
-  { id: "registrations", icon: FileText, title: "Registrations", path: "/admin/registrations" },
   { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
   { id: "users", icon: Users, title: "Users", path: "/admin/users" },
   { id: "questions", icon: BookOpen, title: "Questions", path: "/admin/questions" },

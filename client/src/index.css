@@ -78,17 +78,14 @@ body {
   }
 
   /* Unhide the resume container and its children */
-  /* Unhide the resume container and its children */
-  .resume-preview-container {
-    visibility: visible !important;
-  }
-
-  .resume-preview-container * {
-    visibility: visible !important;
+  .cv-preview-container,
+  .cv-preview-container * {
+    visibility: visible;
+    /* Force display to override 'hidden' class */
   }
 
   /* Position the resume container */
-  .resume-preview-container {
+  .cv-preview-container {
     position: absolute;
     left: 0;
     top: 0;
@@ -100,7 +97,7 @@ body {
   }
 
   /* Reset specific styles on the inner component if needed */
-  .resume-preview {
+  .cv-preview {
     box-shadow: none !important;
     max-width: none !important;
     width: 100% !important;

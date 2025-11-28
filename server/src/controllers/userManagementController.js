@@ -266,8 +266,8 @@ const getUserActivity = catchAsync(async (req, res) => {
       ),
       daysSinceLastLogin: user.lastLogin
         ? Math.floor(
-            (Date.now() - new Date(user.lastLogin)) / (1000 * 60 * 60 * 24)
-          )
+          (Date.now() - new Date(user.lastLogin)) / (1000 * 60 * 60 * 24)
+        )
         : null,
     },
     sessions: user.refreshTokens?.map((token) => ({
@@ -363,7 +363,7 @@ const generateStudentId = async () => {
   const year = new Date().getFullYear();
   let unique = false;
   let studentId = "";
-  
+
   while (!unique) {
     const random = Math.floor(1000 + Math.random() * 9000);
     studentId = `${year}-${random}`;
@@ -442,8 +442,8 @@ const createUser = catchAsync(async (req, res) => {
 
   res.status(201).json({
     success: true,
-    message: role === "admin" 
-      ? "Admin account created. Please copy the password." 
+    message: role === "admin"
+      ? "Admin account created. Please copy the password."
       : "User account created and credentials sent via email",
     data: {
       user: {

@@ -180,11 +180,11 @@ class AuthService {
 
   openGoogleAuth() {
     let baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    
+
     if (baseUrl.endsWith("/api")) {
       baseUrl = baseUrl.slice(0, -4);
     }
-    
+
     window.location.href = `${baseUrl}/api/auth/google`;
   }
 }

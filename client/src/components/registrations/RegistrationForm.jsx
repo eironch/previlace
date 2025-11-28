@@ -436,7 +436,7 @@ export default function RegistrationForm({ onSuccess, onCancel, isAdminMode = fa
 
             {/* Marketing */}
             <section>
-                <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">How Did You Know About CEVAS?</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">How Did You Know About Us?</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {["Tarpaulin", "Sulit.com.ph", "Laguna Libre", "Website", "Facebook Account", "Someone You Know"].map((source) => (
                         <label key={source} className="flex items-center gap-2 cursor-pointer">
