@@ -17,7 +17,7 @@ function QuizSetupWizard() {
   });
 
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const { startQuizSession, startMockExam, loading, error } = useExamStore();
+  const { startQuizAttempt, startMockExam, loading, error } = useExamStore();
 
   function handleCategoryToggle(category) {
     setSelectedCategories((prev) =>
@@ -40,7 +40,7 @@ function QuizSetupWizard() {
       if (setupConfig.mode === "mock") {
         await startMockExam(setupConfig.examLevel.toLowerCase());
       } else {
-        await startQuizSession(config);
+        await startQuizAttempt(config);
       }
       navigate("/dashboard/quiz-session");
     } catch (err) {

@@ -424,13 +424,14 @@ Follow this Prettier configuration:
         "warning": "Yellow icon, warning message, proceed/cancel options"
       },
       "confirmations": {
-        "destructive": "Modal with clear warning, secondary and danger buttons",
-        "standard": "In-line confirmation or simple modal"
+        "destructive": "Use standard Modal component with clear warning, secondary and danger buttons",
+        "standard": "In-line confirmation or standard Modal component"
       },
       "rules": [
         "Never block UI waiting for data - show skeletons",
         "Provide instant feedback for all user actions",
-        "Keep modals focused and minimal - single purpose only"
+        "Keep modals focused and minimal - single purpose only",
+        "ALWAYS use the shared Modal component for all modal interactions"
       ]
     },
 
@@ -745,6 +746,30 @@ full: 9999px
     <ChevronRight className="h-5 w-5 text-gray-400" />
   </button>
 </div>
+```
+
+### Modals
+
+#### Standard Modal
+**IMPORTANT:** Always use the shared `Modal` component located at `@/components/ui/Modal`. Do not create custom modal implementations.
+
+```jsx
+import Modal from "@/components/ui/Modal";
+
+<Modal
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  title="Modal Title"
+  maxWidth="max-w-md" // Optional: max-w-sm, max-w-md, max-w-lg, max-w-xl, max-w-2xl
+>
+  <div className="space-y-4">
+    <p className="text-sm text-gray-600">Modal content goes here.</p>
+    <div className="flex justify-end gap-3">
+      <button onClick={() => setIsModalOpen(false)} className="...">Cancel</button>
+      <button onClick={handleConfirm} className="...">Confirm</button>
+    </div>
+  </div>
+</Modal>
 ```
 
 ### Headers

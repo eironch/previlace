@@ -2,13 +2,13 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSubjectStore } from "@/store/subjectStore";
 import { useAuthStore } from "@/store/authStore";
-import { BookOpen, Target, TrendingUp } from "lucide-react";
+import { BookOpen, Target, TrendingUp, Eye, EyeOff } from "lucide-react";
 import StandardHeader from "@/components/ui/StandardHeader";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
 function SubjectsPage() {
   const navigate = useNavigate();
-  const { subjects, loading, fetchSubjects } = useSubjectStore();
+  const { subjects, loading, fetchSubjects, toggleSubjectPublish } = useSubjectStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -17,6 +17,15 @@ function SubjectsPage() {
 
   function handleSubjectClick(subjectId) {
     navigate(`/dashboard/subjects/${subjectId}`);
+  }
+
+  async function handleTogglePublish(e, subjectId) {
+    e.stopPropagation();
+    try {
+      await toggleSubjectPublish(subjectId);
+    } catch (error) {
+      console.error("Failed to toggle publish:", error);
+    }
   }
 
   return (

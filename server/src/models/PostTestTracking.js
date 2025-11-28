@@ -14,7 +14,7 @@ const postTestTrackingSchema = new mongoose.Schema(
     },
     sessionId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "QuizSession",
+      ref: "QuizAttempt",
       required: true,
     },
     completed: {

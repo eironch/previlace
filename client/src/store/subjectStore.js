@@ -64,6 +64,27 @@ export const useSubjectStore = create((set, get) => ({
   clearError: () => {
     set({ error: null });
   },
+
+  toggleSubjectPublish: async (subjectId) => {
+    try {
+      const response = await learningService.toggleSubjectPublish(subjectId);
+      const updatedSubject = response.data;
+      
+      set((state) => ({
+        subjects: state.subjects.map((s) => 
+          s._id === subjectId ? { ...s, isPublished: updatedSubject.isPublished } : s
+        ),
+        currentSubject: state.currentSubject?._id === subjectId 
+          ? { ...state.currentSubject, isPublished: updatedSubject.isPublished } 
+          : state.currentSubject
+      }));
+      
+      return updatedSubject;
+    } catch (error) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
 }));
 
 export default useSubjectStore;

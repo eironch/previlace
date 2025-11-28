@@ -251,7 +251,6 @@ export default function LandingPage() {
           <div className="flex justify-center space-x-3">
             {!isAuthenticated ? (
               <>
-
                 <Button
                   variant="outline"
                   size="lg"
@@ -334,7 +333,17 @@ export default function LandingPage() {
               Join thousands of successful Civil Service Exam passers.
             </p>
 
-            {!isAuthenticated ? null : (
+            {!isAuthenticated ? (
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white text-black hover:bg-white"
+                onClick={() => openAuthModal("login")}
+              >
+                Sign In to Your Account
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
               <DashboardButton
                 size="lg"
                 variant="outline"

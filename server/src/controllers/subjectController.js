@@ -161,48 +161,34 @@ async function deleteSubject(req, res) {
   }
 }
 
-async function getInstructorSubjects(req, res) {
+async function toggleSubjectPublish(req, res) {
   try {
-    const instructorId = req.user._id;
-    const mongoose = await import("mongoose");
+    const { id } = req.params;
 
-    const subjects = await Subject.find({ instructor: instructorId, isActive: true });
+    const subject = await Subject.findById(id);
 
-    const subjectsWithStats = await Promise.all(subjects.map(async (subject) => {
-      // Count tickets
-      const InquiryTicket = mongoose.default.model("InquiryTicket");
-      const openTickets = await InquiryTicket.countDocuments({ subject: subject._id, status: { $in: ['open', 'in_progress'] } });
+    if (!subject) {
+      return res.status(404).json({
+        success: false,
+        message: "Subject not found",
+      });
+    }
 
-      // Count students who have progress in this subject
-      const UserProgress = mongoose.default.model("UserProgress");
-      const activeStudents = await UserProgress.countDocuments({ subjectId: subject._id });
-
-      // Average score in this subject
-      const progress = await UserProgress.find({ subjectId: subject._id });
-      const totalScore = progress.reduce((acc, curr) => acc + (curr.averageScore || 0), 0);
-      const avgScore = progress.length > 0 ? totalScore / progress.length : 0;
-
-      return {
-        ...subject.toObject(),
-        stats: {
-          openTickets,
-          activeStudents,
-          averageScore: Math.round(avgScore * 10) / 10
-        }
-      };
-    }));
+    subject.isPublished = !subject.isPublished;
+    await subject.save();
 
     res.status(200).json({
       success: true,
-      data: subjectsWithStats,
+      data: subject,
+      message: `Subject ${subject.isPublished ? "published" : "unpublished"} successfully`,
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get instructor subjects error:", error);
+      console.error("Toggle subject publish error:", error);
     }
     res.status(500).json({
       success: false,
-      message: "Failed to fetch instructor subjects",
+      message: "Failed to toggle subject publication",
       error: error.message,
     });
   }
@@ -214,5 +200,5 @@ export {
   createSubject,
   updateSubject,
   deleteSubject,
-  getInstructorSubjects,
+  toggleSubjectPublish,
 };

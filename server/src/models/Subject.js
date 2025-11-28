@@ -37,6 +37,10 @@ const subjectSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isPublished: {
+      type: Boolean,
+      default: false,
+    },
     totalTopics: {
       type: Number,
       default: 0,
@@ -93,6 +97,7 @@ subjectSchema.methods.getProgress = async function (userId) {
 subjectSchema.statics.getByExamLevel = function (examLevel) {
   return this.find({
     isActive: true,
+    isPublished: true,
     $or: [{ examLevel }, { examLevel: "Both" }],
   }).sort({ order: 1 });
 };
@@ -100,6 +105,7 @@ subjectSchema.statics.getByExamLevel = function (examLevel) {
 subjectSchema.statics.getWithProgress = async function (userId, examLevel) {
   const subjects = await this.find({
     isActive: true,
+    isPublished: true,
     $or: [{ examLevel }, { examLevel: "Both" }],
   })
     .sort({ order: 1 })

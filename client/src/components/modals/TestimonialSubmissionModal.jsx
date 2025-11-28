@@ -58,8 +58,8 @@ function TestimonialSubmissionModal({ onClose, onSuccessfulSubmit }) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 
                 <button
                     onClick={onClose}

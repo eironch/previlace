@@ -1,5 +1,5 @@
 import LeaderboardEntry from "../models/LeaderboardEntry.js";
-import QuizSession from "../models/QuizSession.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
 
 const getLeaderboard = catchAsync(async (req, res, next) => {
@@ -138,7 +138,7 @@ const getNearbyUsers = catchAsync(async (req, res, next) => {
 });
 
 async function calculateUserPoints(userId) {
-  const sessions = await QuizSession.find({
+  const sessions = await QuizAttempt.find({
     userId,
     status: "completed",
   });
@@ -166,7 +166,7 @@ const updateUserLeaderboard = catchAsync(async (req, res, next) => {
 
     const points = await calculateUserPoints(req.user._id);
 
-    const stats = await QuizSession.getUserStats(req.user._id);
+    const stats = await QuizAttempt.getUserStats(req.user._id);
     const userStats = stats[0] || {};
 
     await entry.updateEntry({

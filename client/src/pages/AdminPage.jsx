@@ -28,7 +28,7 @@ import {
 import StandardHeader from "@/components/ui/StandardHeader";
 import { useAuthStore } from "@/store/authStore";
 import useAdminCacheStore from "@/store/adminCacheStore";
-import Sidebar, { adminNavItems, superAdminNavItems } from "../components/layout/Sidebar";
+import Sidebar, { adminNavItems } from "../components/layout/Sidebar";
 import UserManagement from "../components/admin/UserManagement";
 import QuestionManagementPage from "./admin/QuestionManagementPage";
 import FileManagementPage from "./admin/FileManagementPage";
@@ -178,10 +178,10 @@ function AdminPage() {
       />
 
       <main className="flex-1 flex flex-col w-full transition-all duration-300 overflow-hidden">
-        {activeTab === "users" && <UserManagement />}
-        {activeTab === "questions" && user?.role === "super_admin" && <QuestionManagementPage />}
-        {activeTab === "classes" && user?.role === "super_admin" && <ClassManagementPage />}
-        {activeTab === "resources" && <FileManagementPage />}
+         {activeTab === "users" && <UserManagement />}
+         {activeTab === "questions" && <QuestionManagementPage />}
+         {activeTab === "classes" && <ClassManagementPage />}
+         {activeTab === "resources" && <FileManagementPage />}
 
         {activeTab === "dashboard" && (
           <DashboardSection
@@ -197,9 +197,9 @@ function AdminPage() {
           <AdminAnalyticsPage />
         )}
 
-        {activeTab === "landing" && user?.role === "super_admin" && (
-          <LandingSection />
-        )}
+         {activeTab === "landing" && (
+            <LandingSection />
+         )}
       </main>
     </div >
   );

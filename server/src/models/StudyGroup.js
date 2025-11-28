@@ -133,7 +133,7 @@ studyGroupSchema.methods.canUserJoin = function (userId) {
 
 studyGroupSchema.methods.generateLeaderboard = async function () {
   const StudyGroupMember = mongoose.model("StudyGroupMember");
-  const QuizSession = mongoose.model("QuizSession");
+  const QuizAttempt = mongoose.model("QuizAttempt");
   
   const members = await StudyGroupMember.find({
     groupId: this._id,
@@ -143,7 +143,7 @@ studyGroupSchema.methods.generateLeaderboard = async function () {
   const leaderboard = [];
 
   for (const member of members) {
-    const quizSessions = await QuizSession.find({
+    const quizSessions = await QuizAttempt.find({
       userId: member.userId._id,
       status: "completed",
       createdAt: { $gte: member.joinedAt },

@@ -49,6 +49,10 @@ const topicSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isPublished: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -95,11 +99,11 @@ topicSchema.methods.getProgress = async function (userId) {
 };
 
 topicSchema.statics.getBySubject = function (subjectId) {
-  return this.find({ subjectId, isActive: true }).sort({ order: 1 });
+  return this.find({ subjectId, isActive: true, isPublished: true }).sort({ order: 1 });
 };
 
 topicSchema.statics.getWithProgress = async function (subjectId, userId) {
-  const topics = await this.find({ subjectId, isActive: true })
+  const topics = await this.find({ subjectId, isActive: true, isPublished: true })
     .sort({ order: 1 })
     .lean();
 

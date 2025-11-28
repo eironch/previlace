@@ -34,13 +34,6 @@ export const adminNavItems = [
   { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
   { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
   { id: "users", icon: Users, title: "Users", path: "/admin/users" },
-  { id: "resources", icon: FileText, title: "Resources", path: "/admin/resources" },
-];
-
-export const superAdminNavItems = [
-  { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
-  { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
-  { id: "users", icon: Users, title: "Users", path: "/admin/users" },
   { id: "questions", icon: BookOpen, title: "Questions", path: "/admin/questions" },
   { id: "classes", icon: Calendar, title: "Class Schedule", path: "/admin/classes" },
   { id: "landing", icon: Layout, title: "Landing Page", path: "/admin/landing" },
@@ -67,9 +60,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
   // On desktop, we use local isCollapsed state (or controlled).
 
   let navItems = studentNavItems;
-  if (user?.role === "super_admin") {
-    navItems = superAdminNavItems;
-  } else if (user?.role === "admin") {
+  if (user?.role === "super_admin" || user?.role === "admin") {
     navItems = adminNavItems;
   } else if (user?.role === "instructor") {
     navItems = instructorNavItems;

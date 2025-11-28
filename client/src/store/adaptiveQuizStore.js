@@ -13,7 +13,7 @@ export const useAdaptiveQuizStore = create((set, get) => ({
     set({ error: null, isAdaptive: true });
 
     try {
-      const response = await examService.startAdaptiveQuizSession(config);
+      const response = await examService.startAdaptiveQuizAttempt(config);
 
       if (response.success) {
         set({

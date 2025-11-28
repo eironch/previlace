@@ -39,6 +39,36 @@ const topicProgressSchema = new mongoose.Schema({
     default: false,
   },
   contentViewedAt: Date,
+  
+  // NEW: Learning tracking
+  learningContentViewed: { type: Boolean, default: false },
+  learningContentViewedAt: Date,
+  learningContentTimeSpent: { type: Number, default: 0 }, // seconds
+  
+  // NEW: Mastery tracking (CEVAS-style progression)
+  masteryLevel: {
+    type: String,
+    enum: ["not_started", "learning", "practicing", "competent", "mastered"],
+    default: "not_started"
+  },
+  
+  // NEW: Practice test tracking
+  practiceTestAttempts: { type: Number, default: 0 },
+  practiceTestBestScore: { type: Number, default: 0 },
+  practiceTestPassedAt: Date,
+  
+  // NEW: Weak concepts from this topic
+  weakConcepts: [String],
+  strongConcepts: [String],
+  
+  // NEW: SM2 data per topic
+  sm2Data: {
+    easeFactor: { type: Number, default: 2.5 },
+    interval: { type: Number, default: 0 },
+    repetitions: { type: Number, default: 0 },
+    nextReviewDate: Date,
+    lastReviewedAt: Date
+  }
 });
 
 const userProgressSchema = new mongoose.Schema(

@@ -6,6 +6,7 @@ import UserQuestionHistory from "../models/UserQuestionHistory.js";
 import UserActivity from "../models/UserActivity.js";
 import StudyPlan from "../models/StudyPlan.js";
 import Subject from "../models/Subject.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 import mongoose from "mongoose";
 
 const getMyRegistration = catchAsync(async (req, res, next) => {
@@ -149,13 +150,14 @@ const getLevel = catchAsync(async (req, res, next) => {
 
 const getDashboardData = catchAsync(async (req, res, next) => {
 	const userId = new mongoose.Types.ObjectId(req.user._id);
+	console.log('Dashboard userId:', userId);
 
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 	const sevenDaysAgo = new Date(today);
 	sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-	const [user, streakDoc, activePlan, activityDates, categories, weakAreas] = await Promise.all([
+	const [user, streakDoc, activePlan, activityDates, categories, weakAreas, preAssessmentSession, mockExamSession] = await Promise.all([
 		User.findById(userId).select("firstName lastName email role level exp nextLevelExp isEmailVerified isProfileComplete"),
 		Streak.findOne({ userId }).lean(),
 		StudyPlan.findOne({ isActive: true, enrolledStudents: userId })
@@ -219,24 +221,46 @@ const getDashboardData = catchAsync(async (req, res, next) => {
 				},
 			},
 			{
-				$project: {
-					accuracy: {
-						$round: [{ $cond: [{ $eq: ["$totalAttempts", 0] }, 0, { $multiply: [{ $divide: ["$correctAttempts", "$totalAttempts"] }, 100] }] }, 2],
-					},
+				$lookup: {
+					from: "topics",
+					localField: "_id",
+					foreignField: "_id",
+					as: "topicInfo",
 				},
 			},
-			{ $match: { accuracy: { $lt: 60 }, totalAttempts: { $gte: 5 } } },
+			{ $unwind: { path: "$topicInfo", preserveNullAndEmptyArrays: true } },
+			{
+				$project: {
+					topicName: { $ifNull: ["$topicInfo.name", "Unknown Topic"] },
+					accuracy: {
+						$cond: [{ $eq: ["$totalAttempts", 0] }, 0, { $multiply: [{ $divide: ["$correctAttempts", "$totalAttempts"] }, 100] }],
+					},
+					totalAttempts: 1,
+				},
+			},
+			{ $match: { accuracy: { $lt: 60 }, totalAttempts: { $gte: 1 } } },
 			{ $sort: { accuracy: 1 } },
 			{ $limit: 5 },
-			{ $lookup: { from: "topics", localField: "_id", foreignField: "_id", as: "topicInfo" } },
-			{ $unwind: "$topicInfo" },
-			{ $project: { topicName: "$topicInfo.name", accuracy: 1 } },
+			{ $project: { topicName: 1, accuracy: { $round: ["$accuracy", 2] } } },
 		]),
+		QuizAttempt.findOne({
+			userId,
+			mode: { $in: ["assessment", "pretest"] },
+			status: "completed",
+		}).select("_id"),
+		QuizAttempt.findOne({
+			userId,
+			mode: "mock",
+			status: "completed",
+		}).select("_id"),
 	]);
 
 	if (!user) {
 		return next(new AppError("User not found", 404));
 	}
+
+	const preAssessmentCompleted = !!preAssessmentSession;
+	const mockExamCompleted = !!mockExamSession;
 
 	let streak = streakDoc;
 	if (!streak) {
@@ -331,7 +355,10 @@ const getDashboardData = catchAsync(async (req, res, next) => {
 				weakAreas: weakAreas || [],
 				totalQuestions: totalAttempts,
 				accuracy: Math.round(accuracy),
+				accuracy: Math.round(accuracy),
 				readiness,
+				preAssessmentCompleted,
+				mockExamCompleted,
 			},
 			studyPlan: activePlan || null,
 		},

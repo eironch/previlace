@@ -8,7 +8,7 @@ import SkeletonLoader from "@/components/ui/SkeletonLoader";
 function QuizSetupPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { startQuizSession, loading } = useExamStore();
+  const { startQuizAttempt, loading } = useExamStore();
   
   const [mode, setMode] = useState("practice");
   const [questionCount, setQuestionCount] = useState(10);
@@ -35,7 +35,7 @@ function QuizSetupPage() {
     };
 
     try {
-      await startQuizSession(config);
+      await startQuizAttempt(config);
       navigate("/dashboard/quiz-session");
     } catch (err) {
       setError(err.message || "Failed to start quiz");

@@ -105,7 +105,8 @@ class AdaptiveQuizService {
       const normalizedExamLevel = examLevel.replace(/-/g, '').toLowerCase();
       query.$or = [
         { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
-        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } }
+        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } },
+        { examLevel: "Both" }
       ];
     }
 
@@ -122,7 +123,8 @@ class AdaptiveQuizService {
         const normalizedExamLevel = examLevel.replace(/-/g, '').toLowerCase();
         queryWithoutRecent.$or = [
           { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
-          { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } }
+          { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } },
+          { examLevel: "Both" }
         ];
       }
       
@@ -156,6 +158,16 @@ class AdaptiveQuizService {
       selected.push(...this.shuffleArray(difficultyGroups.advanced).slice(0, Math.floor(questionCount * 0.6)));
     }
 
+    // Fallback logic: If selected count is less than requested, fill with remaining questions
+    if (selected.length < questionCount) {
+      const remainingNeeded = questionCount - selected.length;
+      const selectedIds = selected.map(q => q._id.toString());
+      const remainingQuestions = allQuestions.filter(
+        q => !selectedIds.includes(q._id.toString())
+      );
+      selected.push(...this.shuffleArray(remainingQuestions).slice(0, remainingNeeded));
+    }
+
     return this.shuffleArray(selected).slice(0, questionCount);
   }
 
@@ -173,7 +185,8 @@ class AdaptiveQuizService {
       const normalizedExamLevel = examLevel.replace(/-/g, '').toLowerCase();
       query.$or = [
         { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
-        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } }
+        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } },
+        { examLevel: "Both" }
       ];
     }
 
@@ -192,7 +205,8 @@ class AdaptiveQuizService {
       const normalizedExamLevel = examLevel.replace(/-/g, '').toLowerCase();
       query.$or = [
         { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
-        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } }
+        { examLevel: { $regex: new RegExp(`^${normalizedExamLevel}$`, "i") } },
+        { examLevel: "Both" }
       ];
     }
 

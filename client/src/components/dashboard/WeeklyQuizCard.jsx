@@ -9,7 +9,7 @@ function WeeklyQuizCard() {
   const navigate = useNavigate();
   const { activePlan, fetchActivePlan } = useStudyPlanStore();
   const { postTestStatus, pretestAvailable, fetchPostTestStatus, checkPretestAvailability, loading } = usePostTestStore();
-  const { startQuizSession, loading: quizLoading } = useExamStore();
+  const { startQuizAttempt, loading: quizLoading } = useExamStore();
   const [currentWeek, setCurrentWeek] = useState(null);
   const [error, setError] = useState(null);
 
@@ -36,7 +36,7 @@ function WeeklyQuizCard() {
     
     try {
       setError(null);
-      await startQuizSession({
+      await startQuizAttempt({
         mode: "post-test",
         weekNumber: currentWeek.weekNumber,
       });
@@ -54,7 +54,7 @@ function WeeklyQuizCard() {
     
     try {
       setError(null);
-      await startQuizSession({
+      await startQuizAttempt({
         mode: "assessment",
         currentWeekNumber: currentWeek.weekNumber,
       });
@@ -70,7 +70,7 @@ function WeeklyQuizCard() {
   async function handleStartPretest() {
     try {
       setError(null);
-      await startQuizSession({
+      await startQuizAttempt({
         mode: "pretest",
       });
       navigate("/dashboard/quiz-session");

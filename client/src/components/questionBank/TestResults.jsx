@@ -130,13 +130,13 @@ function TestResults({ onBackToConfig }) {
             </h2>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {analytics.strongAreas && analytics.strongAreas.length > 0 && (
+              {(analytics.strongTopics?.length > 0 || analytics.strongAreas?.length > 0) && (
                 <div>
                   <h3 className="mb-2 font-medium text-green-700">
                     Strong Areas
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {analytics.strongAreas.map((area) => (
+                    {(analytics.strongTopics?.length > 0 ? analytics.strongTopics : analytics.strongAreas).map((area) => (
                       <span
                         key={area}
                         className="rounded bg-green-200 px-2 py-1 text-sm text-green-700"
@@ -148,13 +148,13 @@ function TestResults({ onBackToConfig }) {
                 </div>
               )}
 
-              {analytics.weakAreas && analytics.weakAreas.length > 0 && (
+              {(analytics.weakTopics?.length > 0 || analytics.weakAreas?.length > 0) && (
                 <div>
                   <h3 className="mb-2 font-medium text-red-700">
                     Areas for Improvement
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {analytics.weakAreas.map((area) => (
+                    {(analytics.weakTopics?.length > 0 ? analytics.weakTopics : analytics.weakAreas).map((area) => (
                       <span
                         key={area}
                         className="rounded bg-red-200 px-2 py-1 text-sm text-red-700"

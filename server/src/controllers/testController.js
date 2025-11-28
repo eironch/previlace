@@ -11,7 +11,10 @@ const startTest = catchAsync(async (req, res, next) => {
   if (subjectArea) filters.subjectArea = subjectArea;
   if (difficulty) filters.difficulty = difficulty;
   if (examLevel) {
-    filters.$or = [{ examLevel }, { examLevel: "Both" }];
+    filters.$or = [
+      { examLevel: { $regex: new RegExp(`^${examLevel}$`, "i") } },
+      { examLevel: "Both" }
+    ];
   }
   
   const questions = await ManualQuestion.getRandomQuestions(filters, questionCount);
@@ -69,7 +72,7 @@ const submitTest = catchAsync(async (req, res, next) => {
     return next(new AppError("Test not found", 404));
   }
   
-  if (test.userId.toString() !== req.user._id) {
+  if (test.userId.toString() !== req.user._id.toString()) {
     return next(new AppError("Not authorized to submit this test", 403));
   }
   
@@ -125,7 +128,7 @@ const getTestResult = catchAsync(async (req, res, next) => {
     return next(new AppError("Test not found", 404));
   }
   
-  if (test.userId.toString() !== req.user._id && req.user.role !== "admin") {
+  if (test.userId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
     return next(new AppError("Not authorized to view this test", 403));
   }
   
@@ -197,7 +200,7 @@ const pauseTest = catchAsync(async (req, res, next) => {
     return next(new AppError("Test not found", 404));
   }
   
-  if (test.userId.toString() !== req.user._id) {
+  if (test.userId.toString() !== req.user._id.toString()) {
     return next(new AppError("Not authorized to pause this test", 403));
   }
   
