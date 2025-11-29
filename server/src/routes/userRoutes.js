@@ -7,7 +7,9 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.get("/dashboard", userController.getDashboardData);
+router.get("/dashboard/base", userController.getDashboardBase);
+router.get("/dashboard/analytics", userController.getDashboardAnalytics);
+router.get("/dashboard/schedule", userController.getDashboardSchedule);
 router.get("/my-registration", userController.getMyRegistration);
 router.get("/profile", userController.getProfile);
 router.patch("/profile", validateUpdateProfile, userController.updateProfile);

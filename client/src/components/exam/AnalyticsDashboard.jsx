@@ -71,7 +71,7 @@ function AnalyticsDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8">
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="w-full px-4">
         <h1 className="mb-8 text-3xl font-bold text-gray-900">
           Analytics Dashboard
         </h1>

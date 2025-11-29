@@ -143,7 +143,7 @@ function QuestionTypeSelection({ onSelectType, onBack }) {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="w-full px-6 py-8">
         <div className="mb-8 flex items-center gap-4">
           <Button variant="ghost" onClick={onBack}>
             <ArrowLeft className="h-5 w-5" />

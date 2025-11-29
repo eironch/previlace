@@ -47,14 +47,19 @@ import notificationRoutes from "./src/routes/notificationRoutes.js";
 import jobRoutes from "./src/routes/jobRoutes.js";
 import resumeRoutes from "./src/routes/resumeRoutes.js";
 import interviewRoutes from "./src/routes/interviewRoutes.js";
+import behaviorAnalyticsRoutes from "./src/routes/behaviorAnalyticsRoutes.js";
+import dssRoutes from "./src/routes/dssRoutes.js";
 import weekendClassRoutes from "./src/routes/weekendClassRoutes.js";
 import registrationRoutes from "./src/routes/registrationRoutes.js";
+import adaptivityRoutes from "./src/routes/adaptivityRoutes.js";
+import adminAnalyticsRoutes from "./src/routes/adminAnalyticsRoutes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { generalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 import { AppError } from "./src/utils/AppError.js";
 import { createServer } from "http";
 import { startTicketExpirationJob } from "./src/jobs/ticketExpirationJob.js";
 import { startReminderJobs } from "./src/jobs/reminderJob.js";
+import { startFSRSOptimizationJob } from "./src/jobs/fsrsOptimizationJob.js";
 
 const app = express();
 
@@ -177,8 +182,12 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/interviews", interviewRoutes);
+app.use("/api/behavior-analytics", behaviorAnalyticsRoutes);
+app.use("/api/dss", dssRoutes);
 app.use("/api/weekend-classes", weekendClassRoutes);
 app.use("/api/registrations", registrationRoutes);
+app.use("/api/adaptivity", adaptivityRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
@@ -194,6 +203,7 @@ async function startServer() {
 
     startTicketExpirationJob();
     startReminderJobs();
+    startFSRSOptimizationJob();
 
     const httpServer = createServer(app);
     // socketService.initialize(httpServer); // Removed Socket.IO

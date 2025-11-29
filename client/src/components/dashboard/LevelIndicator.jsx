@@ -1,8 +1,8 @@
 import { TrendingUp } from "lucide-react";
-import useDashboardStore from "@/store/dashboardStore";
 
-function LevelIndicator() {
-  const { level, exp: xp, nextLevelExp: xpToNextLevel } = useDashboardStore();
+
+function LevelIndicator({ user }) {
+  const { level, exp: xp, nextLevelExp: xpToNextLevel } = user || {};
 
   const progress = xpToNextLevel > 0 ? Math.min((xp / xpToNextLevel) * 100, 100) : 0;
 

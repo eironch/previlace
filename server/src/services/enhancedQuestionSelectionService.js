@@ -1,21 +1,19 @@
 import ManualQuestion from "../models/ManualQuestion.js";
 import UserQuestionHistory from "../models/UserQuestionHistory.js";
 import Topic from "../models/Topic.js";
-import sm2AlgorithmService from "./sm2AlgorithmService.js";
+import fsrsService from "./fsrsService.js";
 
 class EnhancedQuestionSelectionService {
   async selectQuestionsForSession(userId, config) {
     const {
-      categories = [],
       difficulty = "",
       examLevel = "",
       questionCount = 10,
-      mode = "practice",
       topicId = null,
       subjectId = null,
     } = config;
 
-    const distribution = sm2AlgorithmService.getReviewDistribution(questionCount);
+    const distribution = this.getReviewDistribution(questionCount);
     const selectedQuestions = [];
 
     const dueQuestions = await this.getDueForReviewQuestions(
@@ -70,10 +68,88 @@ class EnhancedQuestionSelectionService {
       selectedQuestions.push(...fallbackQuestions);
     }
 
-    return sm2AlgorithmService.selectQuestionsWithInterleaving(
-      selectedQuestions,
-      questionCount
-    );
+    return this.selectQuestionsWithInterleaving(selectedQuestions, questionCount);
+  }
+
+  getReviewDistribution(totalQuestions) {
+    return {
+      dueForReview: Math.floor(totalQuestions * 0.4),
+      weakAreas: Math.floor(totalQuestions * 0.3),
+      newQuestions: Math.floor(totalQuestions * 0.2),
+      reinforcement: Math.floor(totalQuestions * 0.1),
+    };
+  }
+
+  selectQuestionsWithInterleaving(questions, targetCount) {
+    const topicGroups = {};
+    questions.forEach((q) => {
+      const topicId = q.topicId?.toString() || "unknown";
+      if (!topicGroups[topicId]) {
+        topicGroups[topicId] = [];
+      }
+      topicGroups[topicId].push(q);
+    });
+
+    Object.values(topicGroups).forEach((group) => {
+      group.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    });
+
+    const selected = [];
+    const topicKeys = Object.keys(topicGroups);
+    let topicIndex = 0;
+
+    while (selected.length < targetCount && topicKeys.length > 0) {
+      const topicId = topicKeys[topicIndex % topicKeys.length];
+      const group = topicGroups[topicId];
+
+      if (group.length > 0) {
+        selected.push(group.shift());
+      }
+
+      if (group.length === 0) {
+        const idx = topicKeys.indexOf(topicId);
+        topicKeys.splice(idx, 1);
+        if (topicKeys.length > 0) {
+          topicIndex = topicIndex % topicKeys.length;
+        }
+      } else {
+        topicIndex++;
+      }
+    }
+
+    return selected;
+  }
+
+  calculatePriority(history) {
+    const now = new Date();
+    let priority = 0;
+
+    if (history.fsrsData?.due) {
+      const dueDate = new Date(history.fsrsData.due);
+      const daysOverdue = Math.floor((now - dueDate) / (1000 * 60 * 60 * 24));
+      if (daysOverdue > 0) {
+        priority += Math.min(daysOverdue * 10, 100);
+      }
+    }
+
+    const card = {
+      stability: history.fsrsData?.stability || 0,
+      state: fsrsService.stringToState(history.fsrsData?.state || "new"),
+      lastReview: history.fsrsData?.lastReview || null
+    };
+    const retrievability = fsrsService.getRetrievability(card, now);
+    priority += (1 - retrievability) * 50;
+
+    if (history.totalAttempts > 0) {
+      const errorRate = history.incorrectAttempts / history.totalAttempts;
+      priority += errorRate * 50;
+    }
+
+    if (history.fsrsData?.lapses > 0) {
+      priority += Math.min(history.fsrsData.lapses * 5, 30);
+    }
+
+    return Math.min(priority, 200);
   }
 
   async getDueForReviewQuestions(userId, examLevel, count, topicId, subjectId) {
@@ -81,10 +157,10 @@ class EnhancedQuestionSelectionService {
 
     const dueHistories = await UserQuestionHistory.find({
       userId,
-      "spacedRepetitionData.nextReviewDate": { $lte: new Date() },
+      "fsrsData.due": { $lte: new Date() },
       masteryLevel: { $ne: "mastered" },
     })
-      .sort({ "spacedRepetitionData.nextReviewDate": 1 })
+      .sort({ "fsrsData.due": 1 })
       .limit(count * 2)
       .populate("questionId");
 
@@ -96,7 +172,7 @@ class EnhancedQuestionSelectionService {
 
     const questionsWithPriority = validHistories.map((h) => {
       const question = h.questionId;
-      question.priority = sm2AlgorithmService.calculatePriority(h);
+      question.priority = this.calculatePriority(h);
       question.historyData = h;
       return question;
     });
@@ -183,9 +259,9 @@ class EnhancedQuestionSelectionService {
       userId,
       masteryLevel: { $in: ["advanced", "mastered"] },
       questionId: { $nin: excludeIds },
-      "spacedRepetitionData.interval": { $gte: 14 },
+      "fsrsData.scheduledDays": { $gte: 14 },
     })
-      .sort({ "spacedRepetitionData.lastReviewedAt": 1 })
+      .sort({ "fsrsData.lastReview": 1 })
       .limit(count * 2)
       .populate("questionId");
 
@@ -233,7 +309,7 @@ class EnhancedQuestionSelectionService {
     return questions;
   }
 
-  async processAnswerWithSM2(userId, questionId, isCorrect, responseTimeMs, question) {
+  async processAnswerWithFSRS(userId, questionId, isCorrect, responseTimeMs, question) {
     let history = await UserQuestionHistory.findOne({ userId, questionId });
 
     if (!history) {
@@ -242,38 +318,19 @@ class EnhancedQuestionSelectionService {
         questionId,
         subject: question.subjectId || question.topicId,
         topic: question.topicId,
-        spacedRepetitionData: {
-          easeFactor: 2.5,
-          interval: 0,
-          repetitions: 0,
-          nextReviewDate: new Date(),
+        fsrsData: {
+          stability: 0,
+          difficulty: 5,
+          due: new Date(),
+          elapsedDays: 0,
+          scheduledDays: 0,
+          reps: 0,
+          lapses: 0,
+          state: "new",
+          lastReview: null
         },
       });
     }
-
-    const avgTimeMs = history.averageResponseTime || 30000;
-    const consecutiveCorrect = this.getConsecutiveCorrect(history.attempts || []);
-
-    const qualityRating = sm2AlgorithmService.calculateQualityRating(
-      isCorrect,
-      responseTimeMs,
-      avgTimeMs,
-      consecutiveCorrect
-    );
-
-    const sm2Result = sm2AlgorithmService.calculateNextReview(
-      history.spacedRepetitionData,
-      qualityRating
-    );
-
-    history.spacedRepetitionData = {
-      easeFactor: sm2Result.easeFactor,
-      interval: sm2Result.interval,
-      repetitions: sm2Result.repetitions,
-      nextReviewDate: sm2Result.nextReviewDate,
-      lastReviewedAt: sm2Result.lastReviewedAt,
-      difficultyRating: qualityRating,
-    };
 
     history.attempts.push({
       isCorrect,
@@ -289,13 +346,10 @@ class EnhancedQuestionSelectionService {
     }
 
     history.lastAttemptAt = new Date();
+    history.updateFSRS(isCorrect, responseTimeMs);
 
     const accuracy = history.correctAttempts / history.totalAttempts;
-    history.masteryLevel = sm2AlgorithmService.determineMasteryLevel(
-      sm2Result.interval,
-      sm2Result.repetitions,
-      accuracy
-    );
+    history.updateMasteryLevel();
 
     history.weaknessScore = (1 - accuracy) * 100;
     history.isWeakArea = history.weaknessScore > 40 && history.totalAttempts >= 1;
@@ -307,22 +361,11 @@ class EnhancedQuestionSelectionService {
 
     return {
       masteryLevel: history.masteryLevel,
-      nextReviewDate: sm2Result.nextReviewDate,
-      interval: sm2Result.interval,
+      nextReviewDate: history.fsrsData.due,
+      scheduledDays: history.fsrsData.scheduledDays,
       isWeakArea: history.isWeakArea,
+      retrievability: history.getRetrievability()
     };
-  }
-
-  getConsecutiveCorrect(attempts) {
-    let count = 0;
-    for (let i = attempts.length - 1; i >= 0; i--) {
-      if (attempts[i].isCorrect) {
-        count++;
-      } else {
-        break;
-      }
-    }
-    return count;
   }
 
   async getRecentlyAnsweredQuestions(userId, days = 7) {
@@ -352,6 +395,8 @@ class EnhancedQuestionSelectionService {
           advanced: 0,
           mastered: 0,
         },
+        averageStability: 0,
+        totalLapses: 0
       };
     }
 
@@ -379,12 +424,17 @@ class EnhancedQuestionSelectionService {
       mastered: histories.filter((h) => h.masteryLevel === "mastered").length,
     };
 
+    const averageStability = histories.reduce((sum, h) => sum + (h.fsrsData?.stability || 0), 0) / histories.length;
+    const totalLapses = histories.reduce((sum, h) => sum + (h.fsrsData?.lapses || 0), 0);
+
     return {
       recentAccuracy,
       averageTimePerQuestion: avgTime,
       streak: 0,
       totalQuestionsAttempted: histories.length,
       masteryDistribution,
+      averageStability,
+      totalLapses
     };
   }
 }

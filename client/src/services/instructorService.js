@@ -32,6 +32,20 @@ const instructorService = {
     });
     return response.data.availability;
   },
+
+  getAvailableInstructors: async (dayOfWeek, subjectId) => {
+    const params = {};
+    if (dayOfWeek !== undefined) params.dayOfWeek = dayOfWeek;
+    if (subjectId) params.subjectId = subjectId;
+
+    const response = await axios.get(`${API_URL}/api/instructor-availability/available`, {
+      params,
+      withCredentials: true,
+    });
+    // The API returns { availabilities: [...] } where each item has .instructorId populated
+    // We want to return a list of instructors
+    return response.data.availabilities.map(a => a.instructorId);
+  },
 };
 
 export default instructorService;

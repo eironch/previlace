@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Search, MapPin, Users, Loader } from "lucide-react";
+import { Search, MapPin, Users } from "lucide-react";
 import Button from "../ui/Button";
 import { Input } from "../ui/Input";
 import useStudyGroupStore from "../../store/studyGroupStore";
+import SkeletonLoader from "../ui/SkeletonLoader";
 
 export default function StudyGroupBrowser() {
   const [search, setSearch] = useState("");
@@ -34,7 +35,7 @@ export default function StudyGroupBrowser() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 p-6">
-      <div className="mx-auto max-w-7xl">
+      <div className="w-full">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900">
             Discover Study Groups
@@ -77,8 +78,24 @@ export default function StudyGroupBrowser() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader className="h-8 w-8 animate-spin text-blue-600" />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="flex flex-col rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mb-4">
+                  <SkeletonLoader variant="title" className="mb-2 h-6" />
+                  <SkeletonLoader className="h-4 w-3/4" />
+                </div>
+                <div className="mb-4 space-y-2">
+                  <SkeletonLoader className="h-4 w-24" />
+                  <SkeletonLoader className="h-4 w-32" />
+                </div>
+                <div className="mb-4 flex gap-1">
+                  <SkeletonLoader className="h-6 w-16 rounded-full" />
+                  <SkeletonLoader className="h-6 w-16 rounded-full" />
+                </div>
+                <SkeletonLoader variant="button" className="mt-auto" />
+              </div>
+            ))}
           </div>
         ) : (
           <>

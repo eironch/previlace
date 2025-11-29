@@ -148,37 +148,14 @@ const getLevel = catchAsync(async (req, res, next) => {
 	});
 });
 
-const getDashboardData = catchAsync(async (req, res, next) => {
+const getDashboardBase = catchAsync(async (req, res, next) => {
 	const userId = new mongoose.Types.ObjectId(req.user._id);
-	console.log('Dashboard userId:', userId);
-
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
-	const sevenDaysAgo = new Date(today);
-	sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-	const [user, streakDoc, activePlan, activityDates, categories, weakAreas, preAssessmentSession, mockExamSession] = await Promise.all([
+	const [user, streakDoc, activityDates] = await Promise.all([
 		User.findById(userId).select("firstName lastName email role level exp nextLevelExp isEmailVerified isProfileComplete"),
 		Streak.findOne({ userId }).lean(),
-		StudyPlan.findOne({ isActive: true, enrolledStudents: userId })
-			.select("_id batchId name startDate endDate examDate totalWeeks weeks")
-			.populate({
-				path: "weeks.saturdaySession.subjectId",
-				select: "name code icon",
-			})
-			.populate({
-				path: "weeks.saturdaySession.topics",
-				select: "name",
-			})
-			.populate({
-				path: "weeks.sundaySession.subjectId",
-				select: "name code icon",
-			})
-			.populate({
-				path: "weeks.sundaySession.topics",
-				select: "name",
-			})
-			.lean(),
 		UserQuestionHistory.aggregate([
 			{ $match: { userId } },
 			{ $unwind: "$attempts" },
@@ -191,6 +168,126 @@ const getDashboardData = catchAsync(async (req, res, next) => {
 			{ $sort: { _id: -1 } },
 			{ $limit: 30 },
 		]),
+	]);
+
+	if (!user) {
+		return next(new AppError("User not found", 404));
+	}
+
+	let streak = streakDoc;
+	if (!streak) {
+		streak = new Streak({ userId });
+		await streak.save();
+	}
+
+	const datesWithActivity = new Set(activityDates.map((d) => d._id));
+	let currentStreak = 0;
+	let longestStreak = 0;
+	let tempStreak = 0;
+
+	if (datesWithActivity.size > 0) {
+		const sortedDates = Array.from(datesWithActivity).sort((a, b) => new Date(b) - new Date(a));
+		const mostRecentDate = new Date(sortedDates[0]);
+		mostRecentDate.setHours(0, 0, 0, 0);
+
+		const yesterday = new Date(today);
+		yesterday.setDate(yesterday.getDate() - 1);
+
+		if (mostRecentDate >= yesterday) {
+			let checkDate = new Date(mostRecentDate);
+			while (true) {
+				const dateStr = checkDate.toISOString().split("T")[0];
+				if (datesWithActivity.has(dateStr)) {
+					currentStreak++;
+					checkDate.setDate(checkDate.getDate() - 1);
+				} else {
+					break;
+				}
+			}
+		}
+
+		const allDates = sortedDates.map((d) => new Date(d)).sort((a, b) => a - b);
+		for (let i = 0; i < allDates.length; i++) {
+			if (i === 0) {
+				tempStreak = 1;
+			} else {
+				const daysDiff = Math.floor((allDates[i] - allDates[i - 1]) / (1000 * 60 * 60 * 24));
+				if (daysDiff === 1) {
+					tempStreak++;
+				} else {
+					if (tempStreak > longestStreak) longestStreak = tempStreak;
+					tempStreak = 1;
+				}
+			}
+		}
+		if (tempStreak > longestStreak) longestStreak = tempStreak;
+	}
+
+	if (currentStreak !== streak.currentStreak || longestStreak !== streak.longestStreak) {
+		streak.currentStreak = currentStreak;
+		streak.longestStreak = longestStreak;
+		streak.lastActivityDate = datesWithActivity.size > 0 ? new Date(Array.from(datesWithActivity).sort().reverse()[0]) : null;
+		await Streak.updateOne({ userId }, { currentStreak, longestStreak, lastActivityDate: streak.lastActivityDate });
+	}
+
+	res.status(200).json({
+		success: true,
+		data: {
+			user: {
+				id: user._id,
+				email: user.email,
+				firstName: user.firstName,
+				lastName: user.lastName,
+				isEmailVerified: user.isEmailVerified,
+				isProfileComplete: user.isProfileComplete,
+				role: user.role,
+				level: user.level || 1,
+				exp: user.exp || 0,
+				nextLevelExp: user.nextLevelExp || 1000,
+			},
+			streak: {
+				currentStreak,
+				longestStreak,
+			},
+		},
+	});
+});
+
+const getDashboardSchedule = catchAsync(async (req, res, next) => {
+	const userId = new mongoose.Types.ObjectId(req.user._id);
+
+	const activePlan = await StudyPlan.findOne({ isActive: true, enrolledStudents: userId })
+		.select("_id batchId name startDate endDate examDate totalWeeks weeks")
+		.populate({
+			path: "weeks.saturdaySession.subjectId",
+			select: "name code icon",
+		})
+		.populate({
+			path: "weeks.saturdaySession.topics",
+			select: "name",
+		})
+		.populate({
+			path: "weeks.sundaySession.subjectId",
+			select: "name code icon",
+		})
+		.populate({
+			path: "weeks.sundaySession.topics",
+			select: "name",
+		})
+		.lean();
+
+	res.status(200).json({
+		success: true,
+		data: {
+			studyPlan: activePlan || null,
+		},
+	});
+});
+
+const getDashboardAnalytics = catchAsync(async (req, res, next) => {
+	const userId = new mongoose.Types.ObjectId(req.user._id);
+
+	const [categories, weakAreas, preAssessmentSession, mockExamSession, questionHistory] = await Promise.all([
 		UserQuestionHistory.aggregate([
 			{ $match: { userId } },
 			{
@@ -253,72 +350,12 @@ const getDashboardData = catchAsync(async (req, res, next) => {
 			mode: "mock",
 			status: "completed",
 		}).select("_id"),
+		UserQuestionHistory.find({ userId }).lean(),
 	]);
-
-	if (!user) {
-		return next(new AppError("User not found", 404));
-	}
 
 	const preAssessmentCompleted = !!preAssessmentSession;
 	const mockExamCompleted = !!mockExamSession;
 
-	let streak = streakDoc;
-	if (!streak) {
-		streak = new Streak({ userId });
-		await streak.save();
-	}
-
-	const datesWithActivity = new Set(activityDates.map((d) => d._id));
-	let currentStreak = 0;
-	let longestStreak = 0;
-	let tempStreak = 0;
-
-	if (datesWithActivity.size > 0) {
-		const sortedDates = Array.from(datesWithActivity).sort((a, b) => new Date(b) - new Date(a));
-		const mostRecentDate = new Date(sortedDates[0]);
-		mostRecentDate.setHours(0, 0, 0, 0);
-
-		const yesterday = new Date(today);
-		yesterday.setDate(yesterday.getDate() - 1);
-
-		if (mostRecentDate >= yesterday) {
-			let checkDate = new Date(mostRecentDate);
-			while (true) {
-				const dateStr = checkDate.toISOString().split("T")[0];
-				if (datesWithActivity.has(dateStr)) {
-					currentStreak++;
-					checkDate.setDate(checkDate.getDate() - 1);
-				} else {
-					break;
-				}
-			}
-		}
-
-		const allDates = sortedDates.map((d) => new Date(d)).sort((a, b) => a - b);
-		for (let i = 0; i < allDates.length; i++) {
-			if (i === 0) {
-				tempStreak = 1;
-			} else {
-				const daysDiff = Math.floor((allDates[i] - allDates[i - 1]) / (1000 * 60 * 60 * 24));
-				if (daysDiff === 1) {
-					tempStreak++;
-				} else {
-					if (tempStreak > longestStreak) longestStreak = tempStreak;
-					tempStreak = 1;
-				}
-			}
-		}
-		if (tempStreak > longestStreak) longestStreak = tempStreak;
-	}
-
-	if (currentStreak !== streak.currentStreak || longestStreak !== streak.longestStreak) {
-		streak.currentStreak = currentStreak;
-		streak.longestStreak = longestStreak;
-		streak.lastActivityDate = datesWithActivity.size > 0 ? new Date(Array.from(datesWithActivity).sort().reverse()[0]) : null;
-		await Streak.updateOne({ userId }, { currentStreak, longestStreak, lastActivityDate: streak.lastActivityDate });
-	}
-
-	const questionHistory = await UserQuestionHistory.find({ userId }).lean();
 	let totalAttempts = 0;
 	let correctAttempts = 0;
 	questionHistory.forEach((h) => {
@@ -334,33 +371,15 @@ const getDashboardData = catchAsync(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		data: {
-			user: {
-				id: user._id,
-				email: user.email,
-				firstName: user.firstName,
-				lastName: user.lastName,
-				isEmailVerified: user.isEmailVerified,
-				isProfileComplete: user.isProfileComplete,
-				role: user.role,
-				level: user.level || 1,
-				exp: user.exp || 0,
-				nextLevelExp: user.nextLevelExp || 1000,
-			},
-			streak: {
-				currentStreak,
-				longestStreak,
-			},
 			analytics: {
 				categories: categories || [],
 				weakAreas: weakAreas || [],
 				totalQuestions: totalAttempts,
 				accuracy: Math.round(accuracy),
-				accuracy: Math.round(accuracy),
 				readiness,
 				preAssessmentCompleted,
 				mockExamCompleted,
 			},
-			studyPlan: activePlan || null,
 		},
 	});
 });
@@ -484,6 +503,9 @@ export default {
 	updateUserRole,
 	deleteUser,
 	getLevel,
-	getDashboardData,
+	getLevel,
+	getDashboardBase,
+	getDashboardAnalytics,
+	getDashboardSchedule,
 	getMyRegistration,
 };

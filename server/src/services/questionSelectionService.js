@@ -1,5 +1,6 @@
 import ManualQuestion from "../models/ManualQuestion.js";
 import UserQuestionHistory from "../models/UserQuestionHistory.js";
+import fsrsService from "./fsrsService.js";
 
 class QuestionSelectionService {
   async selectQuestionsForSession(userId, config) {
@@ -12,11 +13,11 @@ class QuestionSelectionService {
     } = config;
 
     const query = this.buildBaseQuery(categories, difficulty, examLevel);
-    
+
     if (mode === "spaced-repetition") {
       return this.selectSpacedRepetitionQuestions(userId, query, questionCount);
     }
-    
+
     if (mode === "adaptive") {
       return this.selectAdaptiveQuestions(userId, query, questionCount);
     }
@@ -25,9 +26,9 @@ class QuestionSelectionService {
   }
 
   buildBaseQuery(categories, difficulty, examLevel) {
-    const query = { 
+    const query = {
       status: "published",
-      isActive: true 
+      isActive: true
     };
 
     if (categories && categories.length > 0) {
@@ -46,7 +47,6 @@ class QuestionSelectionService {
   }
 
   async selectRandomQuestions(userId, query, questionCount) {
-    // Duolingo style: Mix in 30% review questions if available
     const reviewCount = Math.floor(questionCount * 0.3);
     const newCount = questionCount - reviewCount;
 
@@ -55,7 +55,7 @@ class QuestionSelectionService {
 
     const recentQuestions = await this.getRecentlyAnsweredQuestions(userId, 50);
     const excludeIds = [...recentQuestions, ...reviewIds];
-    
+
     if (excludeIds.length > 0) {
       query._id = { $nin: excludeIds };
     }
@@ -66,60 +66,71 @@ class QuestionSelectionService {
     ]);
 
     const selectedNew = newQuestions.slice(0, newCount);
-    
-    // Combine and shuffle
     const combined = [...reviewQuestions, ...selectedNew];
     return combined.sort(() => Math.random() - 0.5);
   }
 
   async selectSpacedRepetitionQuestions(userId, query, questionCount) {
-    const dueQuestions = await UserQuestionHistory.aggregate([
-      {
-        $match: {
-          userId,
-          nextReviewDate: { $lte: new Date() },
-          masteryLevel: { $ne: "mastered" }
-        }
-      },
-      { $sort: { nextReviewDate: 1 } },
-      { $limit: questionCount }
-    ]);
+    const dueHistories = await UserQuestionHistory.find({
+      userId,
+      "fsrsData.due": { $lte: new Date() },
+      masteryLevel: { $ne: "mastered" }
+    })
+      .sort({ "fsrsData.due": 1 })
+      .limit(questionCount)
+      .populate("questionId");
+
+    const dueQuestions = dueHistories
+      .filter(h => h.questionId)
+      .map(h => h.questionId);
 
     if (dueQuestions.length < questionCount) {
       const additionalCount = questionCount - dueQuestions.length;
-      const additionalQuestions = await this.selectRandomQuestions(
-        userId, 
-        query, 
-        additionalCount
-      );
-      
-      const dueQuestionIds = dueQuestions.map(q => q.questionId);
-      const questions = await ManualQuestion.find({
-        _id: { $in: dueQuestionIds }
-      });
+      const dueQuestionIds = dueQuestions.map(q => q._id);
 
-      return [...questions, ...additionalQuestions];
+      const additionalQuery = { ...query };
+      if (dueQuestionIds.length > 0) {
+        additionalQuery._id = { $nin: dueQuestionIds };
+      }
+
+      const additionalQuestions = await ManualQuestion.aggregate([
+        { $match: additionalQuery },
+        { $sample: { size: additionalCount } }
+      ]);
+
+      return [...dueQuestions, ...additionalQuestions];
     }
 
-    const questionIds = dueQuestions.map(q => q.questionId);
-    return ManualQuestion.find({ _id: { $in: questionIds } });
+    return dueQuestions;
+  }
+
+  async selectByRetrievability(userId, threshold = 0.85, questionCount = 20) {
+    const lowRetrievability = await UserQuestionHistory.getByRetrievability(
+      userId,
+      threshold,
+      questionCount
+    );
+
+    return lowRetrievability
+      .filter(h => h.questionId)
+      .map(h => h.questionId);
   }
 
   async selectAdaptiveQuestions(userId, query, questionCount) {
     const userPerformance = await this.getUserPerformanceLevel(userId);
-    
+
     const difficultyDistribution = this.calculateDifficultyDistribution(
-      userPerformance, 
+      userPerformance,
       questionCount
     );
 
     const questions = [];
-    
+
     for (const [difficulty, count] of Object.entries(difficultyDistribution)) {
       const difficultyQuery = { ...query, difficulty };
       const difficultyQuestions = await this.selectRandomQuestions(
-        userId, 
-        difficultyQuery, 
+        userId,
+        difficultyQuery,
         count
       );
       questions.push(...difficultyQuestions);
@@ -179,20 +190,20 @@ class QuestionSelectionService {
       .sort({ lastAttemptAt: -1 })
       .limit(limit)
       .select("questionId");
-    
+
     return recentHistory.map(h => h.questionId);
   }
 
   async prioritizeWeakAreas(userId, questions) {
     const weakAreas = await this.identifyWeakAreas(userId);
-    
+
     if (weakAreas.length === 0) return questions;
 
-    const weakAreaQuestions = questions.filter(q => 
+    const weakAreaQuestions = questions.filter(q =>
       weakAreas.includes(q.category) || weakAreas.includes(q.subjectArea)
     );
 
-    const otherQuestions = questions.filter(q => 
+    const otherQuestions = questions.filter(q =>
       !weakAreas.includes(q.category) && !weakAreas.includes(q.subjectArea)
     );
 
@@ -230,6 +241,34 @@ class QuestionSelectionService {
     ]);
 
     return categoryPerformance.map(cp => cp._id);
+  }
+
+  async prioritizeByRetrievability(userId, questions) {
+    const questionIds = questions.map(q => q._id);
+
+    const histories = await UserQuestionHistory.find({
+      userId,
+      questionId: { $in: questionIds }
+    });
+
+    const historyMap = new Map();
+    const now = new Date();
+
+    for (const h of histories) {
+      const card = {
+        stability: h.fsrsData?.stability || 0,
+        state: fsrsService.stringToState(h.fsrsData?.state || "new"),
+        lastReview: h.fsrsData?.lastReview || null
+      };
+      const retrievability = fsrsService.getRetrievability(card, now);
+      historyMap.set(h.questionId.toString(), retrievability);
+    }
+
+    return [...questions].sort((a, b) => {
+      const retA = historyMap.get(a._id.toString()) ?? 1;
+      const retB = historyMap.get(b._id.toString()) ?? 1;
+      return retA - retB;
+    });
   }
 }
 

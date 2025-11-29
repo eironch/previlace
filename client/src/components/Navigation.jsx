@@ -32,11 +32,12 @@ export default function Navigation() {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-300 bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
-            <div className="flex cursor-pointer items-center" onClick={() => navigate("/")}>
-              <span className="text-xl font-bold text-gray-900">Previlace</span>
+            <div className="flex cursor-pointer items-center gap-2" onClick={() => navigate("/")}>
+              <img src="/logo.svg" alt="Previlace" className="h-8 w-auto" />
+              <span className="text-xl font-bold text-gray-900 hidden md:block">Previlace</span>
             </div>
 
             <div className="ml-10 hidden md:flex md:space-x-1">

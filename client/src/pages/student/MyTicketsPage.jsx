@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useInquiryStore } from "../../store/inquiryStore";
+import { useTickets } from "../../hooks/useTickets";
 import TicketCard from "../../components/inquiry/TicketCard";
 import TicketDetail from "../../components/inquiry/TicketDetail";
 import { Filter, MessageSquareOff } from "lucide-react";
@@ -8,31 +8,31 @@ import StandardHeader from "@/components/ui/StandardHeader";
 
 export default function MyTicketsPage() {
   const navigate = useNavigate();
-  const { tickets, loading, getStudentTickets } = useInquiryStore();
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const { useStudentTickets, useTicket, refreshTickets } = useTickets();
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  useEffect(() => {
-    getStudentTickets();
-  }, [getStudentTickets]);
+  const { tickets, isLoading: isListLoading } = useStudentTickets(statusFilter);
+  
+  // Fetch full details for the selected ticket
+  const { ticket: selectedTicket, isLoading: isDetailLoading } = useTicket(selectedTicketId);
 
-  const filteredTickets = (tickets || []).filter((ticket) => {
-    if (statusFilter === "all") return true;
-    return ticket.status === statusFilter;
-  });
+  // We don't filter client-side anymore as the hook handles it via API params
+  // But for consistency with the UI selector if the API doesn't support all filters perfectly yet:
+  const filteredTickets = tickets || [];
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50">
       <StandardHeader 
         title="Support Center" 
         description="View and manage your support tickets"
-        onRefresh={getStudentTickets}
+        onRefresh={refreshTickets}
       />
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-        <div className="grid h-[calc(100vh-200px)] gap-6 lg:grid-cols-3">
+      <div className="flex-1 overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid h-full gap-6 lg:grid-cols-3">
           {/* Ticket List */}
-          <div className="flex flex-col rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-1">
+          <div className="flex flex-col rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-1 overflow-hidden">
             <div className="border-b border-gray-300 p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-gray-900">Tickets</h2>
@@ -53,13 +53,17 @@ export default function MyTicketsPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
-              {loading ? (
+              {isListLoading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="h-32 animate-pulse rounded-lg bg-gray-200"
-                    />
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex flex-col gap-2 rounded-lg border border-gray-200 p-4">
+                      <div className="flex justify-between">
+                        <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
+                        <div className="h-4 w-16 animate-pulse rounded bg-gray-200" />
+                      </div>
+                      <div className="h-6 w-3/4 animate-pulse rounded bg-gray-200" />
+                      <div className="mt-2 h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+                    </div>
                   ))}
                 </div>
               ) : filteredTickets.length === 0 ? (
@@ -69,18 +73,18 @@ export default function MyTicketsPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {filteredTickets.map((ticket) => (
+                  {filteredTickets.map((ticket, index) => (
                     <div
-                      key={ticket._id}
+                      key={ticket._id || index}
                       className={`rounded-lg transition-all ${
-                        selectedTicket?._id === ticket._id
+                        selectedTicketId === ticket._id
                           ? "ring-2 ring-black"
                           : ""
                       }`}
                     >
                       <TicketCard
                         ticket={ticket}
-                        onClick={() => setSelectedTicket(ticket)}
+                        onClick={() => setSelectedTicketId(ticket._id)}
                       />
                     </div>
                   ))}
@@ -93,6 +97,12 @@ export default function MyTicketsPage() {
           <div className="hidden overflow-hidden rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-2 lg:block">
             {selectedTicket ? (
               <TicketDetail ticket={selectedTicket} isInstructor={false} />
+            ) : isDetailLoading && selectedTicketId ? (
+               <div className="flex h-full flex-col items-center justify-center space-y-4 p-8">
+                  <div className="h-8 w-3/4 animate-pulse rounded bg-gray-200" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+                  <div className="h-64 w-full animate-pulse rounded bg-gray-200" />
+               </div>
             ) : (
               <div className="flex h-full items-center justify-center text-gray-500">
                 <p>Select a ticket to view details</p>

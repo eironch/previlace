@@ -4,7 +4,7 @@ import { useTopicStore } from "@/store/topicStore";
 import { useAuthStore } from "@/store/authStore";
 import useExamStore from "@/store/examStore";
 import learningService from "@/services/learningService";
-import { ChevronLeft, BookOpen, Play, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { ChevronLeft, BookOpen, Play, CheckCircle, AlertCircle, Eye, EyeOff, Clock } from "lucide-react";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 import FileUploadButton from "@/components/files/FileUploadButton";
 import FileList from "@/components/files/FileList";
@@ -95,15 +95,115 @@ function TopicDetailPage() {
     }
   }
 
-  // ... (rest of the render logic)
+  // SWR: Only show skeleton if we have NO data (loading is true AND no currentTopic)
+  // If we have currentTopic, we show it while fetching updates in background
+  // Also show skeleton if we have no topic and no error (initial load)
+  if ((topicLoading && !currentTopic) || (!currentTopic && !contentError)) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="sticky top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
+          <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <SkeletonLoader variant="circle" className="h-10 w-10" />
+                <div className="space-y-2">
+                  <SkeletonLoader className="h-6 w-48" />
+                  <SkeletonLoader className="h-4 w-32" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
+            <div className="mb-6">
+              <div className="flex items-start justify-between">
+                <div className="w-full max-w-2xl">
+                  <SkeletonLoader variant="title" className="mb-4 h-8" />
+                  <SkeletonLoader className="mb-2" />
+                  <SkeletonLoader className="w-3/4" />
+                </div>
+                <SkeletonLoader className="h-8 w-24 rounded-full" />
+              </div>
+              
+              <div className="mt-6 flex items-center gap-6">
+                <SkeletonLoader className="h-5 w-32" />
+                <SkeletonLoader className="h-5 w-24 rounded-full" />
+              </div>
+            </div>
+
+            <SkeletonLoader variant="button" className="mt-8" />
+          </div>
+
+          <div className="space-y-6">
+            <SkeletonLoader className="h-64 rounded-lg" />
+            <SkeletonLoader className="h-48 rounded-lg" />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* ... (header) ... */}
+      <div className="sticky top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
+        <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50"
+                title="Back"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  {currentTopic?.name || "Topic Details"}
+                </h1>
+                <p className="text-sm text-gray-600">
+                  {currentTopic?.subject?.name}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {/* Optional: Add progress or other actions here */}
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
-          {/* ... (topic header) ... */}
+          <div className="mb-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{currentTopic?.name}</h2>
+                <p className="mt-2 text-gray-600">{currentTopic?.description}</p>
+              </div>
+              <div className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
+                {/* Time removed as requested */}
+              </div>
+            </div>
+            
+            <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-1.5">
+                <BookOpen className="h-4 w-4" />
+                <span>{currentTopic?.totalQuestions || 0} Questions</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                  currentTopic?.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
+                  currentTopic?.difficulty === 'Advanced' ? 'bg-red-100 text-red-700' :
+                  'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {currentTopic?.difficulty || 'Intermediate'}
+                </span>
+              </div>
+            </div>
+          </div>
 
           {/* Learning Recommendation Banner */}
           {learningStatus && !learningStatus.hasViewedContent && learningContent && (
@@ -127,7 +227,19 @@ function TopicDetailPage() {
             disabled={quizLoading}
             className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {/* ... */}
+            <div className="flex items-center justify-center gap-2">
+              {quizLoading ? (
+                <>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>Starting Quiz...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-5 w-5" />
+                  <span>Start Quiz</span>
+                </>
+              )}
+            </div>
           </button>
         </div>
 
@@ -135,6 +247,11 @@ function TopicDetailPage() {
           <div className="rounded-lg border border-gray-300 bg-white p-8 text-center">
             <AlertCircle className="mx-auto mb-2 h-8 w-8 text-gray-400" />
             <p className="text-gray-600">{contentError}</p>
+          </div>
+        ) : contentLoading ? (
+          <div className="space-y-6">
+            <SkeletonLoader className="h-64 rounded-lg" />
+            <SkeletonLoader className="h-48 rounded-lg" />
           </div>
         ) : learningContent ? (
           <div className="space-y-8">

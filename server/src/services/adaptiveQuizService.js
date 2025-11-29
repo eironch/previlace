@@ -2,8 +2,81 @@ import ManualQuestion from "../models/ManualQuestion.js";
 import UserProgress from "../models/UserProgress.js";
 import Topic from "../models/Topic.js";
 import questionSelectionService from "./questionSelectionService.js";
+import UserBehaviorProfile from "../models/UserBehaviorProfile.js";
+import learningPathService from "./learningPathService.js";
 
 class AdaptiveQuizService {
+  async createBehaviorAdaptedQuiz(userId, subjectId, examLevel, baseQuestionCount = 20) {
+    const profile = await UserBehaviorProfile.findOne({ userId });
+    const adaptedConfig = await learningPathService.getAdaptedQuizConfig(userId, {
+      questionCount: baseQuestionCount,
+      examLevel,
+    });
+
+    let questionCount = adaptedConfig.questionCount || baseQuestionCount;
+    let difficultyBias = adaptedConfig.difficultyBias || null;
+
+    if (profile) {
+      if (profile.averageFocusScore < 60) {
+        questionCount = Math.min(questionCount, 10);
+      } else if (profile.averageFocusScore < 75) {
+        questionCount = Math.min(questionCount, 15);
+      }
+
+      if (profile.averageConfidenceScore < 60) {
+        difficultyBias = difficultyBias || "beginner";
+      } else if (profile.averageConfidenceScore > 85 && profile.averageIntegrityScore > 85) {
+        difficultyBias = difficultyBias || "advanced";
+      }
+    }
+
+    const quiz = await this.createSubjectQuiz(userId, subjectId, examLevel, questionCount);
+
+    if (difficultyBias) {
+      quiz.questions = this.applyDifficultyBias(quiz.questions, difficultyBias, questionCount);
+    }
+
+    return {
+      ...quiz,
+      behaviorAdapted: true,
+      adaptations: {
+        originalQuestionCount: baseQuestionCount,
+        adjustedQuestionCount: questionCount,
+        difficultyBias,
+        focusScore: profile?.averageFocusScore,
+        confidenceScore: profile?.averageConfidenceScore,
+      },
+    };
+  }
+
+  applyDifficultyBias(questions, bias, targetCount) {
+    const difficultyGroups = {
+      beginner: questions.filter((q) => /^beginner$/i.test(q.difficulty)),
+      intermediate: questions.filter((q) => /^intermediate$/i.test(q.difficulty)),
+      advanced: questions.filter((q) => /^advanced$/i.test(q.difficulty)),
+    };
+
+    const selected = [];
+    const biasLower = bias.toLowerCase();
+
+    if (biasLower === "beginner") {
+      selected.push(...this.shuffleArray(difficultyGroups.beginner).slice(0, Math.floor(targetCount * 0.7)));
+      selected.push(...this.shuffleArray(difficultyGroups.intermediate).slice(0, Math.floor(targetCount * 0.25)));
+      selected.push(...this.shuffleArray(difficultyGroups.advanced).slice(0, Math.floor(targetCount * 0.05)));
+    } else if (biasLower === "advanced") {
+      selected.push(...this.shuffleArray(difficultyGroups.advanced).slice(0, Math.floor(targetCount * 0.6)));
+      selected.push(...this.shuffleArray(difficultyGroups.intermediate).slice(0, Math.floor(targetCount * 0.3)));
+      selected.push(...this.shuffleArray(difficultyGroups.beginner).slice(0, Math.floor(targetCount * 0.1)));
+    }
+
+    if (selected.length < targetCount) {
+      const remaining = questions.filter((q) => !selected.includes(q));
+      selected.push(...this.shuffleArray(remaining).slice(0, targetCount - selected.length));
+    }
+
+    return this.shuffleArray(selected).slice(0, targetCount);
+  }
+
   async createSubjectQuiz(userId, subjectId, examLevel, questionCount = 20) {
     const topics = await Topic.find({ subjectId, isActive: true });
 

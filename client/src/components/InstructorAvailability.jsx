@@ -1,88 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Calendar as CalendarIcon, Check, X, Save } from "lucide-react";
-import instructorService from "../services/instructorService";
-import { useAuthStore } from "../store/authStore";
+import React from "react";
+import { Calendar as CalendarIcon, Check, X } from "lucide-react";
+import SkeletonLoader from "./ui/SkeletonLoader";
 
-const InstructorAvailability = () => {
-  const { user } = useAuthStore();
-  const [availability, setAvailability] = useState({}); // { "YYYY-MM-DD": { isAvailable: boolean, mode: string } }
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState(null);
-
-  useEffect(() => {
-    fetchAvailability();
-  }, [user._id]);
-
-  const fetchAvailability = async () => {
-    try {
-      setLoading(true);
-      const data = await instructorService.getAvailability(user._id);
-      
-      // Transform backend data to frontend state
-      // Backend: weekendAvailability: [{ date: Date, isAvailable: Boolean, mode: String }]
-      const availMap = {};
-      if (data && data.weekendAvailability) {
-        data.weekendAvailability.forEach(item => {
-          const dateStr = new Date(item.date).toISOString().split('T')[0];
-          availMap[dateStr] = {
-            isAvailable: item.isAvailable,
-            mode: item.mode || 'Online'
-          };
-        });
-      }
-      setAvailability(availMap);
-    } catch (error) {
-      console.error("Error fetching availability:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleDate = (dateStr) => {
-    setAvailability((prev) => {
-      const current = prev[dateStr];
-      if (current && current.isAvailable) {
-        // If available, toggle to unavailable
-        return { ...prev, [dateStr]: { isAvailable: false, mode: 'Online' } };
-      } else {
-        // If unavailable or not set, toggle to available
-        return { ...prev, [dateStr]: { isAvailable: true, mode: 'Online' } };
-      }
-    });
-  };
-
-  const handleModeChange = (dateStr, mode, e) => {
-    e.stopPropagation();
-    setAvailability(prev => ({
-      ...prev,
-      [dateStr]: { ...prev[dateStr], mode }
-    }));
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    setMessage(null);
-    try {
-      // Transform frontend state to backend format
-      const specificDates = Object.entries(availability).map(([dateStr, data]) => ({
-        date: new Date(dateStr),
-        isAvailable: data.isAvailable,
-        mode: data.mode
-      }));
-
-      await instructorService.setAvailability({
-        specificDates // This maps to weekendAvailability in controller as per my fix
-      });
-      setMessage({ type: 'success', text: 'Availability saved successfully!' });
-    } catch (error) {
-      console.error("Error saving availability:", error);
-      setMessage({ type: 'error', text: 'Failed to save availability.' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
+const InstructorAvailability = ({ availability, onToggleDate, onModeChange, loading }) => {
+  
   // Helper to generate upcoming weekends (12 weeks)
   const getUpcomingWeekends = () => {
     const dates = [];
@@ -102,7 +23,46 @@ const InstructorAvailability = () => {
 
   const weekends = getUpcomingWeekends();
 
-  if (loading) return <div className="p-8 text-center">Loading availability...</div>;
+  const handleButtonClick = (dateStr, type, currentMode, isAvailable, e) => {
+    e.stopPropagation();
+    
+    if (!isAvailable) {
+      // If not available, clicking any button makes it available with that mode
+      onToggleDate(dateStr);
+      onModeChange(dateStr, type);
+      return;
+    }
+
+    // If already available
+    if (currentMode === 'Both') {
+      // If Both, clicking one removes it (sets to the other)
+      onModeChange(dateStr, type === 'Online' ? 'Offline' : 'Online');
+    } else if (currentMode === type) {
+      // If clicking the active one, toggle availability off (or could enforce at least one)
+      // Let's toggle off for intuitive "deselect" behavior
+      onToggleDate(dateStr);
+    } else {
+      // If clicking the inactive one, set to Both
+      onModeChange(dateStr, 'Both');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <SkeletonLoader variant="circle" className="w-6 h-6" />
+          <SkeletonLoader variant="title" className="w-48" />
+        </div>
+        <SkeletonLoader className="w-full mb-6" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <SkeletonLoader key={i} variant="card" className="h-32" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
@@ -111,32 +71,30 @@ const InstructorAvailability = () => {
           <CalendarIcon className="w-6 h-6 text-black" />
           <h2 className="text-xl font-bold text-gray-900">Weekend Availability</h2>
         </div>
-        {message && (
-          <span className={`text-sm font-medium ${message.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-            {message.text}
-          </span>
-        )}
       </div>
       
       <p className="text-gray-600 mb-6">
-        Select the weekends you are available to teach. You can also specify if you prefer Online or Offline for each day.
+        Select the weekends you are available to teach. Click "Online" or "Offline" to toggle specific modes.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {weekends.map((date) => {
           const dateStr = date.toISOString().split('T')[0];
-          const data = availability[dateStr] || { isAvailable: false, mode: 'Online' }; // Default unavailable if not set
+          const data = availability[dateStr] || { isAvailable: false, mode: 'Online' };
           const isAvailable = data.isAvailable;
+          const mode = data.mode;
+
+          const isOnline = isAvailable && (mode === 'Online' || mode === 'Both');
+          const isOffline = isAvailable && (mode === 'Offline' || mode === 'Both');
 
           return (
             <div
               key={dateStr}
-              onClick={() => toggleDate(dateStr)}
               className={`
-                relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all cursor-pointer group
+                relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all group
                 ${isAvailable 
                   ? 'border-black bg-gray-50' 
-                  : 'border-gray-300 bg-white hover:border-gray-300'}
+                  : 'border-gray-300 bg-white hover:border-gray-400'}
               `}
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -146,38 +104,38 @@ const InstructorAvailability = () => {
                 {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
               
-              <div className={`mt-2 flex items-center gap-1 text-sm font-medium ${isAvailable ? 'text-green-600' : 'text-gray-400'}`}>
+              <div className={`mt-2 mb-3 flex items-center gap-1 text-sm font-medium ${isAvailable ? 'text-green-600' : 'text-gray-400'}`}>
                 {isAvailable ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                 {isAvailable ? 'Available' : 'Unavailable'}
               </div>
 
-              {isAvailable && (
-                <div className="mt-3 w-full" onClick={e => e.stopPropagation()}>
-                  <select
-                    value={data.mode}
-                    onChange={(e) => handleModeChange(dateStr, e.target.value, e)}
-                    className="w-full text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-black focus:outline-none"
-                  >
-                    <option value="Online">Online</option>
-                    <option value="Offline">Offline</option>
-                    <option value="Both">Both</option>
-                  </select>
-                </div>
-              )}
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={(e) => handleButtonClick(dateStr, 'Online', mode, isAvailable, e)}
+                  className={`
+                    flex-1 py-1 px-2 text-xs font-semibold rounded border transition-colors
+                    ${isOnline 
+                      ? 'bg-black text-white border-black' 
+                      : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}
+                  `}
+                >
+                  Online
+                </button>
+                <button
+                  onClick={(e) => handleButtonClick(dateStr, 'Offline', mode, isAvailable, e)}
+                  className={`
+                    flex-1 py-1 px-2 text-xs font-semibold rounded border transition-colors
+                    ${isOffline 
+                      ? 'bg-black text-white border-black' 
+                      : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}
+                  `}
+                >
+                  Offline
+                </button>
+              </div>
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-8 flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save Availability'}
-        </button>
       </div>
     </div>
   );

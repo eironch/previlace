@@ -31,12 +31,17 @@ export const useSubjectStore = create((set, get) => ({
   },
 
   fetchSubjectById: async (subjectId) => {
-    // Only set loading if we don't have this specific subject
-    const current = get().currentSubject;
-    if (!current || current._id !== subjectId) {
-      set({ loading: true, error: null });
+    // SWR: Check if we have this subject in our list
+    const existingSubject = get().subjects.find(s => s._id === subjectId);
+    
+    if (existingSubject) {
+      set({ currentSubject: existingSubject, loading: false, error: null });
     } else {
-      set({ error: null });
+      // Only set loading if we don't have the data
+      const current = get().currentSubject;
+      if (!current || current._id !== subjectId) {
+        set({ loading: true, error: null });
+      }
     }
 
     try {

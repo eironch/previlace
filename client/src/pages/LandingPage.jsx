@@ -134,16 +134,12 @@ export default function LandingPage() {
       {/* HEADER — Professional Responsive Version */}
       {/* ------------------------------------------------------ */}
       <header className="border-b bg-white sticky top-0 z-40">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             {/* BRAND */}
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black">
-                <Target className="h-4 w-4 text-white" />
-              </div>
-              <h1 className="text-[1.25rem] font-semibold tracking-tight">
-                Previlace
-              </h1>
+              <img src="/logo.svg" alt="Previlace" className="h-9 w-auto" />
+              <span className="text-[1.25rem] font-semibold tracking-tight">Previlace</span>
             </div>
 
             {/* DESKTOP NAV */}
@@ -365,7 +361,7 @@ export default function LandingPage() {
 
       {/* FOOTER */}
       <footer className="mt-16 border-t">
-        <div className="mx-auto max-w-7xl px-4 py-6 text-center text-sm text-gray-500">
+        <div className="w-full px-4 py-6 text-center text-sm text-gray-500">
           © 2025 Previlace. All rights reserved.
         </div>
       </footer>

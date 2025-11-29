@@ -33,7 +33,7 @@ export default function TicketCard({ ticket, onClick }) {
               ticket.status
             )}`}
           >
-            {ticket.status.replace("_", " ").toUpperCase()}
+            {(ticket.status || "unknown").replace("_", " ").toUpperCase()}
           </span>
           <span className="text-xs text-gray-500">
             {ticket.subject?.name || "General"}
@@ -53,7 +53,11 @@ export default function TicketCard({ ticket, onClick }) {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
-            <span>{formatDistanceToNow(new Date(ticket.createdAt))} ago</span>
+            <span>
+              {ticket.createdAt && !isNaN(new Date(ticket.createdAt).getTime())
+                ? `${formatDistanceToNow(new Date(ticket.createdAt))} ago`
+                : "Just now"}
+            </span>
           </div>
           {ticket.responses?.length > 0 && (
             <div className="flex items-center gap-1">

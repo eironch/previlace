@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import examService from "../services/examService";
+import adaptivityService from "../services/adaptivityService";
 
 export const useAdaptiveQuizStore = create((set, get) => ({
   adaptiveSession: null,
@@ -129,6 +130,71 @@ export const useAdaptiveQuizStore = create((set, get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  adaptiveConfig: null,
+  sessionRecommendations: null,
+  reviewSummary: null,
+  isLoadingAdaptivity: false,
+
+  fetchAdaptiveConfig: async (options = {}) => {
+    set({ isLoadingAdaptivity: true, error: null });
+    try {
+      const response = await adaptivityService.getAdaptedQuizConfig(options);
+      if (response.success) {
+        set({ adaptiveConfig: response.data, isLoadingAdaptivity: false });
+        return response.data;
+      }
+    } catch (error) {
+      set({ error: error.message, isLoadingAdaptivity: false });
+      return null;
+    }
+  },
+
+  fetchSessionRecommendations: async () => {
+    set({ isLoadingAdaptivity: true });
+    try {
+      const response = await adaptivityService.getSessionRecommendations();
+      if (response.success) {
+        set({ sessionRecommendations: response.data, isLoadingAdaptivity: false });
+        return response.data;
+      }
+    } catch (error) {
+      set({ isLoadingAdaptivity: false });
+      return null;
+    }
+  },
+
+  fetchReviewSummary: async () => {
+    try {
+      const response = await adaptivityService.getReviewSummary();
+      if (response.success) {
+        set({ reviewSummary: response.data });
+        return response.data;
+      }
+    } catch (error) {
+      return null;
+    }
+  },
+
+  getQuestionPriority: async (topicIds, count, examLevel) => {
+    try {
+      const response = await adaptivityService.getQuestionPriority(topicIds, count, examLevel);
+      if (response.success) {
+        return response.data;
+      }
+    } catch (error) {
+      return null;
+    }
+  },
+
+  submitBehaviorFeedback: async (quizAttemptId, feedbackData) => {
+    try {
+      const response = await adaptivityService.recordBehaviorFeedback(quizAttemptId, feedbackData);
+      return response.success;
+    } catch (error) {
+      return false;
+    }
   },
 }));
 

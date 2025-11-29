@@ -390,6 +390,58 @@ quizAttemptSchema.methods.complete = async function () {
     }
   }
 
+  // Update UserProgress for each topic involved in the quiz
+  if (this.analytics && this.analytics.topicPerformance) {
+    const UserProgress = (await import("./UserProgress.js")).default;
+    const Topic = (await import("./Topic.js")).default;
+    
+    // Get all topics involved
+    const topicNames = Object.keys(this.analytics.topicPerformance);
+    
+    for (const topicName of topicNames) {
+      const stats = this.analytics.topicPerformance[topicName];
+      // Find topic by name (since analytics uses names)
+      // Ideally we should track topicId in analytics, but for now we look it up
+      // Or better, iterate through answers to group by topicId
+    }
+
+    // Better approach: Group answers by topicId directly
+    const topicStats = {};
+    for (const answer of this.answers) {
+      if (answer.topicId) {
+        const tId = answer.topicId.toString();
+        if (!topicStats[tId]) {
+          topicStats[tId] = { 
+            correct: 0, 
+            total: 0, 
+            score: 0 
+          };
+        }
+        topicStats[tId].total++;
+        if (answer.isCorrect) topicStats[tId].correct++;
+      }
+    }
+
+    // Update progress for each topic
+    for (const [topicId, stats] of Object.entries(topicStats)) {
+      const score = Math.round((stats.correct / stats.total) * 100);
+      
+      // We need the subjectId for UserProgress
+      // We can get it from the Topic model
+      const topic = await Topic.findById(topicId);
+      if (topic) {
+        const userProgress = await UserProgress.getOrCreate(this.userId, topic.subjectId);
+        await userProgress.updateTopicProgress(
+          topicId,
+          score,
+          stats.total,
+          stats.correct,
+          false // hasViewedContent - we don't track this here yet
+        );
+      }
+    }
+  }
+
   return this.save();
 };
 

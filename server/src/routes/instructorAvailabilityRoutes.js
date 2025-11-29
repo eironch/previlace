@@ -13,7 +13,7 @@ import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", protect, authorize("admin", "super_admin"), getAllAvailabilities);
+router.get("/all", protect, authorize("admin", "super_admin"), getAllAvailabilities);
 router.get("/search", protect, authorize("admin", "super_admin"), getAvailableInstructors);
 router.get("/:instructorId?", protect, getAvailability);
 router.post("/", protect, authorize("instructor", "admin", "super_admin"), setAvailability);

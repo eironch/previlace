@@ -17,6 +17,7 @@ import {
   Calendar,
   FileText,
   CheckSquare,
+  Shield,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -33,6 +34,7 @@ export const studentNavItems = [
 export const adminNavItems = [
   { id: "dashboard", icon: LayoutDashboard, title: "Dashboard", path: "/admin" },
   { id: "analytics", icon: BarChart3, title: "Analytics", path: "/admin/analytics" },
+  { id: "behavior", icon: Shield, title: "Behavior", path: "/admin/behavior-analytics" },
   { id: "users", icon: Users, title: "Users", path: "/admin/users" },
   { id: "questions", icon: BookOpen, title: "Questions", path: "/admin/questions" },
   { id: "classes", icon: Calendar, title: "Class Schedule", path: "/admin/classes" },
@@ -107,7 +109,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
             >
               <div className="flex h-full flex-col">
                 <div className="flex items-center justify-between p-4 border-b border-gray-300">
-                  <span className="text-xl font-bold text-gray-900">Previlace</span>
+                  <img src="/logo.svg" alt="Previlace" className="h-8 w-auto" />
                   <button onClick={() => setIsOpen(false)} className="p-1 rounded-md hover:bg-gray-200">
                     <ChevronLeft className="w-6 h-6 text-gray-500" />
                   </button>
@@ -181,7 +183,12 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
       className="relative hidden h-screen flex-col border-r border-gray-300 bg-white shadow-sm md:flex"
     >
       <div className="flex h-16 items-center justify-between px-4">
-        {!isCollapsed && <span className="text-xl font-bold text-gray-900">Previlace</span>}
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <img src="/logo.svg" alt="Previlace" className="h-8 w-auto" />
+            <span className="text-xl font-bold text-gray-900">Previlace</span>
+          </div>
+        )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={`rounded-lg p-1.5 text-gray-500 hover:bg-gray-200 ${isCollapsed ? "mx-auto" : ""}`}

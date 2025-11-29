@@ -96,7 +96,7 @@ function RoleDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mx-auto max-w-7xl">
+      <div className="w-full">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.firstName || user.email}</h1>
           <p className="mt-2 text-gray-600">{getRoleTitle()}</p>

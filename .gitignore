@@ -23,7 +23,7 @@ archive/
 # Logs
 logs
 *.log
-
+*.txt
 # Cache directories
 .npm
 .eslintcache

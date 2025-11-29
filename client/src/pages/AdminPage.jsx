@@ -38,6 +38,12 @@ import ClassManagementPage from "./admin/ClassManagementPage";
 import LandingPageManager from "../components/admin/LandingPageManager";
 import AdminAnalyticsPage from "./admin/AdminAnalyticsPage";
 import AdminRegistrationPage from "./admin/AdminRegistrationPage";
+import BehaviorAnalyticsDashboard from "./admin/BehaviorAnalyticsDashboard";
+import FlaggedSessionsPage from "./admin/FlaggedSessionsPage";
+import InterventionQueuePage from "./admin/InterventionQueuePage";
+import UserBehaviorDetailPage from "./admin/UserBehaviorDetailPage";
+import FSRSPerformancePage from "./admin/analytics/FSRSPerformancePage";
+import ContentEffectivenessPage from "./admin/analytics/ContentEffectivenessPage";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import StatsCard from "@/components/admin/dashboard/StatsCard";
@@ -59,6 +65,7 @@ function AdminPage() {
   const getTabFromPath = (path) => {
     if (path === "/admin") return "dashboard";
     if (path.includes("/admin/registrations")) return "users";
+    if (path.includes("/admin/behavior-analytics")) return "behavior";
     if (path.includes("/admin/analytics")) return "analytics";
     if (path.includes("/admin/users")) return "users";
     if (path.includes("/admin/questions")) return "questions";
@@ -207,7 +214,11 @@ function AdminPage() {
          )}
 
          {activeTab === "analytics" && (
-           <AdminAnalyticsPage />
+           <AnalyticsSection />
+         )}
+
+         {activeTab === "behavior" && (
+           <BehaviorAnalyticsSection />
          )}
 
          {activeTab === "landing" && (user?.role === "super_admin" || user?.role === "admin") && (
@@ -284,6 +295,35 @@ function LandingSection() {
             </div>
         </>
     );
+}
+
+function BehaviorAnalyticsSection() {
+    const location = useLocation();
+    const path = location.pathname;
+
+    if (path.includes("/admin/behavior-analytics/user/")) {
+        return <UserBehaviorDetailPage />;
+    }
+    if (path.includes("/admin/behavior-analytics/flagged")) {
+        return <FlaggedSessionsPage />;
+    }
+    if (path.includes("/admin/behavior-analytics/intervention")) {
+        return <InterventionQueuePage />;
+    }
+    return <BehaviorAnalyticsDashboard />;
+}
+
+function AnalyticsSection() {
+    const location = useLocation();
+    const path = location.pathname;
+
+    if (path.includes("/admin/analytics/fsrs-performance")) {
+        return <FSRSPerformancePage />;
+    }
+    if (path.includes("/admin/analytics/content-effectiveness")) {
+        return <ContentEffectivenessPage />;
+    }
+    return <AdminAnalyticsPage />;
 }
 
 

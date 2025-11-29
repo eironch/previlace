@@ -92,10 +92,10 @@ const InstructorDashboardPage = () => {
     <div className="min-h-screen bg-gray-50">
       <StandardHeader
         title="Instructor Dashboard"
-        subtitle={`Welcome back, ${user?.firstName}. Here's your overview.`}
+        description={`Welcome back, ${user?.firstName}. Here's your overview.`}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Stats Grid */}
         {/* Subjects Analytics Grid */}

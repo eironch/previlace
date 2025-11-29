@@ -3,25 +3,29 @@ import learningService from "../services/learningService";
 
 export const useTopicStore = create((set, get) => ({
   topics: [],
+  topicsSubjectId: null, // Track which subject the current topics belong to
   currentTopic: null,
   loading: false,
   error: null,
 
   fetchTopicsBySubject: async (subjectId) => {
-    // Check if we already have topics for this subject
-    const currentTopics = get().topics || [];
-    const hasTopicsForSubject = currentTopics.length > 0 && currentTopics[0]?.subjectId === subjectId;
+    // Check if we already have topics for this SPECIFIC subject
+    const { topics, topicsSubjectId } = get();
+    const isSameSubject = topicsSubjectId === subjectId;
     
-    if (!hasTopicsForSubject) {
-      set({ loading: true, error: null });
+    if (isSameSubject && topics.length > 0) {
+       // SWR: We have data for this subject. Keep loading false to show data.
+       set({ error: null });
     } else {
-      set({ error: null });
+       // New subject or no data. Clear old topics to avoid showing wrong data.
+       set({ topics: [], topicsSubjectId: subjectId, loading: true, error: null });
     }
 
     try {
       const response = await learningService.fetchTopicsBySubject(subjectId);
       set({
         topics: response.data || [],
+        topicsSubjectId: subjectId, // Ensure ID is set
         loading: false,
       });
     } catch (error) {
@@ -33,11 +37,17 @@ export const useTopicStore = create((set, get) => ({
   },
 
   fetchTopicById: async (topicId) => {
-    const current = get().currentTopic;
-    if (!current || current._id !== topicId) {
-      set({ loading: true, error: null });
+    // SWR: Check if we have this topic in our list
+    const existingTopic = get().topics.find(t => t._id === topicId);
+    
+    if (existingTopic) {
+      set({ currentTopic: existingTopic, loading: false, error: null });
     } else {
-      set({ error: null });
+      const current = get().currentTopic;
+      if (!current || current._id !== topicId) {
+        // Clear currentTopic if it's a different topic, so we show skeleton instead of wrong data
+        set({ currentTopic: null, loading: true, error: null });
+      }
     }
 
     try {

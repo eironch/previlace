@@ -94,7 +94,7 @@ function QuizResultsPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <StandardHeader title="Quiz Results" subtitle="Review your performance" />
-        <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
           {/* Score Skeleton */}
           <div className="mb-8 overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-300 p-8">
             <div className="flex flex-col items-center">
@@ -156,7 +156,7 @@ function QuizResultsPage() {
     <div className="min-h-screen bg-gray-50">
       <StandardHeader title="Quiz Results" subtitle="Review your performance" />
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Score Summary Card */}
         <div className="mb-8 overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-300">

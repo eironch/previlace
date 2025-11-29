@@ -14,13 +14,20 @@ export const useTestimonialsStore = create((set, get) => ({
      * @desc Fetches ALL testimonials (for Admin view).
      */
     fetchTestimonials: async () => {
-        set({ isLoading: true, error: null });
+        const { testimonials } = get();
+        // SWR: Only set loading if we don't have data yet
+        if (testimonials.length === 0) {
+            set({ isLoading: true, error: null });
+        }
+
         try {
-            // Add minimum delay to ensure animation is visible
-            const [response] = await Promise.all([
-                testimonialService.fetchAllTestimonials({}),
-                new Promise(resolve => setTimeout(resolve, 500))
-            ]);
+            // Add minimum delay to ensure animation is visible only on initial load
+            const fetchPromise = testimonialService.fetchAllTestimonials({});
+            
+            // If we are loading for the first time, add a small delay to prevent flash
+            const response = testimonials.length === 0 
+                ? await Promise.all([fetchPromise, new Promise(resolve => setTimeout(resolve, 500))]).then(res => res[0])
+                : await fetchPromise;
 
             set({
                 testimonials: response.testimonials || [],

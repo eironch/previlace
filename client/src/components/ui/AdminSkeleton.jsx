@@ -15,7 +15,7 @@ export default function AdminSkeleton({ showHeader = false }) {
       )}
 
       {/* Content Skeleton */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="h-48 rounded-lg bg-gray-200"></div>

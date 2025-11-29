@@ -20,6 +20,7 @@
 		"framer-motion": "^12.23.24",
 		"katex": "^0.16.9",
 		"lucide-react": "^0.533.0",
+		"posthog-js": "^1.298.1",
 		"react": "^19.1.0",
 		"react-day-picker": "^9.11.2",
 		"react-dom": "^19.1.0",
@@ -27,6 +28,7 @@
 		"react-router-dom": "^7.1.1",
 		"recharts": "^2.10.3",
 		"socket.io-client": "^4.8.1",
+		"swr": "^2.3.7",
 		"tailwind-merge": "^3.3.1",
 		"zustand": "^5.0.3"
 	},

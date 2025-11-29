@@ -1,82 +1,38 @@
 import { create } from "zustand";
 import apiClient from "../services/apiClient";
+import { mutate } from "swr";
 
 export const useInquiryStore = create((set, get) => ({
-  tickets: [],
-  currentTicket: null,
-  loading: false,
+  // We removed tickets/currentTicket state as it's now managed by SWR
   error: null,
 
   createTicket: async (data) => {
     try {
       const response = await apiClient.post("/inquiry-tickets", data);
-      set((state) => ({
-        tickets: [response, ...state.tickets],
-      }));
-      return response;
+      const ticket = response.data;
+      // Trigger SWR revalidation for student tickets
+      mutate((key) => typeof key === 'string' && key.startsWith('/inquiry-tickets/student'));
+      return ticket;
     } catch (error) {
       set({ error: error.message });
       throw error;
     }
   },
 
-  getStudentTickets: async (status) => {
-    const currentTickets = get().tickets || [];
-    if (currentTickets.length === 0) {
-      set({ loading: true });
-    }
-    try {
-      const params = status ? { status } : {};
-      const response = await apiClient.get("/inquiry-tickets/student", {
-        params,
-      });
-      // Ensure tickets is always an array
-      const ticketsData = Array.isArray(response) ? response : (response?.tickets || response?.data || []);
-      set({ tickets: ticketsData, loading: false });
-    } catch (error) {
-      set({ error: error.message, tickets: [], loading: false });
-    }
-  },
-
-  getInstructorTickets: async (status, subjectId) => {
-    const currentTickets = get().tickets || [];
-    if (currentTickets.length === 0) {
-      set({ loading: true });
-    }
-    try {
-      const params = {};
-      if (status) params.status = status;
-      if (subjectId) params.subjectId = subjectId;
-      const response = await apiClient.get("/inquiry-tickets/instructor", {
-        params,
-      });
-      // Ensure tickets is always an array
-      const ticketsData = Array.isArray(response) ? response : (response?.tickets || response?.data || []);
-      set({ tickets: ticketsData, loading: false });
-    } catch (error) {
-      set({ error: error.message, tickets: [], loading: false });
-    }
-  },
-
-  getTicketById: async (id) => {
-    const current = get().currentTicket;
-    if (!current || current._id !== id) {
-      set({ loading: true });
-    }
-    try {
-      const ticket = await apiClient.get(`/inquiry-tickets/${id}`);
-      set({ currentTicket: ticket, loading: false });
-    } catch (error) {
-      set({ error: error.message, loading: false });
-    }
-  },
+  // Removed getStudentTickets, getInstructorTickets, getTicketById (handled by useTickets hook)
 
   addResponse: async (id, message) => {
     try {
-      const ticket = await apiClient.post(`/inquiry-tickets/${id}/response`, {
+      const response = await apiClient.post(`/inquiry-tickets/${id}/response`, {
         message,
       });
-      set({ currentTicket: ticket });
+      const ticket = response.data;
+      
+      // Update the specific ticket cache immediately
+      mutate(`/inquiry-tickets/${id}`, ticket, false);
+      // Trigger revalidation to ensure consistency
+      mutate(`/inquiry-tickets/${id}`);
+      
       return ticket;
     } catch (error) {
       set({ error: error.message });
@@ -86,11 +42,15 @@ export const useInquiryStore = create((set, get) => ({
 
   addInternalNote: async (id, note) => {
     try {
-      const ticket = await apiClient.post(
+      const response = await apiClient.post(
         `/inquiry-tickets/${id}/internal-note`,
         { note }
       );
-      set({ currentTicket: ticket });
+      const ticket = response.data;
+      
+      mutate(`/inquiry-tickets/${id}`, ticket, false);
+      mutate(`/inquiry-tickets/${id}`);
+
       return ticket;
     } catch (error) {
       set({ error: error.message });
@@ -100,10 +60,16 @@ export const useInquiryStore = create((set, get) => ({
 
   updateTicketStatus: async (id, status) => {
     try {
-      const ticket = await apiClient.patch(`/inquiry-tickets/${id}/status`, {
+      const response = await apiClient.patch(`/inquiry-tickets/${id}/status`, {
         status,
       });
-      set({ currentTicket: ticket });
+      const ticket = response.data;
+      
+      mutate(`/inquiry-tickets/${id}`, ticket, false);
+      mutate(`/inquiry-tickets/${id}`);
+      // Also revalidate lists
+      mutate((key) => typeof key === 'string' && key.startsWith('/inquiry-tickets'));
+
       return ticket;
     } catch (error) {
       set({ error: error.message });
@@ -117,8 +83,8 @@ export const useInquiryStore = create((set, get) => ({
         "/inquiry-tickets/bulk-update",
         data
       );
-      // Refresh tickets after bulk update
-      // Note: We might want to optimistically update instead if performance is key
+      // Revalidate all ticket lists
+      mutate((key) => typeof key === 'string' && key.startsWith('/inquiry-tickets'));
       return response;
     } catch (error) {
       set({ error: error.message });

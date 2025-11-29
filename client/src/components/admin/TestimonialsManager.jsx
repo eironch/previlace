@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTestimonialsStore } from "@/store/testimonialsStore";
+import SkeletonLoader from '@/components/ui/SkeletonLoader';
 import {
     CheckCircle, Clock, User, Star, AlertTriangle,
     Loader2, RefreshCw, Heart // ⭐ Added Heart icon for 'Favorited' visual
@@ -158,9 +159,53 @@ export default function TestimonialsManager({ landingPage = false }) {
     // ... (isLoading and error rendering remains the same) ...
 
     if (isLoading) return (
-        <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-black" />
-            <p className="ml-3 text-gray-600">Loading testimonials...</p>
+        <div className="space-y-6">
+             <div className="rounded-lg border border-gray-300 bg-white shadow-sm">
+                {!landingPage && (
+                    <div className="border-b border-gray-300 px-6 py-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <SkeletonLoader variant="title" className="w-32" />
+                                <div className="flex items-center gap-2">
+                                    <SkeletonLoader className="w-12 h-4" />
+                                    <SkeletonLoader className="w-24 h-8 rounded-md" />
+                                </div>
+                            </div>
+                            <SkeletonLoader className="w-24 h-6 rounded-full" />
+                        </div>
+                    </div>
+                )}
+                <div className="divide-y divide-gray-200">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center space-x-3">
+                                    <SkeletonLoader variant="avatar" />
+                                    <div className="space-y-2">
+                                        <SkeletonLoader variant="text" className="w-32" />
+                                        <SkeletonLoader variant="text" className="w-24 h-3" />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <SkeletonLoader className="w-16 h-6 rounded-full" />
+                                    <SkeletonLoader className="w-20 h-3" />
+                                </div>
+                            </div>
+                            <div className="mb-4 pl-13 space-y-2">
+                                <SkeletonLoader className="w-24 h-4" />
+                                <SkeletonLoader variant="text" />
+                                <SkeletonLoader variant="text" />
+                                <SkeletonLoader variant="text" className="w-2/3" />
+                            </div>
+                            {!landingPage && (
+                                <div className="flex gap-2 pl-13">
+                                    <SkeletonLoader variant="button" className="w-24 h-8" />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 

@@ -1,14 +1,40 @@
-import { useRef, useEffect, useState, useMemo } from "react";
-import { CheckCircle, Circle, BookOpen, ChevronRight, MapPin } from "lucide-react";
+import { useRef, useEffect, useState, useMemo, forwardRef, useImperativeHandle } from "react";
+import { CheckCircle, Circle, BookOpen, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Modal from "@/components/ui/Modal";
 import useDashboardStore from "@/store/dashboardStore";
 
-function JourneyMap({ studyPlan }) {
+const JourneyMap = forwardRef(({ studyPlan }, ref) => {
   const navigate = useNavigate();
   const [selectedSession, setSelectedSession] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { preAssessmentCompleted, mockExamCompleted } = useDashboardStore();
+
+  const scrollContainerRef = useRef(null);
+  const currentSessionRef = useRef(null);
+
+  const scrollToCurrent = () => {
+    if (currentSessionRef.current && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const element = currentSessionRef.current;
+      
+      const containerWidth = container.offsetWidth;
+      const elementLeft = element.offsetLeft;
+      const elementWidth = element.offsetWidth;
+      
+      // Center the element
+      const scrollLeft = elementLeft - (containerWidth / 2) + (elementWidth / 2);
+      
+      container.scrollTo({
+        left: scrollLeft,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    scrollToCurrent
+  }));
 
   if (!studyPlan) {
     return (
@@ -93,28 +119,6 @@ function JourneyMap({ studyPlan }) {
     navigate(`/dashboard/topics/${topic._id}`);
   }
 
-  const scrollContainerRef = useRef(null);
-  const currentSessionRef = useRef(null);
-
-  const scrollToCurrent = () => {
-    if (currentSessionRef.current && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const element = currentSessionRef.current;
-      
-      const containerWidth = container.offsetWidth;
-      const elementLeft = element.offsetLeft;
-      const elementWidth = element.offsetWidth;
-      
-      // Center the element
-      const scrollLeft = elementLeft - (containerWidth / 2) + (elementWidth / 2);
-      
-      container.scrollTo({
-        left: scrollLeft,
-        behavior: "smooth"
-      });
-    }
-  };
-
   useEffect(() => {
     // Only scroll on mount
     scrollToCurrent();
@@ -173,15 +177,6 @@ function JourneyMap({ studyPlan }) {
             ))}
           </div>
         </div>
-        
-        {/* Jump to Current Button */}
-        <button
-          onClick={scrollToCurrent}
-          className="absolute right-0 top-0 -mt-8 flex items-center gap-1 rounded-md bg-white px-2 py-1 text-xs font-medium text-gray-600 shadow-sm hover:bg-gray-50 hover:text-gray-900"
-        >
-          <MapPin size={12} />
-          Jump to Current
-        </button>
       </div>
 
       <Modal
@@ -275,6 +270,8 @@ function JourneyMap({ studyPlan }) {
       </Modal>
     </>
   );
-}
+});
+
+JourneyMap.displayName = "JourneyMap";
 
 export default JourneyMap;

@@ -21,7 +21,7 @@ function JourneyPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-6">
+      <div className="w-full px-4 py-6">
         <div className="space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-24 w-full animate-pulse rounded-lg bg-gray-200" />
@@ -40,7 +40,7 @@ function JourneyPage() {
   }, {});
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="w-full px-4 py-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Your Learning Journey</h1>

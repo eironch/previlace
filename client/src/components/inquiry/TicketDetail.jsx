@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
 import { Send, User, Shield, Lock } from "lucide-react";
 import { useInquiryStore } from "../../store/inquiryStore";
@@ -9,6 +9,15 @@ export default function TicketDetail({ ticket, isInstructor }) {
   const [internalNote, setInternalNote] = useState("");
   const [activeTab, setActiveTab] = useState("reply"); // reply | note
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [ticket.responses, ticket.internalNotes]);
 
   const { addResponse, addInternalNote, updateTicketStatus } = useInquiryStore();
   const { user } = useAuthStore();
@@ -116,50 +125,70 @@ export default function TicketDetail({ ticket, isInstructor }) {
             ...(isInstructor ? ticket.internalNotes.map((n) => ({ ...n, type: "note" })) : []),
           ]
             .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-            .map((item, index) => (
-              <div
-                key={index}
-                className={`flex gap-4 ${item.type === "note" ? "bg-yellow-50 p-4 rounded-lg border border-yellow-200" : ""
-                  }`}
-              >
-                <div className="flex-shrink-0">
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full ${item.type === "note"
-                      ? "bg-yellow-200"
-                      : item.author._id === ticket.student._id
-                        ? "bg-gray-200"
-                        : "bg-black text-white"
-                      }`}
-                  >
-                    {item.type === "note" ? (
-                      <Lock className="h-4 w-4 text-yellow-700" />
-                    ) : item.author.role === "instructor" || item.author.role === "admin" ? (
-                      <Shield className="h-4 w-4" />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
+            .map((item, index) => {
+              // Robust check for current user ownership
+              // Handle both populated object (with _id or id) and direct ID string
+              const authorId = (item.author && typeof item.author === 'object') 
+                ? (item.author._id || item.author.id) 
+                : item.author;
+                
+              const userId = user?._id || user?.id;
+              const isMe = authorId === userId;
+              
+              return (
+                <div
+                  key={index}
+                  className={`flex gap-4 ${item.type === "note" ? "bg-yellow-50 p-4 rounded-lg border border-yellow-200" : ""
+                    } ${isMe && item.type !== "note" ? "flex-row-reverse" : ""}`}
+                >
+                  <div className="flex-shrink-0">
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-full ${item.type === "note"
+                        ? "bg-yellow-200"
+                        : isMe
+                          ? "bg-black text-white"
+                          : "bg-gray-200"
+                        }`}
+                    >
+                      {item.type === "note" ? (
+                        <Lock className="h-4 w-4 text-yellow-700" />
+                      ) : item.author?.role === "instructor" || item.author?.role === "admin" ? (
+                        <Shield className="h-4 w-4" />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1">
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">
-                      {item.author.firstName} {item.author.lastName}
-                    </span>
-                    {item.type === "note" && (
-                      <span className="text-xs font-medium text-yellow-700">
-                        Internal Note
+                  <div className={`flex-1 ${isMe && item.type !== "note" ? "text-right" : ""}`}>
+                    <div className={`mb-1 flex items-center gap-2 ${isMe && item.type !== "note" ? "justify-end" : ""}`}>
+                      <span className="font-semibold text-gray-900">
+                        {isMe ? "You" : `${item.author?.firstName || 'Unknown'} ${item.author?.lastName || ''}`}
                       </span>
-                    )}
-                    <span className="text-xs text-gray-500">
-                      {format(new Date(item.createdAt), "MMM d, h:mm a")}
-                    </span>
+                      {item.type === "note" && (
+                        <span className="text-xs font-medium text-yellow-700">
+                          Internal Note
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-500">
+                        {format(new Date(item.createdAt), "MMM d, h:mm a")}
+                      </span>
+                    </div>
+                    <div className={`inline-block rounded-lg px-4 py-2 ${
+                      item.type === "note" 
+                        ? "" 
+                        : isMe 
+                          ? "bg-black text-white" 
+                          : "bg-gray-100 text-gray-800"
+                    }`}>
+                      <p className="whitespace-pre-wrap text-left">
+                        {item.type === "note" ? item.note : item.message}
+                      </p>
+                    </div>
                   </div>
-                  <p className="whitespace-pre-wrap text-gray-700">
-                    {item.type === "note" ? item.note : item.message}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+            <div ref={messagesEndRef} />
         </div>
       </div>
 

@@ -42,8 +42,19 @@ const generateTokens = (userId) => {
 
 
 
+import fs from "fs";
+import path from "path";
+
+const logToFile = (message) => {
+    const logPath = path.join(process.cwd(), "login_debug.log");
+    fs.appendFileSync(logPath, new Date().toISOString() + " - " + message + "\n");
+};
+
 const login = catchAsync(async (req, res, next) => {
 	const { identifier, password } = req.body;
+
+    logToFile(`Login attempt for: ${identifier}`);
+    logToFile(`Request Body: ${JSON.stringify(req.body)}`);
 
 	if (!identifier || !password) {
 		return next(new AppError("Please provide identifier and password", 400));
@@ -55,11 +66,16 @@ const login = catchAsync(async (req, res, next) => {
 	}).select("+password");
 
 	if (!user) {
+        logToFile(`User not found for: ${identifier}`);
 		return next(new AppError("Invalid credentials", 401));
 	}
 
+    logToFile(`User found: ${user.email}`);
 	const isPasswordValid = await user.comparePassword(password);
+    logToFile(`Password valid: ${isPasswordValid}`);
+
 	if (!isPasswordValid) {
+        logToFile(`Password invalid for: ${identifier}`);
 		return next(new AppError("Invalid credentials", 401));
 	}
 

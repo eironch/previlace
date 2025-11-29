@@ -828,7 +828,7 @@ const CVPage = () => {
                 <StandardHeader title="CV Builder" showBack={true} backPath="/dashboard/jobs" />
             </div>
 
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 print:p-0 print:m-0 print:max-w-none">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-8 print:p-0 print:m-0 print:max-w-none">
 
                 {/* Mobile Preview Button */}
                 <div className="lg:hidden mb-6">

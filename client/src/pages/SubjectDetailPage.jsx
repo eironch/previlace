@@ -11,7 +11,7 @@ function SubjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { currentSubject, loading: subjectLoading, fetchSubjectById } = useSubjectStore();
-  const { topics, loading: topicsLoading, fetchTopicsBySubject } = useTopicStore();
+  const { topics, loading: topicsLoading, topicsSubjectId, fetchTopicsBySubject } = useTopicStore();
   const { user } = useAuthStore();
   const { startQuizAttempt, loading: quizLoading } = useExamStore();
   const [quizError, setQuizError] = useState(null);
@@ -46,25 +46,29 @@ function SubjectDetailPage() {
     navigate(`/dashboard/topics/${topicId}`);
   }
 
-  if (subjectLoading || topicsLoading) {
-    return (
+  // Determine if we should show the full page skeleton
+  // Show if:
+  // 1. We are loading the subject AND we don't have the correct subject data yet
+  // 2. OR we have no subject data and no error (initial load before fetch)
+  const isSubjectLoaded = currentSubject && currentSubject._id === id;
+  const showSubjectSkeleton = (subjectLoading && !isSubjectLoaded) || (!isSubjectLoaded && !currentSubject); // Simplified: !isSubjectLoaded basically
+
+  if (showSubjectSkeleton) {
+     // ... (skeleton render)
+     return (
       <div className="min-h-screen bg-white">
-        <header className="border-b border-gray-300 bg-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between py-4">
+        <div className="sticky top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
+          <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <SkeletonLoader variant="circle" className="h-5 w-5" />
+                <SkeletonLoader variant="circle" className="h-10 w-10" />
                 <SkeletonLoader className="h-6 w-48" />
-              </div>
-              <div className="flex items-center gap-4">
-                <SkeletonLoader className="h-4 w-24" />
-                <SkeletonLoader variant="button" className="h-10 w-24" />
               </div>
             </div>
           </div>
-        </header>
+        </div>
 
-        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
             <div className="mb-4 flex items-center gap-4">
               <SkeletonLoader variant="circle" className="h-16 w-16" />
@@ -112,21 +116,41 @@ function SubjectDetailPage() {
     );
   }
 
+  // Determine if we should show topic skeletons
+  // Show if:
+  // 1. Topics are loading AND we have no topics
+  // 2. OR the topics we have belong to a different subject (mismatch)
+  const showTopicSkeleton = (topicsLoading && topics.length === 0) || topicsSubjectId !== id;
+
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-300 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 transition-colors hover:text-black"
-          >
-            <ChevronLeft className="h-5 w-5" />
-            <span className="font-medium">Back</span>
-          </button>
+      {/* ... header ... */}
+      <div className="sticky top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
+        <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50"
+                title="Back"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  {currentSubject?.name || "Subject Details"}
+                </h1>
+                <p className="text-sm text-gray-600">
+                  {topics.length} Topics
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </header>
+      </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
+        {/* ... subject details ... */}
         <div className="mb-8 rounded-lg border border-gray-300 bg-white p-6">
           <div className="mb-4 flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-200">
@@ -199,7 +223,21 @@ function SubjectDetailPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {topics.map((topic) => (
+          {showTopicSkeleton ? (
+            // Show skeleton for topics if loading and no topics
+            [1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="rounded-lg border border-gray-300 bg-white p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <SkeletonLoader className="h-6 w-24" />
+                  <SkeletonLoader variant="circle" className="h-6 w-6" />
+                </div>
+                <SkeletonLoader variant="title" className="mb-2 h-6" />
+                <SkeletonLoader className="mb-2" />
+                <SkeletonLoader className="w-2/3" />
+              </div>
+            ))
+          ) : (
+            topics.map((topic) => (
             <button
               key={topic._id}
               onClick={() => handleTopicClick(topic._id)}
@@ -224,7 +262,6 @@ function SubjectDetailPage() {
               </p>
 
               <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>{topic.estimatedMinutes || 30} mins</span>
                 {topic.progress && (
                   <span className="font-semibold">
                     Best: {Math.round(topic.progress.bestScore || 0)}%
@@ -239,7 +276,8 @@ function SubjectDetailPage() {
                 </div>
               )}
             </button>
-          ))}
+          ))
+          )}
         </div>
       </main>
     </div>

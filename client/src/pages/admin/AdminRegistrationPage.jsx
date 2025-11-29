@@ -106,7 +106,7 @@ export default function AdminRegistrationPage({ showHeader = true, defaultOpenCr
             )}
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-8">
-                <div className="max-w-7xl mx-auto">
+                <div className="w-full mx-auto">
 
                     {/* Filters & Actions */}
                     <div className="flex flex-col sm:flex-row gap-4 mb-6 justify-between items-center">
@@ -480,4 +480,3 @@ export default function AdminRegistrationPage({ showHeader = true, defaultOpenCr
         </div>
     );
 }
-

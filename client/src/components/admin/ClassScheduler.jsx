@@ -34,6 +34,9 @@ const ClassScheduler = forwardRef((props, ref) => {
 
   const [topics, setTopics] = useState([]); // Topics for the currently selected subject in dropdown
 
+  const [filteredInstructors, setFilteredInstructors] = useState([]);
+  const [loadingInstructors, setLoadingInstructors] = useState(false);
+
   const { getCachedData, setCachedData } = useAdminCacheStore();
   const CACHE_KEY = 'weekend-classes-data';
 
@@ -53,6 +56,28 @@ const ClassScheduler = forwardRef((props, ref) => {
       fetchTopics(currentTopic.subject);
     }
   }, [currentTopic.subject]);
+
+  // Fetch available instructors when date changes
+  useEffect(() => {
+    if (formData.date) {
+      fetchAvailableInstructors(formData.date);
+    }
+  }, [formData.date]);
+
+  const fetchAvailableInstructors = async (dateString) => {
+    setLoadingInstructors(true);
+    try {
+      const date = new Date(dateString);
+      const dayOfWeek = date.getDay();
+      const available = await instructorService.getAvailableInstructors(dayOfWeek);
+      setFilteredInstructors(available);
+    } catch (error) {
+      console.error("Error fetching available instructors:", error);
+      setFilteredInstructors([]);
+    } finally {
+      setLoadingInstructors(false);
+    }
+  };
 
   const fetchData = async () => {
     const cached = getCachedData(CACHE_KEY);
@@ -391,11 +416,15 @@ const ClassScheduler = forwardRef((props, ref) => {
                     value={formData.instructor}
                     onChange={handleInputChange}
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                    disabled={loadingInstructors}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-black focus:outline-none disabled:bg-gray-100"
                   >
-                    <option value="">Select Instructor</option>
-                    {instructors.map(i => <option key={i._id} value={i._id}>{i.firstName} {i.lastName}</option>)}
+                    <option value="">{loadingInstructors ? "Checking availability..." : "Select Instructor"}</option>
+                    {filteredInstructors.map(i => <option key={i._id} value={i._id}>{i.firstName} {i.lastName}</option>)}
                   </select>
+                  {filteredInstructors.length === 0 && !loadingInstructors && formData.date && (
+                    <p className="text-xs text-red-500 mt-1">No instructors available on this day.</p>
+                  )}
                 </div>
 
                 <div>

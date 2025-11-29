@@ -227,22 +227,57 @@ export async function removeSubject(req, res) {
 
 export async function getAvailableInstructors(req, res) {
   try {
-    const { dayOfWeek, subjectId } = req.query;
+    const { date, dayOfWeek, subjectId } = req.query;
 
-    const filter = {};
-    if (dayOfWeek) {
-      filter["weeklySlots.dayOfWeek"] = parseInt(dayOfWeek);
-      filter["weeklySlots.isAvailable"] = true;
-    }
+    // 1. Fetch all availabilities first (we need to filter in memory for complex date logic)
+    // Optimization: We can still filter by subject at DB level if provided
+    const dbFilter = {};
     if (subjectId) {
-      filter.subjects = subjectId;
+      dbFilter.subjects = subjectId;
     }
 
-    const availabilities = await InstructorAvailability.find(filter)
+    const allAvailabilities = await InstructorAvailability.find(dbFilter)
       .populate("instructorId", "firstName lastName email")
       .populate("subjects", "name");
 
-    return res.status(200).json({ availabilities });
+    // 2. Filter based on date/schedule logic
+    const availableInstructors = allAvailabilities.filter((avail) => {
+      if (!avail.instructorId) return false; // Skip orphaned records
+
+      // If a specific date is provided, check for overrides first
+      if (date) {
+        const queryDate = new Date(date);
+        const dateStr = queryDate.toISOString().split('T')[0];
+        
+        // Check specific date override
+        const override = avail.weekendAvailability.find(
+          (d) => new Date(d.date).toISOString().split('T')[0] === dateStr
+        );
+
+        if (override) {
+          return override.isAvailable;
+        }
+
+        // Fallback to weekly slot
+        const day = queryDate.getDay();
+        const hasSlot = avail.weeklySlots.some(
+          (slot) => slot.dayOfWeek === day && slot.isAvailable
+        );
+        return hasSlot;
+      }
+
+      // Fallback: If only dayOfWeek is provided (legacy/general check)
+      if (dayOfWeek !== undefined) {
+        return avail.weeklySlots.some(
+          (slot) => slot.dayOfWeek === parseInt(dayOfWeek) && slot.isAvailable
+        );
+      }
+
+      // If no date/day filter, return all (subject filter already applied)
+      return true;
+    });
+
+    return res.status(200).json({ availabilities: availableInstructors });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error fetching available instructors:", error);

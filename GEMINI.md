@@ -50,7 +50,8 @@ pnpm build
 
 *   **Code Style:** The project uses Prettier for code formatting.
 *   **Linting:** ESLint is used for linting the client-side code.
-*   **State Management:** Zustand is used for state management in the client.
+*   **State Management:** Zustand is used for global client state.
+*   **Data Fetching:** Use `SWR` (Stale-While-Revalidate) for server state and caching.
 *   **API Communication:** The client communicates with the server using RESTful APIs (via `axios`).
 ````
 
@@ -776,7 +777,7 @@ import Modal from "@/components/ui/Modal";
 
 #### Page Header
 ```jsx
-<div className="mb-8">
+<div className="sticky top-0 z-30 mb-8 border-b border-gray-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
   <h1 className="text-3xl font-bold text-gray-900">Page Title</h1>
   <p className="mt-2 text-gray-600">Page description</p>
 </div>

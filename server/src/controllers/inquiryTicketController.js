@@ -16,6 +16,20 @@ async function createTicket(req, res, next) {
       throw new AppError("Subject has no assigned instructor", 400);
     }
 
+    // Check for existing active ticket for this subject
+    const existingTicket = await InquiryTicket.findOne({
+      student: studentId,
+      subject: subjectId,
+      status: { $in: ["open", "in_progress"] },
+    });
+
+    if (existingTicket) {
+      throw new AppError(
+        "You already have an active ticket for this subject. Please wait for it to be resolved.",
+        400
+      );
+    }
+
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
@@ -50,6 +64,7 @@ async function getStudentTickets(req, res, next) {
     }
 
     const tickets = await InquiryTicket.find(filter)
+      .select("-internalNotes -responses.message") // Exclude heavy fields
       .populate("subject", "name")
       .populate("instructor", "firstName lastName")
       .sort({ createdAt: -1 });
@@ -74,6 +89,7 @@ async function getInstructorTickets(req, res, next) {
     }
 
     const tickets = await InquiryTicket.find(filter)
+      .select("-internalNotes -responses.message") // Exclude heavy fields
       .populate("student", "firstName lastName email")
       .populate("subject", "name")
       .sort({ priority: -1, createdAt: -1 });

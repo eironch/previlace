@@ -1,6 +1,6 @@
 import UserActivity from "../models/UserActivity.js";
-import DailyActivity from "../models/DailyActivity.js";
-import ManualQuestion from "../models/ManualQuestion.js";
+import UserQuestionHistory from "../models/UserQuestionHistory.js";
+import fsrsService from "./fsrsService.js";
 
 class SpacedRepetitionService {
   async getMistakesForReview(userId, limit = 10) {
@@ -32,6 +32,37 @@ class SpacedRepetitionService {
     return this.prioritizeMistakes(mistakes).slice(0, limit);
   }
 
+  async prioritizeMistakesByRetrievability(userId, limit = 10) {
+    const histories = await UserQuestionHistory.find({
+      userId,
+      incorrectAttempts: { $gt: 0 },
+      "fsrsData.state": { $in: ["review", "relearning"] }
+    }).populate("questionId");
+
+    const now = new Date();
+    const withRetrievability = histories.map(h => {
+      const card = {
+        stability: h.fsrsData.stability,
+        state: fsrsService.stringToState(h.fsrsData.state),
+        lastReview: h.fsrsData.lastReview
+      };
+      return {
+        history: h,
+        retrievability: fsrsService.getRetrievability(card, now)
+      };
+    });
+
+    return withRetrievability
+      .sort((a, b) => a.retrievability - b.retrievability)
+      .slice(0, limit)
+      .map(item => ({
+        questionId: item.history.questionId,
+        retrievability: item.retrievability,
+        stability: item.history.fsrsData.stability,
+        lapses: item.history.fsrsData.lapses
+      }));
+  }
+
   prioritizeMistakes(mistakes) {
     return mistakes.sort((a, b) => {
       const priorityA = this.calculatePriority(a);
@@ -42,14 +73,14 @@ class SpacedRepetitionService {
 
   calculatePriority(mistake) {
     const daysSinceMistake = mistake.daysSinceMistake;
-    
+
     let priority = 10;
-    
+
     if (daysSinceMistake === 0) priority += 20;
     else if (daysSinceMistake === 1) priority += 15;
     else if (daysSinceMistake <= 3) priority += 10;
     else if (daysSinceMistake <= 7) priority += 5;
-    
+
     return priority;
   }
 
@@ -60,37 +91,19 @@ class SpacedRepetitionService {
     return Math.floor((now - past) / (1000 * 60 * 60 * 24));
   }
 
-  async scheduleNextReview(userId, questionId, wasCorrect) {
-    const userActivities = await UserActivity.find({
-      userId,
-      "mistakes.questionId": questionId,
-    });
+  async scheduleNextReview(userId, questionId, wasCorrect, responseTime = 30000) {
+    const history = await UserQuestionHistory.findOne({ userId, questionId });
+    if (!history) return null;
 
-    if (userActivities.length === 0) return null;
-
-    const activity = userActivities[userActivities.length - 1];
-    const mistake = activity.mistakes.find(
-      m => m.questionId.toString() === questionId.toString()
-    );
-
-    if (!mistake) return null;
-
-    if (wasCorrect) {
-      mistake.reviewedAt = new Date();
-      await activity.save();
-      return null;
-    }
+    history.updateFSRS(wasCorrect, responseTime);
+    await history.save();
 
     return {
       questionId,
-      nextReviewDate: this.calculateNextReviewDate(),
+      nextReviewDate: history.fsrsData.due,
+      stability: history.fsrsData.stability,
+      retrievability: history.getRetrievability()
     };
-  }
-
-  calculateNextReviewDate() {
-    const now = new Date();
-    now.setDate(now.getDate() + 1);
-    return now;
   }
 
   async trackMistake(userActivityId, questionId, incorrectAnswer, correctAnswer, explanation) {
@@ -169,6 +182,18 @@ class SpacedRepetitionService {
         instructions: "Review these questions and try to get them correct this time",
       },
     };
+  }
+
+  async getExamReadiness(userId, examDate) {
+    return UserQuestionHistory.getExamReadiness(userId, examDate);
+  }
+
+  async getDueQuestions(userId, limit = 20) {
+    return UserQuestionHistory.getDueForReview(userId, limit);
+  }
+
+  async getLowRetrievabilityQuestions(userId, threshold = 0.85, limit = 20) {
+    return UserQuestionHistory.getByRetrievability(userId, threshold, limit);
   }
 }
 

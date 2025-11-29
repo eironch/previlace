@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Video, User } from 'lucide-react';
+import { Calendar, Clock, MapPin, Video } from 'lucide-react';
 import weekendClassService from '../../services/weekendClassService';
 import { useAuthStore } from '../../store/authStore';
 import { format } from 'date-fns';
+import StandardHeader from '../../components/ui/StandardHeader';
+import SkeletonLoader from '../../components/ui/SkeletonLoader';
 
 export default function InstructorClassesPage() {
   const { user } = useAuthStore();
@@ -26,25 +28,41 @@ export default function InstructorClassesPage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black">My Classes</h1>
-          <p className="mt-2 text-gray-600">View your upcoming teaching schedule.</p>
-        </div>
+      <StandardHeader
+        title="My Classes"
+        description="View your upcoming teaching schedule."
+        onRefresh={fetchClasses}
+        isRefreshing={loading}
+      />
 
+      <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {classes.length > 0 ? (
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-lg border border-gray-300 p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <SkeletonLoader className="h-6 w-16" />
+                  <SkeletonLoader className="h-6 w-16" />
+                </div>
+                <SkeletonLoader variant="title" className="mb-2" />
+                <SkeletonLoader className="w-1/2 mb-4" />
+                <div className="space-y-2">
+                  <SkeletonLoader className="w-full" />
+                  <SkeletonLoader className="w-3/4" />
+                  <SkeletonLoader className="w-1/2" />
+                </div>
+              </div>
+            ))
+          ) : classes.length > 0 ? (
             classes.map(cls => (
               <div key={cls._id} className="bg-white rounded-lg border border-gray-300 shadow-sm p-6 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-4">
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${cls.mode === 'Online' ? 'bg-green-200 text-green-800' : 'bg-orange-200 text-orange-800'}`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${cls.mode === 'Online' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
                     {cls.mode}
                   </span>
-                  <span className={`px-2 py-1 rounded text-xs font-semibold bg-gray-200 text-gray-800`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800`}>
                     {cls.status}
                   </span>
                 </div>
@@ -54,23 +72,23 @@ export default function InstructorClassesPage() {
                 
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-4 h-4 text-gray-400" />
                     {format(new Date(cls.date), 'EEEE, MMMM do, yyyy')}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
+                    <Clock className="w-4 h-4 text-gray-400" />
                     {cls.startTime} - {cls.endTime}
                   </div>
                   {cls.mode === 'Online' ? (
                     <div className="flex items-center gap-2">
-                      <Video className="w-4 h-4" />
+                      <Video className="w-4 h-4 text-gray-400" />
                       <a href={cls.meetingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate max-w-[200px]">
                         {cls.meetingLink || 'No link provided'}
                       </a>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
+                      <MapPin className="w-4 h-4 text-gray-400" />
                       {cls.location || 'No location provided'}
                     </div>
                   )}
@@ -79,7 +97,9 @@ export default function InstructorClassesPage() {
             ))
           ) : (
             <div className="col-span-full text-center py-12 bg-white rounded-lg border border-gray-300 border-dashed">
-              <p className="text-gray-500">No classes scheduled yet.</p>
+              <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-gray-900">No classes scheduled</h3>
+              <p className="text-gray-500 mt-1">You don't have any classes scheduled yet.</p>
             </div>
           )}
         </div>

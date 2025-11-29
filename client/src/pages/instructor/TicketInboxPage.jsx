@@ -1,24 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useTickets } from "../../hooks/useTickets";
 import { useInquiryStore } from "../../store/inquiryStore";
 import TicketCard from "../../components/inquiry/TicketCard";
 import TicketDetail from "../../components/inquiry/TicketDetail";
-import { Filter, CheckSquare, Square, CheckCircle } from "lucide-react";
+import { Filter, CheckSquare, Square, CheckCircle, MessageSquareOff } from "lucide-react";
+import StandardHeader from "../../components/ui/StandardHeader";
 
 export default function TicketInboxPage() {
-  const {
-    tickets,
-    loading,
-    getInstructorTickets,
-    bulkUpdateTickets,
-  } = useInquiryStore();
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("open"); // Default to open tickets
+  const { useInstructorTickets, useTicket, refreshTickets } = useTickets();
+  const { bulkUpdateTickets } = useInquiryStore();
+  
+  const [statusFilter, setStatusFilter] = useState("open");
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [selectedTicketIds, setSelectedTicketIds] = useState(new Set());
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 
-  useEffect(() => {
-    getInstructorTickets(statusFilter === "all" ? null : statusFilter);
-  }, [getInstructorTickets, statusFilter]);
+  // Fetch list
+  const { tickets, isLoading: isListLoading } = useInstructorTickets(statusFilter === "all" ? null : statusFilter);
+
+  // Fetch details for selected ticket (SWR handles caching, so this is efficient)
+  const { ticket: currentTicket, isLoading: isDetailLoading } = useTicket(selectedTicketId);
+
+  const handleTicketClick = (ticket) => {
+    setSelectedTicketId(ticket._id);
+  };
 
   const handleSelectTicket = (id, e) => {
     e.stopPropagation();
@@ -48,7 +53,7 @@ export default function TicketInboxPage() {
         value: "resolved",
       });
       setSelectedTicketIds(new Set());
-      getInstructorTickets(statusFilter === "all" ? null : statusFilter);
+      refreshTickets();
     } catch (error) {
       console.error("Bulk update failed:", error);
     } finally {
@@ -57,36 +62,36 @@ export default function TicketInboxPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Support Inbox</h1>
-            <p className="mt-2 text-gray-600">
-              Manage student inquiries and support requests.
-            </p>
-          </div>
-          {selectedTicketIds.size > 0 && (
+    <div className="flex flex-col h-screen bg-gray-50">
+      <StandardHeader
+        title="Support Inbox"
+        description="Manage student inquiries and support requests."
+        onRefresh={refreshTickets}
+        isRefreshing={isListLoading}
+        endContent={
+          selectedTicketIds.size > 0 && (
             <button
               onClick={handleBulkResolve}
               disabled={isBulkActionLoading}
-              className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
             >
               <CheckCircle className="h-4 w-4" />
               Resolve Selected ({selectedTicketIds.size})
             </button>
-          )}
-        </div>
+          )
+        }
+      />
 
-        <div className="grid h-[calc(100vh-200px)] gap-6 lg:grid-cols-3">
+      <div className="flex-1 overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid h-full gap-6 lg:grid-cols-3">
           {/* Ticket List */}
-          <div className="flex flex-col rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-1">
+          <div className="flex flex-col rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-1 overflow-hidden">
             <div className="border-b border-gray-300 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-gray-900">Inbox</span>
-                  <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
-                    {tickets.length}
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                    {tickets?.length || 0}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -94,7 +99,7 @@ export default function TicketInboxPage() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="rounded-md border-none bg-transparent text-sm font-medium text-gray-600 focus:ring-0"
+                    className="rounded-md border-none bg-transparent text-sm font-medium text-gray-600 focus:ring-0 cursor-pointer"
                   >
                     <option value="open">Open</option>
                     <option value="in_progress">In Progress</option>
@@ -106,25 +111,31 @@ export default function TicketInboxPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
-              {loading ? (
+              {isListLoading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="h-32 animate-pulse rounded-lg bg-gray-200"
-                    />
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex flex-col gap-2 rounded-lg border border-gray-200 p-4">
+                      <div className="flex justify-between">
+                        <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
+                        <div className="h-4 w-16 animate-pulse rounded bg-gray-200" />
+                      </div>
+                      <div className="h-6 w-3/4 animate-pulse rounded bg-gray-200" />
+                      <div className="mt-2 h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+                    </div>
                   ))}
                 </div>
-              ) : tickets.length === 0 ? (
-                <div className="flex h-full items-center justify-center text-center text-gray-500">
+              ) : tickets?.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center text-center text-gray-500">
+                  <MessageSquareOff className="mb-2 h-8 w-8 opacity-50" />
                   <p>No tickets found</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {tickets.map((ticket) => (
+                  {tickets?.map((ticket) => (
                     <div
                       key={ticket._id}
-                      className={`relative rounded-lg transition-all ${selectedTicket?._id === ticket._id
+                      className={`relative rounded-lg transition-all ${
+                        selectedTicketId === ticket._id
                           ? "ring-2 ring-black"
                           : ""
                         }`}
@@ -132,7 +143,7 @@ export default function TicketInboxPage() {
                       {/* Selection Checkbox */}
                       <div
                         onClick={(e) => handleSelectTicket(ticket._id, e)}
-                        className="absolute left-2 top-2 z-10 cursor-pointer text-gray-400 hover:text-black"
+                        className="absolute left-3 top-4 z-10 cursor-pointer text-gray-400 hover:text-black"
                       >
                         {selectedTicketIds.has(ticket._id) ? (
                           <CheckSquare className="h-5 w-5 text-black" />
@@ -144,7 +155,7 @@ export default function TicketInboxPage() {
                       <div className="pl-8">
                         <TicketCard
                           ticket={ticket}
-                          onClick={() => setSelectedTicket(ticket)}
+                          onClick={() => handleTicketClick(ticket)}
                         />
                       </div>
                     </div>
@@ -156,11 +167,19 @@ export default function TicketInboxPage() {
 
           {/* Ticket Detail */}
           <div className="hidden overflow-hidden rounded-lg border border-gray-300 bg-white shadow-sm lg:col-span-2 lg:block">
-            {selectedTicket ? (
-              <TicketDetail ticket={selectedTicket} isInstructor={true} />
+            {currentTicket ? (
+              <TicketDetail ticket={currentTicket} isInstructor={true} />
+            ) : isDetailLoading ? (
+               <div className="flex h-full flex-col items-center justify-center space-y-4 p-8">
+                  <div className="h-8 w-3/4 animate-pulse rounded bg-gray-200" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+                  <div className="h-64 w-full animate-pulse rounded bg-gray-200" />
+               </div>
             ) : (
-              <div className="flex h-full items-center justify-center text-gray-500">
-                <p>Select a ticket to view details</p>
+              <div className="flex h-full flex-col items-center justify-center text-gray-500">
+                <MessageSquareOff className="mb-4 h-12 w-12 opacity-20" />
+                <p className="text-lg font-medium">Select a ticket to view details</p>
+                <p className="text-sm text-gray-400">Choose a ticket from the list to start responding</p>
               </div>
             )}
           </div>

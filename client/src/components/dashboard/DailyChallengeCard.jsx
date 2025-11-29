@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Target, Trophy, CheckCircle, Clock, Zap } from "lucide-react";
 import usePostTestStore from "@/store/postTestStore";
 import useExamStore from "@/store/examStore";
-import useDashboardStore from "@/store/dashboardStore";
 import weekendClassService from "@/services/weekendClassService";
 
 function getDayName(date) {
@@ -11,9 +10,8 @@ function getDayName(date) {
   return days[date.getDay()];
 }
 
-function DailyChallengeCard() {
+function DailyChallengeCard({ studyPlan: activePlan }) {
   const navigate = useNavigate();
-  const { studyPlan: activePlan, isLoading: dashboardLoading } = useDashboardStore();
   const { postTestStatus, fetchPostTestStatus, loading: postTestLoading } = usePostTestStore();
   const { startQuizAttempt, startDailyPractice, loading: quizLoading, currentSession, sessionActive } = useExamStore();
   const [weekendClass, setWeekendClass] = useState(null);
@@ -86,7 +84,7 @@ function DailyChallengeCard() {
     }
   }
 
-  if (postTestLoading || dashboardLoading || !activePlan) {
+  if (postTestLoading || !activePlan) {
     return (
       <div className="rounded-lg border border-gray-300 bg-white p-6">
         <div className="flex items-center gap-4">
@@ -107,93 +105,102 @@ function DailyChallengeCard() {
   const isPostTestCompleted = !!currentWeekPostTest;
 
   return (
-    <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-black">
-            {isPostTestCompleted ? (
-              <Zap className="h-6 w-6 text-white" />
-            ) : (
-              <Target className="h-6 w-6 text-white" />
-            )}
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {isPostTestCompleted ? "Daily Practice" : "Post-Test"}
-            </h3>
-            <p className="text-sm text-gray-500">
-              Week {currentWeek?.weekNumber || 1} - {dayName}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 rounded-full bg-gray-200 px-3 py-1">
-            <Trophy className="h-4 w-4 text-gray-900" />
-            <span className="text-sm font-semibold text-gray-900">
-              +{isPostTestCompleted ? "15" : "30"} XP
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </div>
-      )}
-
-      {isPostTestCompleted ? (
-        <>
-          {/* Post-Test Completed Banner Removed */}
-          <div className="mb-4 space-y-2 text-sm text-gray-600">
-             <div className="flex items-center justify-between">
-              <span>Questions</span>
-              <span className="font-medium text-gray-900">10</span>
+    <div className="flex h-full flex-col justify-between rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
+      <div>
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-black">
+              {isPostTestCompleted ? (
+                <Zap className="h-6 w-6 text-white" />
+              ) : (
+                <Target className="h-6 w-6 text-white" />
+              )}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {isPostTestCompleted ? "Daily Practice" : "Post-Test"}
+              </h3>
+              <p className="text-sm text-gray-500">
+                Week {currentWeek?.weekNumber || 1} - {dayName}
+              </p>
             </div>
           </div>
-          <button
-            onClick={handleStartDailyPractice}
-            disabled={quizLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
-          >
-            {quizLoading && (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            )}
-            {quizLoading ? "Starting..." : (
-              isDailyPracticeActive ? "Continue Daily Practice" : "Start Daily Practice"
-            )}
-          </button>
-        </>
-      ) : (
-        <>
-          <div className="mb-4 space-y-2 text-sm text-gray-600">
-            <div className="flex items-center justify-between">
-              <span>Questions</span>
-              <span className="font-medium text-gray-900">30</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Time Limit</span>
-              <span className="font-medium text-gray-900">45 minutes</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Topics</span>
-              <span className="font-medium text-gray-900">
-                {currentWeek?.weekNumber ? `Week ${currentWeek.weekNumber - 1}` : "Week 4"}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 rounded-full bg-gray-200 px-3 py-1">
+              <Trophy className="h-4 w-4 text-gray-900" />
+              <span className="text-sm font-semibold text-gray-900">
+                +{isPostTestCompleted ? "15" : "30"} XP
               </span>
             </div>
           </div>
-          <button
-            onClick={handleStartPostTest}
-            disabled={quizLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
-          >
-            {quizLoading && (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            )}
-            {quizLoading ? "Starting..." : "Start Post-Test"}
-          </button>
-        </>
-      )}
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+            {error}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-auto">
+        <p className="mb-4 text-center text-sm font-medium text-gray-600">
+          {isPostTestCompleted 
+            ? "Consistency is key! Keep your streak alive with daily practice." 
+            : "Ready to level up? Complete the post-test to unlock new challenges."}
+        </p>
+
+        {isPostTestCompleted ? (
+          <>
+            <div className="mb-4 space-y-2 text-sm text-gray-600">
+               <div className="flex items-center justify-between">
+                <span>Questions</span>
+                <span className="font-medium text-gray-900">10</span>
+              </div>
+            </div>
+            <button
+              onClick={handleStartDailyPractice}
+              disabled={quizLoading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+            >
+              {quizLoading && (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              )}
+              {quizLoading ? "Starting..." : (
+                isDailyPracticeActive ? "Continue Daily Practice" : "Start Daily Practice"
+              )}
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="mb-4 space-y-2 text-sm text-gray-600">
+              <div className="flex items-center justify-between">
+                <span>Questions</span>
+                <span className="font-medium text-gray-900">30</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Time Limit</span>
+                <span className="font-medium text-gray-900">45 minutes</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Topics</span>
+                <span className="font-medium text-gray-900">
+                  {currentWeek?.weekNumber ? `Week ${currentWeek.weekNumber - 1}` : "Week 4"}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={handleStartPostTest}
+              disabled={quizLoading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+            >
+              {quizLoading && (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              )}
+              {quizLoading ? "Starting..." : "Start Post-Test"}
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

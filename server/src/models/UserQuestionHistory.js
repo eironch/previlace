@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import fsrsService, { Rating_ENUM, State_ENUM } from "../services/fsrsService.js";
 
 const userQuestionHistorySchema = new mongoose.Schema(
   {
@@ -75,37 +76,50 @@ const userQuestionHistorySchema = new mongoose.Schema(
     ],
     weaknessScore: {
       type: Number,
-      default: 0, // 0-100, higher means weaker
+      default: 0,
     },
     isWeakArea: {
       type: Boolean,
       default: false,
     },
-    spacedRepetitionData: {
-      easeFactor: {
-        type: Number,
-        default: 2.5,
-      },
-      interval: {
-        type: Number,
-        default: 1,
-      },
-      repetitions: {
+    fsrsData: {
+      stability: {
         type: Number,
         default: 0,
       },
-      nextReviewDate: {
+      difficulty: {
+        type: Number,
+        default: 5,
+        min: 1,
+        max: 10,
+      },
+      due: {
         type: Date,
         default: Date.now,
         index: true,
       },
-      lastReviewedAt: Date,
-      difficultyRating: {
+      elapsedDays: {
         type: Number,
-        min: 1,
-        max: 5,
-        default: 3,
+        default: 0,
       },
+      scheduledDays: {
+        type: Number,
+        default: 0,
+      },
+      reps: {
+        type: Number,
+        default: 0,
+      },
+      lapses: {
+        type: Number,
+        default: 0,
+      },
+      state: {
+        type: String,
+        enum: ["new", "learning", "review", "relearning"],
+        default: "new",
+      },
+      lastReview: Date,
     },
     isBookmarked: {
       type: Boolean,
@@ -120,8 +134,8 @@ const userQuestionHistorySchema = new mongoose.Schema(
 userQuestionHistorySchema.index({ userId: 1, questionId: 1 }, { unique: true });
 userQuestionHistorySchema.index({ userId: 1, masteryLevel: 1 });
 userQuestionHistorySchema.index({ userId: 1, lastAttemptAt: -1 });
-userQuestionHistorySchema.index({ userId: 1, "spacedRepetitionData.nextReviewDate": 1 });
-userQuestionHistorySchema.index({ "spacedRepetitionData.nextReviewDate": 1, masteryLevel: 1 });
+userQuestionHistorySchema.index({ userId: 1, "fsrsData.due": 1 });
+userQuestionHistorySchema.index({ "fsrsData.due": 1, "fsrsData.state": 1 });
 
 userQuestionHistorySchema.methods.recordAttempt = function (sessionId, isCorrect, timeSpent, userAnswer) {
   this.attempts.push({
@@ -163,11 +177,9 @@ userQuestionHistorySchema.methods.updateMasteryLevel = function () {
     this.masteryLevel = "mastered";
   }
 
-  // Calculate weakness score (inverse of accuracy, weighted by attempts)
-  // If accuracy is low and attempts are high, weakness is high.
   if (this.totalAttempts >= 3) {
-      this.weaknessScore = (1 - accuracy) * 100;
-      this.isWeakArea = this.weaknessScore > 50;
+    this.weaknessScore = (1 - accuracy) * 100;
+    this.isWeakArea = this.weaknessScore > 50;
   }
 };
 
@@ -176,52 +188,79 @@ userQuestionHistorySchema.methods.getAccuracy = function () {
   return (this.correctAttempts / this.totalAttempts) * 100;
 };
 
-userQuestionHistorySchema.methods.updateSpacedRepetition = function (isCorrect, responseTime, difficulty = "intermediate") {
-  let easeFactor = this.spacedRepetitionData.easeFactor || 2.5;
-  let interval = 1;
+userQuestionHistorySchema.methods.updateFSRS = function (isCorrect, responseTime) {
+  const rating = this.calculateRating(isCorrect, responseTime);
   
-  if (isCorrect) {
-    if (responseTime < 10000) {
-      easeFactor = Math.min(easeFactor + 0.1, 3.0);
-    }
-    
-    switch (difficulty) {
-      case "beginner":
-        interval = Math.ceil(easeFactor * 1);
-        break;
-      case "intermediate":
-        interval = Math.ceil(easeFactor * 2);
-        break;
-      case "advanced":
-        interval = Math.ceil(easeFactor * 3);
-        break;
-      default:
-        interval = Math.ceil(easeFactor * 2);
-    }
-    
-    this.spacedRepetitionData.repetitions++;
-  } else {
-    easeFactor = Math.max(easeFactor - 0.2, 1.3);
-    interval = 1;
-    this.spacedRepetitionData.repetitions = 0;
+  const card = {
+    due: this.fsrsData.due || new Date(),
+    stability: this.fsrsData.stability || 0,
+    difficulty: this.fsrsData.difficulty || 5,
+    elapsedDays: this.fsrsData.elapsedDays || 0,
+    scheduledDays: this.fsrsData.scheduledDays || 0,
+    reps: this.fsrsData.reps || 0,
+    lapses: this.fsrsData.lapses || 0,
+    state: fsrsService.stringToState(this.fsrsData.state || "new"),
+    lastReview: this.fsrsData.lastReview || null
+  };
+
+  const updatedCard = fsrsService.schedule(card, new Date(), rating);
+
+  this.fsrsData = {
+    stability: updatedCard.stability,
+    difficulty: updatedCard.difficulty,
+    due: updatedCard.due,
+    elapsedDays: updatedCard.elapsedDays,
+    scheduledDays: updatedCard.scheduledDays,
+    reps: updatedCard.reps,
+    lapses: updatedCard.lapses,
+    state: fsrsService.stateToString(updatedCard.state),
+    lastReview: updatedCard.lastReview
+  };
+
+  return this;
+};
+
+userQuestionHistorySchema.methods.calculateRating = function (isCorrect, responseTime) {
+  if (!isCorrect) {
+    return Rating_ENUM.AGAIN;
   }
 
-  const nextReviewDate = new Date();
-  nextReviewDate.setDate(nextReviewDate.getDate() + interval);
-  
-  this.spacedRepetitionData.easeFactor = easeFactor;
-  this.spacedRepetitionData.interval = interval;
-  this.spacedRepetitionData.nextReviewDate = nextReviewDate;
-  this.spacedRepetitionData.lastReviewedAt = new Date();
+  const avgTime = this.averageResponseTime || 30000;
+  const timeRatio = responseTime / avgTime;
+  const recentAttempts = this.attempts.slice(-5);
+  const recentCorrect = recentAttempts.filter(a => a.isCorrect).length;
+
+  if (timeRatio <= 0.5 && recentCorrect >= 4) {
+    return Rating_ENUM.EASY;
+  }
+  if (timeRatio <= 0.8) {
+    return Rating_ENUM.GOOD;
+  }
+  return Rating_ENUM.HARD;
+};
+
+userQuestionHistorySchema.methods.getRetrievability = function () {
+  if (this.fsrsData.state === "new" || !this.fsrsData.lastReview) {
+    return 0;
+  }
+
+  const card = {
+    stability: this.fsrsData.stability,
+    state: fsrsService.stringToState(this.fsrsData.state),
+    lastReview: this.fsrsData.lastReview
+  };
+
+  return fsrsService.getRetrievability(card);
 };
 
 userQuestionHistorySchema.methods.isDueForReview = function () {
-  return new Date() >= this.spacedRepetitionData.nextReviewDate && this.masteryLevel !== "mastered";
+  if (!this.fsrsData.due) return true;
+  return new Date() >= new Date(this.fsrsData.due) && this.masteryLevel !== "mastered";
 };
 
 userQuestionHistorySchema.methods.getDaysUntilReview = function () {
   const now = new Date();
-  const reviewDate = new Date(this.spacedRepetitionData.nextReviewDate);
+  const reviewDate = new Date(this.fsrsData.due);
   const diffTime = reviewDate - now;
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
@@ -229,12 +268,12 @@ userQuestionHistorySchema.methods.getDaysUntilReview = function () {
 userQuestionHistorySchema.statics.getDueForReview = function (userId, limit = 50) {
   return this.find({
     userId,
-    "spacedRepetitionData.nextReviewDate": { $lte: new Date() },
+    "fsrsData.due": { $lte: new Date() },
     masteryLevel: { $ne: "mastered" }
   })
-  .sort({ "spacedRepetitionData.nextReviewDate": 1 })
-  .limit(limit)
-  .populate("questionId");
+    .sort({ "fsrsData.due": 1 })
+    .limit(limit)
+    .populate("questionId");
 };
 
 userQuestionHistorySchema.statics.getReviewSchedule = function (userId, days = 7) {
@@ -245,7 +284,7 @@ userQuestionHistorySchema.statics.getReviewSchedule = function (userId, days = 7
     {
       $match: {
         userId: new mongoose.Types.ObjectId(userId),
-        "spacedRepetitionData.nextReviewDate": {
+        "fsrsData.due": {
           $gte: new Date(),
           $lte: endDate
         }
@@ -256,7 +295,7 @@ userQuestionHistorySchema.statics.getReviewSchedule = function (userId, days = 7
         _id: {
           $dateToString: {
             format: "%Y-%m-%d",
-            date: "$spacedRepetitionData.nextReviewDate"
+            date: "$fsrsData.due"
           }
         },
         count: { $sum: 1 },
@@ -264,7 +303,7 @@ userQuestionHistorySchema.statics.getReviewSchedule = function (userId, days = 7
           $push: {
             questionId: "$questionId",
             masteryLevel: "$masteryLevel",
-            nextReview: "$spacedRepetitionData.nextReviewDate"
+            nextReview: "$fsrsData.due"
           }
         }
       }
@@ -281,15 +320,19 @@ userQuestionHistorySchema.statics.getOrCreate = async function (userId, question
   let history = await this.findOne({ userId, questionId });
 
   if (!history) {
-    history = await this.create({ 
-      userId, 
+    history = await this.create({
+      userId,
       questionId,
-      spacedRepetitionData: {
-        easeFactor: 2.5,
-        interval: 1,
-        repetitions: 0,
-        nextReviewDate: new Date(),
-        difficultyRating: 3
+      fsrsData: {
+        stability: 0,
+        difficulty: 5,
+        due: new Date(),
+        elapsedDays: 0,
+        scheduledDays: 0,
+        reps: 0,
+        lapses: 0,
+        state: "new",
+        lastReview: null
       }
     });
   }
@@ -363,9 +406,49 @@ userQuestionHistorySchema.statics.getUserStats = function (userId) {
         beginnerCount: {
           $sum: { $cond: [{ $eq: ["$masteryLevel", "beginner"] }, 1, 0] },
         },
+        averageStability: { $avg: "$fsrsData.stability" },
+        totalLapses: { $sum: "$fsrsData.lapses" },
       },
     },
   ]);
+};
+
+userQuestionHistorySchema.statics.getExamReadiness = async function (userId, examDate) {
+  const histories = await this.find({ userId });
+  
+  const cards = histories.map(h => ({
+    stability: h.fsrsData?.stability || 0,
+    state: fsrsService.stringToState(h.fsrsData?.state || "new"),
+    lastReview: h.fsrsData?.lastReview || null
+  }));
+
+  return fsrsService.calculateExamReadiness(cards, examDate);
+};
+
+userQuestionHistorySchema.statics.getByRetrievability = async function (userId, threshold = 0.9, limit = 50) {
+  const histories = await this.find({
+    userId,
+    "fsrsData.state": { $in: ["review", "relearning"] }
+  }).populate("questionId");
+
+  const now = new Date();
+  const withRetrievability = histories.map(h => {
+    const card = {
+      stability: h.fsrsData.stability,
+      state: fsrsService.stringToState(h.fsrsData.state),
+      lastReview: h.fsrsData.lastReview
+    };
+    return {
+      history: h,
+      retrievability: fsrsService.getRetrievability(card, now)
+    };
+  });
+
+  return withRetrievability
+    .filter(item => item.retrievability < threshold)
+    .sort((a, b) => a.retrievability - b.retrievability)
+    .slice(0, limit)
+    .map(item => item.history);
 };
 
 export default mongoose.model("UserQuestionHistory", userQuestionHistorySchema);
