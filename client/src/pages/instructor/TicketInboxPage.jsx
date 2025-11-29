@@ -61,7 +61,7 @@ export default function TicketInboxPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Ticket Inbox</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Support Inbox</h1>
             <p className="mt-2 text-gray-600">
               Manage student inquiries and support requests.
             </p>
@@ -124,11 +124,10 @@ export default function TicketInboxPage() {
                   {tickets.map((ticket) => (
                     <div
                       key={ticket._id}
-                      className={`relative rounded-lg transition-all ${
-                        selectedTicket?._id === ticket._id
+                      className={`relative rounded-lg transition-all ${selectedTicket?._id === ticket._id
                           ? "ring-2 ring-black"
                           : ""
-                      }`}
+                        }`}
                     >
                       {/* Selection Checkbox */}
                       <div
@@ -141,7 +140,7 @@ export default function TicketInboxPage() {
                           <Square className="h-5 w-5" />
                         )}
                       </div>
-                      
+
                       <div className="pl-8">
                         <TicketCard
                           ticket={ticket}

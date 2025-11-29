@@ -25,6 +25,7 @@ export const studentNavItems = [
   { id: "dashboard", icon: Home, title: "Dashboard", path: "/dashboard" },
   { id: "subjects", icon: BookOpen, title: "Study", path: "/dashboard/subjects" },
   { id: "jobs", icon: Briefcase, title: "Career", path: "/dashboard/jobs" },
+
   { id: "analytics", icon: BarChart3, title: "Progress", path: "/dashboard/analytics" },
   { id: "tickets", icon: MessageSquare, title: "Support", path: "/dashboard/tickets" },
 ];
@@ -43,7 +44,7 @@ export const instructorNavItems = [
   { id: "dashboard", icon: Home, title: "Dashboard", path: "/instructor" },
   { id: "classes", icon: Calendar, title: "My Classes", path: "/instructor/classes" },
   { id: "availability", icon: Settings, title: "Availability", path: "/instructor/availability" },
-  { id: "inbox", icon: MessageSquare, title: "Inbox", path: "/dashboard/inbox" },
+  { id: "inbox", icon: MessageSquare, title: "Support", path: "/instructor/inbox" },
 ];
 
 export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabChange, isCollapsed: controlledIsCollapsed, setIsCollapsed: controlledSetIsCollapsed }) {
@@ -69,7 +70,12 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
     if (activeTab && item.id) {
       return activeTab === item.id;
     }
-    return location.pathname === item.path;
+    // Exact match for root dashboard paths
+    if (item.path === "/dashboard" || item.path === "/instructor" || item.path === "/admin") {
+      return location.pathname === item.path;
+    }
+    // Prefix match for sub-routes
+    return location.pathname.startsWith(item.path);
   };
 
   const sidebarVariants = {
@@ -106,7 +112,7 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
                     <ChevronLeft className="w-6 h-6 text-gray-500" />
                   </button>
                 </div>
-                
+
                 <nav className="flex-1 px-2 py-4 space-y-1">
                   {navItems.map((item) => (
                     <button
@@ -119,11 +125,10 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
                         }
                         setIsOpen(false);
                       }}
-                      className={`flex w-full items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
-                        isActive(item)
-                          ? "bg-black text-white"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
+                      className={`flex w-full items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${isActive(item)
+                        ? "bg-black text-white"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
                     >
                       <item.icon className={`mr-3 h-5 w-5 ${isActive(item) ? "text-white" : "text-gray-500"}`} />
                       {item.title}
@@ -196,17 +201,15 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
                 navigate(item.path);
               }
             }}
-            className={`group flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-              isActive(item)
-                ? "bg-black text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            } ${isCollapsed ? "justify-center" : ""}`}
+            className={`group flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isActive(item)
+              ? "bg-black text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              } ${isCollapsed ? "justify-center" : ""}`}
             title={isCollapsed ? item.title : ""}
           >
             <item.icon
-              className={`h-5 w-5 flex-shrink-0 transition-colors ${
-                isActive(item) ? "text-white" : "text-gray-500 group-hover:text-gray-900"
-              } ${!isCollapsed ? "mr-3" : ""}`}
+              className={`h-5 w-5 flex-shrink-0 transition-colors ${isActive(item) ? "text-white" : "text-gray-500 group-hover:text-gray-900"
+                } ${!isCollapsed ? "mr-3" : ""}`}
             />
             {!isCollapsed && (
               <motion.span
@@ -248,20 +251,18 @@ export default function Sidebar({ isMobile, isOpen, setIsOpen, activeTab, onTabC
 
         <button
           onClick={() => navigate("/dashboard/settings")}
-          className={`flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
-            isCollapsed ? "justify-center" : ""
-          }`}
+          className={`flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${isCollapsed ? "justify-center" : ""
+            }`}
           title={isCollapsed ? "Settings" : ""}
         >
           <Settings className={`h-5 w-5 text-gray-500 ${!isCollapsed ? "mr-3" : ""}`} />
           {!isCollapsed && <span>Settings</span>}
         </button>
-        
+
         <button
           onClick={logout}
-          className={`mt-1 flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 ${
-            isCollapsed ? "justify-center" : ""
-          }`}
+          className={`mt-1 flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 ${isCollapsed ? "justify-center" : ""
+            }`}
           title={isCollapsed ? "Sign Out" : ""}
         >
           <LogOut className={`h-5 w-5 ${!isCollapsed ? "mr-3" : ""}`} />

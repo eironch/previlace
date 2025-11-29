@@ -66,7 +66,7 @@ const login = catchAsync(async (req, res, next) => {
 	await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
 
 	const { accessToken, refreshToken } = generateTokens(user._id);
-	
+
 	await user.addRefreshToken(
 		refreshToken,
 		req.headers["user-agent"],
@@ -157,8 +157,8 @@ const forgotPassword = catchAsync(async (req, res, next) => {
 		passwordResetExpires,
 	});
 
-	res.json({ 
-		success: true, 
+	res.json({
+		success: true,
 		message: "If account exists, reset email sent",
 		...(process.env.NODE_ENV !== "production" && { resetToken })
 	});
@@ -211,7 +211,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
 
 const resendEmailVerification = catchAsync(async (req, res, next) => {
 	const user = await User.findById(req.user._id);
-	
+
 	if (user.isEmailVerified) {
 		return next(new AppError("Email already verified", 400));
 	}
@@ -224,8 +224,8 @@ const resendEmailVerification = catchAsync(async (req, res, next) => {
 		emailVerificationExpires,
 	});
 
-	res.json({ 
-		success: true, 
+	res.json({
+		success: true,
 		message: "Verification email sent",
 		...(process.env.NODE_ENV !== "production" && { emailVerificationToken })
 	});
@@ -260,7 +260,7 @@ const updatePassword = catchAsync(async (req, res, next) => {
 	const { currentPassword, newPassword } = req.body;
 
 	const user = await User.findById(req.user._id).select("+password");
-	
+
 	const isCurrentPasswordValid = await user.comparePassword(currentPassword);
 	if (!isCurrentPasswordValid) {
 		return next(new AppError("Current password is incorrect", 401));

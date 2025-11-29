@@ -6,16 +6,16 @@ import { useAppStore } from "@/store/appStore";
 
 const EyeIcon = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-    <circle cx="12" cy="12" r="3"/>
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
 const EyeOffIcon = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.77 0 8.38 4.08 9.96 5.86-1.58 1.78-5.2 5.86-9.96 5.86a10.01 10.01 0 0 1-2.58-.42"/>
-    <path d="M2 2l20 20"/>
+    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.77 0 8.38 4.08 9.96 5.86-1.58 1.78-5.2 5.86-9.96 5.86a10.01 10.01 0 0 1-2.58-.42" />
+    <path d="M2 2l20 20" />
   </svg>
 );
 
@@ -29,7 +29,7 @@ export default function RegisterForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
-  
+
   // State for password visibility toggles
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -57,7 +57,7 @@ export default function RegisterForm() {
 
   const validateForm = () => {
     const errors = {};
-    
+
     if (!formData.email.trim()) errors.email = "Email is required";
     if (!formData.password) errors.password = "Password is required";
     else if (formData.password.length < 6)
@@ -81,7 +81,7 @@ export default function RegisterForm() {
     try {
       const { email, password, firstName, lastName } = formData;
       const registerData = { email, password, firstName, lastName };
-      
+
       const result = await register(registerData);
       if (result && result.success) {
         closeAuthModal();
@@ -141,7 +141,7 @@ export default function RegisterForm() {
           {/* PASSWORD INPUT WITH TOGGLE */}
           <div className="space-y-2">
             <label
-            htmlFor="register-password"
+              htmlFor="register-password"
               className="text-sm font-medium text-gray-700"
             >
               Password
@@ -178,7 +178,7 @@ export default function RegisterForm() {
           {/* CONFIRM PASSWORD INPUT WITH TOGGLE */}
           <div className="space-y-2">
             <label
-            htmlFor="register-confirm-password"
+              htmlFor="register-confirm-password"
               className="text-sm font-medium text-gray-700"
             >
               Confirm Password

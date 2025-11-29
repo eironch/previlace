@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTestimonialsStore } from "@/store/testimonialsStore";
-import { 
-    CheckCircle, Clock, User, Star, AlertTriangle, 
+import {
+    CheckCircle, Clock, User, Star, AlertTriangle,
     Loader2, RefreshCw, Heart // ⭐ Added Heart icon for 'Favorited' visual
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -33,7 +33,7 @@ export default function TestimonialsManager({ landingPage = false }) {
 
     const handleAction = async (testimonialId, actionType) => {
         setActionError(null);
-        
+
         // ⭐ NEW LOGIC: Check the limit BEFORE approving
         if (actionType === 'approve' && approvedCount >= MAX_APPROVED_TESTIMONIALS) {
             setActionError(`Cannot approve more than ${MAX_APPROVED_TESTIMONIALS} testimonials. Please revert one first.`);

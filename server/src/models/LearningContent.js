@@ -7,7 +7,7 @@ const learningContentSchema = new mongoose.Schema(
       ref: "Topic",
       required: true,
       unique: true,
-      index: true,
+      unique: true,
     },
     content: {
       introduction: {
@@ -87,7 +87,7 @@ learningContentSchema.statics.getByTopic = function (topicId) {
   return this.findOne({ topicId, isPublished: true });
 };
 
-learningContentSchema.index({ topicId: 1 });
+
 learningContentSchema.index({ isPublished: 1 });
 
 export default mongoose.model("LearningContent", learningContentSchema);

@@ -1,3 +1,4 @@
+import RegistrationApplication from "../models/RegistrationApplication.js";
 import User from "../models/User.js";
 import { AppError, catchAsync } from "../utils/AppError.js";
 import Streak from "../models/Streak.js";
@@ -7,6 +8,23 @@ import StudyPlan from "../models/StudyPlan.js";
 import Subject from "../models/Subject.js";
 import QuizAttempt from "../models/QuizAttempt.js";
 import mongoose from "mongoose";
+
+const getMyRegistration = catchAsync(async (req, res, next) => {
+	const user = await User.findById(req.user._id);
+	if (!user.registrationNumber) {
+		return next(new AppError("No registration number found for this user", 404));
+	}
+
+	const registration = await RegistrationApplication.findOne({ registrationNumber: user.registrationNumber });
+	if (!registration) {
+		return next(new AppError("Registration application not found", 404));
+	}
+
+	res.status(200).json({
+		success: true,
+		data: registration
+	});
+});
 
 const getProfile = catchAsync(async (req, res, next) => {
 	const user = await User.findById(req.user._id);
@@ -25,10 +43,10 @@ const getProfile = catchAsync(async (req, res, next) => {
 
 const updateProfile = catchAsync(async (req, res, next) => {
 	const allowedFields = [
-		'firstName', 
-		'lastName', 
-		'bio', 
-		'isProfileComplete', 
+		'firstName',
+		'lastName',
+		'bio',
+		'isProfileComplete',
 		'examType',
 		'education',
 		'hasTakenExam',
@@ -47,7 +65,7 @@ const updateProfile = catchAsync(async (req, res, next) => {
 	];
 
 	const updateData = {};
-	
+
 	Object.keys(req.body).forEach(key => {
 		if (allowedFields.includes(key) && req.body[key] !== undefined) {
 			updateData[key] = req.body[key];
@@ -467,4 +485,5 @@ export default {
 	deleteUser,
 	getLevel,
 	getDashboardData,
+	getMyRegistration,
 };

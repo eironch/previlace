@@ -629,7 +629,7 @@ manualQuestionSchema.statics.searchQuestions = function (searchQuery, filters = 
 manualQuestionSchema.index({ templateId: 1, templateVersion: 1 });
 manualQuestionSchema.index({ category: 1, subjectArea: 1, difficulty: 1 });
 manualQuestionSchema.index({ examLevel: 1, workflowState: 1 });
-manualQuestionSchema.index({ createdBy: 1 });
+
 manualQuestionSchema.index({ workflowState: 1, createdAt: -1 });
 manualQuestionSchema.index({ "usageStats.totalAttempts": -1 });
 manualQuestionSchema.index({ "qualityMetrics.overallScore": -1 });

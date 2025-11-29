@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(authenticate);
 
 router.get("/dashboard", userController.getDashboardData);
+router.get("/my-registration", userController.getMyRegistration);
 router.get("/profile", userController.getProfile);
 router.patch("/profile", validateUpdateProfile, userController.updateProfile);
 router.get("/level", userController.getLevel);

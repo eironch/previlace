@@ -17,6 +17,12 @@ const userSchema = new mongoose.Schema(
       sparse: true,
       trim: true,
     },
+    registrationNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
     password: {
       type: String,
       required: function () {
@@ -127,7 +133,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: [
         "Administrative Officer",
-        "Legal Officer", 
+        "Legal Officer",
         "Human Resource Officer",
         "Information Officer",
         "Budget Officer",
@@ -154,7 +160,7 @@ const userSchema = new mongoose.Schema(
       enum: [
         "Metro Manila",
         "Cavite",
-        "Laguna", 
+        "Laguna",
         "Batangas",
         "Rizal",
         "Quezon",
@@ -171,7 +177,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: [
         "Numerical Ability",
-        "Verbal Ability", 
+        "Verbal Ability",
         "General Information",
         "Clerical Ability",
         "Logic & Reasoning",
@@ -185,7 +191,7 @@ const userSchema = new mongoose.Schema(
       enum: [
         "Video Lessons",
         "Text-based Modules",
-        "Practice Quizzes", 
+        "Practice Quizzes",
         "Interactive Flashcards",
         "Mock Exams",
         "Study Groups"

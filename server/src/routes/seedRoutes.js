@@ -10,5 +10,6 @@ router.post("/questions", seedController.seedQuestions);
 router.delete("/questions", seedController.resetQuestions);
 router.get("/questions/count", seedController.getQuestionCount);
 router.post("/reset-and-reseed", seedController.resetAndReseed);
+router.post("/registrations", seedController.seedRegistrations);
 
 export default router;

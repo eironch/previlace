@@ -28,7 +28,7 @@ import InstructorClassesPage from "./pages/instructor/InstructorClassesPage";
 import InstructorAvailabilityPage from "./pages/instructor/InstructorAvailabilityPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import JobBoardPage from "./pages/career/JobBoardPage";
-import ResumePage from "./pages/career/ResumePage";
+import CVPage from "./pages/career/CVPage";
 import InterviewPrepPage from "./pages/career/InterviewPrepPage";
 import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -36,6 +36,8 @@ import AuthModal from "./components/auth/AuthModal";
 import { ScrollToTop } from "./components/ScrollToTop";
 import DevTools from "./components/ui/DevTools";
 import { useAppStore } from "./store/appStore";
+import RegistrationPage from "./pages/RegistrationPage";
+
 
 import DashboardLayout from "./components/layout/DashboardLayout";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -95,7 +97,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={ <LandingPage />}
+          element={<LandingPage />}
         />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
@@ -272,6 +274,11 @@ function App() {
           }
         />
 
+        <Route
+          path="/register"
+          element={<RegistrationPage />}
+        />
+
 
 
         <Route
@@ -280,6 +287,24 @@ function App() {
             <ProtectedRoute requireAdmin>
               <AdminPage />
             </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/instructor"
+          element={
+            <DashboardRoute>
+              <InstructorDashboardPage />
+            </DashboardRoute>
+          }
+        />
+
+        <Route
+          path="/instructor/inbox"
+          element={
+            <DashboardRoute>
+              <TicketInboxPage />
+            </DashboardRoute>
           }
         />
 
@@ -297,6 +322,14 @@ function App() {
           element={
             <DashboardRoute>
               <InstructorAvailabilityPage />
+            </DashboardRoute>
+          }
+        />
+        <Route
+          path="/dashboard/cv"
+          element={
+            <DashboardRoute>
+              <CVPage />
             </DashboardRoute>
           }
         />

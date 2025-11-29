@@ -37,6 +37,8 @@ import FileManagementPage from "./admin/FileManagementPage";
 import ClassManagementPage from "./admin/ClassManagementPage";
 import LandingPageManager from "../components/admin/LandingPageManager";
 import AdminAnalyticsPage from "./admin/AdminAnalyticsPage";
+import AdminRegistrationPage from "./admin/AdminRegistrationPage";
+
 import { useLocation, useNavigate } from "react-router-dom";
 import StatsCard from "@/components/admin/dashboard/StatsCard";
 import RecentUsers from "@/components/admin/dashboard/RecentUsers";
@@ -55,19 +57,20 @@ function AdminPage() {
   const navigate = useNavigate();
 
   const getTabFromPath = (path) => {
-      if (path === "/admin") return "dashboard";
-      if (path.includes("/admin/analytics")) return "analytics";
-      if (path.includes("/admin/users")) return "users";
-      if (path.includes("/admin/questions")) return "questions";
-      if (path.includes("/admin/classes")) return "classes";
-      if (path.includes("/admin/resources")) return "resources";
-      if (path.includes("/admin/landing")) return "landing";
-      return "dashboard";
+    if (path === "/admin") return "dashboard";
+    if (path.includes("/admin/registrations")) return "users";
+    if (path.includes("/admin/analytics")) return "analytics";
+    if (path.includes("/admin/users")) return "users";
+    if (path.includes("/admin/questions")) return "questions";
+    if (path.includes("/admin/classes")) return "classes";
+    if (path.includes("/admin/resources")) return "resources";
+    if (path.includes("/admin/landing")) return "landing";
+    return "dashboard";
   };
 
   const activeTab = getTabFromPath(location.pathname);
   const { user } = useAuthStore();
-  
+
   const { getCachedData, setCachedData } = useAdminCacheStore();
   const CACHE_KEY = 'admin-dashboard-data';
 
@@ -187,8 +190,8 @@ function AdminPage() {
 
       <main className="flex-1 flex flex-col w-full transition-all duration-300 overflow-hidden">
          {activeTab === "users" && <UserManagement />}
-         {activeTab === "questions" && <QuestionManagementPage />}
-         {activeTab === "classes" && <ClassManagementPage />}
+         {activeTab === "questions" && (user?.role === "super_admin" || user?.role === "admin") && <QuestionManagementPage />}
+         {activeTab === "classes" && (user?.role === "super_admin" || user?.role === "admin") && <ClassManagementPage />}
          {activeTab === "resources" && <FileManagementPage />}
 
          {activeTab === "dashboard" && (
@@ -204,14 +207,14 @@ function AdminPage() {
          )}
 
          {activeTab === "analytics" && (
-            <AdminAnalyticsPage />
+           <AdminAnalyticsPage />
          )}
 
-         {activeTab === "landing" && (
+         {activeTab === "landing" && (user?.role === "super_admin" || user?.role === "admin") && (
             <LandingSection />
          )}
       </main>
-    </div>
+    </div >
   );
 }
 
@@ -283,6 +286,7 @@ function LandingSection() {
     );
 }
 
+
 function AdminDashboard({ stats, optimizedStats }) {
   return (
     <div className="space-y-12">
@@ -315,13 +319,13 @@ function AdminDashboard({ stats, optimizedStats }) {
         </div>
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-             <ExamTypeChart data={stats?.examTypes || []} />
-             <SystemHealth data={stats?.systemHealth} />
+            <ExamTypeChart data={stats?.examTypes || []} />
+            <SystemHealth data={stats?.systemHealth} />
           </div>
           <RegistrationTrend data={stats?.monthlyRegistrations || []} />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-             <LearningPatterns stats={stats} />
-             <UserRetention data={stats?.userRetention || []} />
+            <LearningPatterns stats={stats} />
+            <UserRetention data={stats?.userRetention || []} />
           </div>
           <RecentUsers />
         </div>
